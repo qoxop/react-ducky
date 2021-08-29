@@ -1,0 +1,20 @@
+{
+  "name": "rtk-like",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:qoxop/rtk-like.git",
+  "author": "张集伟 <zhangjw01@mingyuanyun.com>",
+  "license": "MIT",
+  "scripts": {
+    "install-peers": "npm-install-peers"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.19",
+    "npm-install-peers": "^1.2.2",
+    "typescript": "^4.4.2"
+  },
+  "peerDependencies": {
+    "immer": "^9.0.5",
+    "react": "^16.13.1"
+  }
+}
