@@ -6,10 +6,17 @@
   "author": "张集伟 <zhangjw01@mingyuanyun.com>",
   "license": "MIT",
   "scripts": {
+    "test": "jest",
     "install-peers": "npm-install-peers"
   },
   "devDependencies": {
+    "@babel/core": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-typescript": "^7.15.0",
+    "@types/jest": "^27.0.1",
     "@types/react": "^17.0.19",
+    "babel-jest": "^27.1.0",
+    "jest": "^27.1.0",
     "npm-install-peers": "^1.2.2",
     "typescript": "^4.4.2"
   },

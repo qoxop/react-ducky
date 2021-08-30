@@ -1,6 +1,12 @@
-import { ActionCreator, AnyFunction } from './typings';
+import { ActionCreator, AnyAction, AnyFunction } from './typings';
 
-export function createAction<P = any>(type: string, prepareAction?: AnyFunction): ActionCreator<P> {
+interface _ActionCreator<P = any> {
+  type: string;
+  match: (action: AnyAction) => boolean;
+  (...args: any[]):ReturnType<ActionCreator<P>>
+} 
+
+export function createAction<P = any>(type: string, prepareAction?: AnyFunction): _ActionCreator<P> {
   function actionCreator(...args: any[]) {
     if (prepareAction) {
       let prepared = prepareAction(...args)
@@ -27,7 +33,7 @@ export function createAction<P = any>(type: string, prepareAction?: AnyFunction)
 
   actionCreator.type = `${type}`;
 
-  actionCreator.match = (action) => (action.type === type);
+  actionCreator.match = (action: AnyAction) => (action.type === type);
 
-  return actionCreator as ActionCreator<P>
+  return actionCreator as unknown as _ActionCreator<P>
 }

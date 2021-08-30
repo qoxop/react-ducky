@@ -43,11 +43,11 @@ export type SliceCaseReducers<State> = {
 
 export type ActionCreator<P = void, M = any, E = any>  = P extends void ? {
   type: string;
-  match: (type: string) => boolean;
+  match: (action: AnyAction) => boolean;
   (p?: P, m?: M, e?: E): PayloadAction<P, M, E>
 } : {
   type: string;
-  match: (type: string) => boolean;
+  match: (action: AnyAction) => boolean;
   (p: P, m?: M, e?: E): PayloadAction<void, M, E>
 }
 
