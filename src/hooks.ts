@@ -46,7 +46,7 @@ function useSelector<S = any, P = any>(
   selector: Selector<S, P>,
   equalityFn: EqualityFn<P> = (last, cur) => (last === cur),
 ) {
-  const [state, setState] = useState<P>(selector(subscriber.getState()));
+  const [state, setState] = useState<P>(() => selector(subscriber.getState()));
   const stateRef = useRef<P>(state);
   useEffect(() => {
     const symbolKey = Symbol();

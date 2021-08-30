@@ -1,13 +1,18 @@
 {
   "name": "rtk-like",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "repository": "git@github.com:qoxop/rtk-like.git",
   "author": "张集伟 <zhangjw01@mingyuanyun.com>",
   "license": "MIT",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "jest",
-    "install-peers": "npm-install-peers"
+    "build": "yarn install-peers && node ./build.js",
+    "install-peers": "npm-install-peers",
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
@@ -18,6 +23,9 @@
     "babel-jest": "^27.1.0",
     "jest": "^27.1.0",
     "npm-install-peers": "^1.2.2",
+    "rollup": "^2.56.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-ts": "^1.4.0",
     "typescript": "^4.4.2"
   },
   "peerDependencies": {
