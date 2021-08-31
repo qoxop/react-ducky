@@ -12,7 +12,7 @@ async function build() {
       rollupTypescript({
         tsconfig: path.resolve(__dirname, './tsconfig.json'),
       }),
-      terser(),
+      // terser(),
     ],
     external: ['immer', 'react']
   });

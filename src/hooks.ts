@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 class StateSubscriber {
   store:any;
-  private listener: Map<Symbol, (state:any) => void>;
+  private listener: Map<Symbol, (state:any) => void> = new Map();
   constructor(store) {
     this.store = store;
   }
@@ -34,9 +34,10 @@ const hookMiddleware = (store) => {
   subscriber = new StateSubscriber(store);
   return (nextDispatch) => (action) => {
     // 执行动作
-    nextDispatch(action);
+    const result = nextDispatch(action);
     // 执行动作后的回调方法
     subscriber.afterDispatch(store.getState());
+    return result;
   }
 }
 
@@ -47,18 +48,19 @@ function useSelector<S = any, P = any>(
   equalityFn: EqualityFn<P> = (last, cur) => (last === cur),
 ) {
   const [state, setState] = useState<P>(() => selector(subscriber.getState()));
-  const stateRef = useRef<P>(state);
-  useEffect(() => {
-    const symbolKey = Symbol();
-    subscriber.addListener(symbolKey, (currentStates) => {
-      const curState = selector(currentStates);
-      if (!equalityFn(curState, stateRef.current)) {
-        setState(curState);
-        stateRef.current = curState;
-      }
-    });
-    return () => subscriber.removeListener(symbolKey);
-  }, []);
+
+  // const stateRef = useRef<P>(state);
+  // useEffect(() => {
+  //   const symbolKey = Symbol();
+  //   subscriber.addListener(symbolKey, (currentStates) => {
+  //     const curState = selector(currentStates);
+  //     if (!equalityFn(curState, stateRef.current)) {
+  //       setState(curState);
+  //       stateRef.current = curState;
+  //     }
+  //   });
+  //   return () => subscriber.removeListener(symbolKey);
+  // }, []);
   return state;
 }
 function useStore() {

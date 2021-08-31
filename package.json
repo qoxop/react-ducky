@@ -1,6 +1,6 @@
 {
   "name": "rtk-like",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "repository": "git@github.com:qoxop/rtk-like.git",
   "author": "张集伟 <zhangjw01@mingyuanyun.com>",
@@ -10,16 +10,16 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "yarn install-peers && node ./build.js",
+    "full-build": "yarn install-peers && node ./build.js",
+    "build": "node ./build.js",
     "install-peers": "npm-install-peers",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn full-build"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-typescript": "^7.15.0",
     "@types/jest": "^27.0.1",
-    "@types/react": "^17.0.19",
     "babel-jest": "^27.1.0",
     "jest": "^27.1.0",
     "npm-install-peers": "^1.2.2",
@@ -29,7 +29,7 @@
     "typescript": "^4.4.2"
   },
   "peerDependencies": {
-    "immer": "^9.0.5",
-    "react": "^16.13.1"
+    "immer": "*",
+    "react": "*"
   }
 }
