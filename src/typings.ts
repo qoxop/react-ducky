@@ -109,7 +109,7 @@ export interface ISlice<
     name: string,
     reducer: Reducer<State>,
     actions: CaseReducerActions<CRS>,
-    atomActions?: AtomActions<ASS>,
+    atomActions: AtomActions<ASS>,
     [k: string]: any
 }
 

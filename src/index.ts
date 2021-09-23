@@ -4,11 +4,6 @@ import { createSlice } from './createSlice';
 import { createAsyncThunk } from './createAsyncThunk';
 import { createReducer } from './createReducer';
 import { thunkMiddleware } from './ middleware/thunk-middleware';
-import {
-  ReturnPromiseType,
-  PayloadAction,
-  PromiseOrNot
-} from './typings';
 
 export {
   useStore,
@@ -23,8 +18,5 @@ export {
   createReducer,
   thunkMiddleware,
 }
-export type {
-  PayloadAction,
-  ReturnPromiseType,
-  PromiseOrNot
-}
+
+export * from './typings'

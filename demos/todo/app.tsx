@@ -1,14 +1,11 @@
 import React, { useMemo } from 'react';
-import { useAsyncGetter, useSelector, useActions } from 'rtk-like';
-import { FilterType, TodoItem } from '../typings';
+import { useSelector, useActions } from 'rtk-like';
+import { TodoItem } from '../typings';
 import { actions, InitialState } from './slice';
 import  { Todo, AddTodo, Filter } from '../components';
 
-type TODOS = InitialState['todos'];
-
 export function TodoApp() {
-    const todos = useAsyncGetter((state) => state.todo?.todos) as TODOS;
-    const filter = useSelector((state) => state.todo?.filter) as FilterType;
+    const { filter, todos } = useSelector((state) => state.todo) as InitialState;
     const { bindActions } = useActions({ actions });
     const todoArr = useMemo(() => {
         const data: TodoItem[] = []

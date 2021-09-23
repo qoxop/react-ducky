@@ -11,9 +11,15 @@ export function createSlice<
     CR extends SliceCaseReducers<State>,
     ASS extends AtomStates<State>,
 >(options: ICreateSliceOptions<State, CR, ASS>): ISlice<State, CR, ASS> {
-
-    const { reducers, name, extraReducers, persistence, persistenceKey, atomStates } = options;
-    const storage = persistence === 'local' ? window.localStorage : window.sessionStorage;
+    const {
+        name,
+        reducers,
+        extraReducers,
+        persistence,
+        persistenceKey,
+        atomStates
+    } = options;
+    const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey || `REDUX-PERSISTENCE-${name}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
@@ -25,7 +31,6 @@ export function createSlice<
         throw new Error('createSlice name 参数重复～');
     }
 
-    // 初始值，用于持久化数据的恢复
     const rKeys = Object.keys(reducers);
     const builder = new Builder<State>();
 
@@ -42,7 +47,7 @@ export function createSlice<
             }));
         } else {
             builder.addCase(actionType, reduceCase.reducer);
-            actions[rKey] = createAction(actionType, (...args:any[]) => ({
+            actions[rKey] = createAction(actionType, (...args:unknown[]) => ({
                 ...reduceCase.prepare(...args),
                 type: actionType,
             }));
@@ -55,7 +60,7 @@ export function createSlice<
         } else {
             Object.keys(extraReducers).forEach(eKey => {
                 builder.addCase(eKey, extraReducers[eKey]);
-            })
+            });
         }
     }
 
@@ -73,7 +78,6 @@ export function createSlice<
             });
             return pre;
         }, {} as any);
-        console.log(atomStates, atomActions)
     }
 
     reducer = createReducerWithOpt(options.initialState, {
