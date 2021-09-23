@@ -46,6 +46,7 @@
   },
   "peerDependencies": {
     "immer": "^9.0.5",
-    "react": "^16.13.1"
+    "react": "^16.13.1",
+    "redux": "*"
   }
 }

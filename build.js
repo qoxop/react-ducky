@@ -14,7 +14,7 @@ async function build() {
       }),
       // terser(),
     ],
-    external: ['immer', 'react']
+    external: ['immer', 'react', 'redux']
   });
   await bundle.write({
     format: 'commonjs',
