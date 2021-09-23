@@ -1,8 +1,13 @@
 import { Draft } from "immer"
+import { Dispatch, Reducer } from 'redux'
 import { Builder } from "./createReducer";
 
 export type AnyFunction<T = any> = (...args: any) => T;
 
+export type PromiseOrNot<S> =  Promise<S> | S;
+export type PromiseMaybe<S> = S extends Promise<S> ? S : PromiseOrNot<S>;
+
+/** 获取 Promise 的返回内容 */
 export type ReturnPromiseType<F extends (...args: any) => Promise<any>> = F extends (...args: any) => Promise<infer T> ? T : any;
 
 export interface Action {
@@ -17,11 +22,9 @@ export type PayloadAction<P = any, M = never, E = never> = { payload: P, type: s
     ([M] extends [never] ? {} : { meta: M }) &
     ([E] extends [never] ? {} : { error: E });
 
-// export type Actions = Record<string, AnyAction>
-
 export type CaseReducer<S = any> = (
   state: Draft<S>,
-  action?: PayloadAction|void
+  action?: PayloadAction
 ) => S | void | Draft<S>
 
 export type PrepareAction<P = any> =
@@ -76,33 +79,46 @@ export type CaseReducerActions<CRS extends SliceCaseReducers<any>> = {
     CRS[Type] extends AnyFunction ? ActionCreatorForCaseReducer<CRS[Type]> : void
 }
 
+export type AtomStates<State> = { 
+  [K in keyof State]?: (...args: unknown[]) => PromiseMaybe<State[K]>
+}
+
+export type AtomActions<SAS extends AtomStates<unknown>> = {
+  [K in keyof SAS]: SAS[K]
+}
 
 export interface ICreateSliceOptions<
     State extends Object = Object,
     CRS extends SliceCaseReducers<State> = SliceCaseReducers<State>,
+    ASS extends AtomStates<State> = AtomStates<State>,
 > {
     name: string;
     initialState: State;
     reducers: CRS;
-    extraReducers?: Record<string, CaseReducer<State>> | ((builder: Builder<State>) => void)
+    extraReducers?: Record<string, CaseReducer<State>> | ((builder: Builder<State>) => void),
+    atomStates?: ASS;
     persistence?: 'session'|'local';
     persistenceKey?: string;
 }
 
 export interface ISlice<
     State,
-    CRS extends SliceCaseReducers<State> = SliceCaseReducers<State>
+    CRS extends SliceCaseReducers<State> = SliceCaseReducers<State>,
+    ASS extends AtomStates<State> = AtomStates<State>,
 > {
     name: string,
-    reducer: any,
+    reducer: Reducer<State>,
     actions: CaseReducerActions<CRS>,
+    atomActions?: AtomActions<ASS>,
     [k: string]: any
 }
 
-
-export interface AsyncThunk<T = any> {
+export interface AsyncThunk<T = any, Ags extends Array<any> = any[]> {
   pending: string;
   fulfilled: string;
   rejected: string;
-  (...args: any[]): (dispatch:any, getState: () => any) => Promise<T>
+  (...args: Ags): (dispatch:Dispatch) => Promise<T>
 }
+
+export type Selector<S = any, P = any> = (state: S) => P;
+export type EqualityFn<P = any> = (last: P, current: P) => boolean;

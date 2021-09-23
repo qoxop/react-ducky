@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "typeRoots": ["node_modules/@types"],
+    "strict": false,
+    "isolatedModules": true,
     "allowJs": false,
     "skipLibCheck": false,
     "esModuleInterop": false,
@@ -16,6 +18,13 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": false,
-    "declaration":true
-  }
+    "declaration":true,
+    "paths": {
+      "rtk-like": ["./src/index.ts"]
+    }
+  },
+  "include": [
+    "./src/**/*",
+    "./demos/**/*",
+  ]
 }
