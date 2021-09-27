@@ -1,58 +1,61 @@
+/** TS 类型体操 */
 import { Draft } from "immer"
-import { Dispatch, Reducer } from 'redux'
+import { Dispatch, Reducer, Action, AnyAction } from 'redux'
 import { Builder } from "./createReducer";
-
-export type AnyFunction<T = any> = (...args: any) => T;
-
-export type PromiseOrNot<S> =  Promise<S> | S;
-export type PromiseMaybe<S> = S extends Promise<S> ? S : PromiseOrNot<S>;
-
-/** 获取 Promise 的返回内容 */
-export type ReturnPromiseType<F extends (...args: any) => Promise<any>> = F extends (...args: any) => Promise<infer T> ? T : any;
-
-export interface Action {
-  type: string
-}
-
-export interface AnyAction extends Action {
-  [k: string]: any;
-}
 
 export type PayloadAction<P = any, M = never, E = never> = { payload: P, type: string } &
     ([M] extends [never] ? {} : { meta: M }) &
     ([E] extends [never] ? {} : { error: E });
 
-export type CaseReducer<S = any> = (
-  state: Draft<S>,
-  action?: PayloadAction
-) => S | void | Draft<S>
+export interface AnyFunction<T = any> {
+  (...args: any):T
+};
 
-export type PrepareAction<P = any> =
-    | ((...args: any[]) => { payload: P })
-    | ((...args: any[]) => { payload: P; meta: any })
-    | ((...args: any[]) => { payload: P; error: any })
-    | ((...args: any[]) => { payload: P; meta: any; error: any })
+export type PromiseOrNot<S> =  Promise<S> | S;
+export type PromiseMaybe<S> = S extends Promise<S> ? S : PromiseOrNot<S>;
 
-export type CaseReducerWithPrepare<State> = {
-  reducer: CaseReducer<State>
-  prepare: PrepareAction
+/**
+ * 类型过滤器
+ */
+type TypeFilter<T, S> = {[K in keyof S]: S[K] extends T ? K : never}[keyof S]
+
+/**
+ * 获取 Promise 的返回内容
+ */
+export type ReturnPromiseType<F extends (...args: any) => Promise<any>> = F extends (...args: any) => Promise<infer T> ? T : any;
+
+
+/**
+ * reducer 方法定义
+ */
+export interface CaseReducer<S = any, PAC extends Omit<PayloadAction, 'type'> = any> {
+  (state: Draft<S>, action?: Action<string> & PAC): S | void | Draft<S>
+}
+
+export type PrepareAction<P = unknown> =
+    | ((...args: unknown[]) => { payload: P })
+    | ((...args: unknown[]) => { payload: P; meta: any })
+    | ((...args: unknown[]) => { payload: P; error: any })
+    | ((...args: unknown[]) => { payload: P; meta: any; error: any })
+
+export type CaseReducerWithPrepare<State, Pa extends PrepareAction = PrepareAction> = {
+  prepare: Pa;
+  reducer: CaseReducer<State, ReturnType<Pa>>
 }
 
 export type SliceCaseReducers<State> = {
-  [K: string]:
-    | CaseReducer<State>
-    | CaseReducerWithPrepare<State>
+  [K: string]: CaseReducer<State> | CaseReducerWithPrepare<State>
 }
 
-export type ActionCreator<P = void, M = any, E = any>  = P extends void ? {
+export type ActionCreator<P = void>  = P extends void ? ({
   type: string;
   match: (action: AnyAction) => boolean;
-  (p?: P, m?: M, e?: E): PayloadAction<P, M, E>
-} : {
+  (): AnyAction
+}) : ({
   type: string;
   match: (action: AnyAction) => boolean;
-  (p: P, m?: M, e?: E): PayloadAction<void, M, E>
-}
+  (payload: P, ...args: unknown[]): PayloadAction<void>
+})
 
 /**
  * 计算 CaseReducerWithPrepare 对于的 ActionCreator 的类型
@@ -74,45 +77,80 @@ export type ActionCreatorForCaseReducer<CR extends AnyFunction> =
  * 计算所有 ActionCreator 的类型集合
  */
 export type CaseReducerActions<CRS extends SliceCaseReducers<any>> = {
-  [Type in keyof CRS]: CRS[Type] extends {prepare: any} ?
+  [Type in keyof CRS]: CRS[Type] extends { prepare: any } ?
     ActionCreatorForCaseReducerWithPrepare<CRS[Type]['prepare']> :
     CRS[Type] extends AnyFunction ? ActionCreatorForCaseReducer<CRS[Type]> : void
 }
 
-export type AtomStates<State> = { 
-  [K in keyof State]?: (...args: unknown[]) => PromiseMaybe<State[K]>
+
+/**
+ * 异步的原子对象
+ */
+export type AtomObject<V = unknown, E = any> = {
+  status: 'unactive'|'pending'|'fulfilled'|'rejected';
+  value: V;
+  error?: E;
+  isPending?: boolean;
 }
 
-export type AtomActions<SAS extends AtomStates<unknown>> = {
-  [K in keyof SAS]: SAS[K]
+
+
+
+/**
+ * 原子数据获取方法
+ */
+export type AtomFetchers<State> = { 
+  // 继承了 AtomObject 类型的需要提供 Fetcher 函数
+  [K in TypeFilter<AtomObject, State>]: State[K] extends AtomObject ? (...args: unknown[]) => Promise<State[K]['value']> : void;
 }
 
-export interface ICreateSliceOptions<
-    State extends Object = Object,
-    CRS extends SliceCaseReducers<State> = SliceCaseReducers<State>,
-    ASS extends AtomStates<State> = AtomStates<State>,
-> {
-    name: string;
-    initialState: State;
-    reducers: CRS;
-    extraReducers?: Record<string, CaseReducer<State>> | ((builder: Builder<State>) => void),
-    atomStates?: ASS;
-    persistence?: 'session'|'local';
-    persistenceKey?: string;
+/**
+ * 原子数据异步动作
+ */
+export type AtomActions<AFS> = {
+  [K in keyof AFS]: AFS[K] extends AnyFunction ?  (...args: Parameters<AFS[K]>) => (dispatch:Dispatch) => ReturnType<AFS[K]> : void;
 }
 
-export interface ISlice<
-    State,
-    CRS extends SliceCaseReducers<State> = SliceCaseReducers<State>,
-    ASS extends AtomStates<State> = AtomStates<State>,
-> {
+type TotalCreateSliceOptions<
+  STATE extends Object = Object,
+  SCR extends SliceCaseReducers<STATE> = {},
+  AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
+> = {
+  name: string;
+  initialState: STATE;
+  reducers: SCR;
+  atomFetchers: AFS;
+  extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void),
+  persistence?: 'session'|'local';
+  persistenceKey?: string;
+}
+
+export type ICreateSliceOptions<
+  STATE extends Object = Object,
+  SCR extends SliceCaseReducers<STATE> = SliceCaseReducers<STATE>,
+  AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
+> = TypeFilter<AtomObject, STATE> extends never ? // 是否存在 AtomObject 的字段
+  (Omit<TotalCreateSliceOptions<STATE, SCR, AFS>, 'atomFetchers'>) :
+  TotalCreateSliceOptions<STATE, SCR, AFS>
+
+/**
+ * Slice 对象数据结构
+ */
+export type ISlice<
+  STATE extends Object = Object,
+  SCR extends SliceCaseReducers<STATE> = SliceCaseReducers<STATE>,
+  AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>,
+  OPT extends ICreateSliceOptions = ICreateSliceOptions
+> = {
     name: string,
-    reducer: Reducer<State>,
-    actions: CaseReducerActions<CRS>,
-    atomActions: AtomActions<ASS>,
+    reducer: Reducer<STATE>,
+    actions: CaseReducerActions<SCR>,
     [k: string]: any
-}
+} & (OPT extends {atomFetchers: any} ? { atomActions: AtomActions<AFS> } : {});
 
+/**
+ * 异步chunk
+ */
 export interface AsyncThunk<T = any, Ags extends Array<any> = any[]> {
   pending: string;
   fulfilled: string;

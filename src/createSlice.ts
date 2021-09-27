@@ -1,5 +1,5 @@
 import { Reducer } from 'redux';
-import { ActionCreator, ICreateSliceOptions, ISlice, SliceCaseReducers, AtomStates, AtomActions } from './typings';
+import { ActionCreator, ICreateSliceOptions, ISlice, SliceCaseReducers, AtomFetchers, AtomActions, AtomObject } from './typings';
 import { Builder, createReducerWithOpt } from "./createReducer";
 import { createAction } from './createAction';
 import { createPromiseChunk } from './createAsyncThunk';
@@ -8,23 +8,24 @@ const nameSet = new Set();
 
 export function createSlice<
     State,
-    CR extends SliceCaseReducers<State>,
-    ASS extends AtomStates<State>,
->(options: ICreateSliceOptions<State, CR, ASS>): ISlice<State, CR, ASS> {
+    SCR extends SliceCaseReducers<State>,
+    AFS extends AtomFetchers<State>
+>(options: ICreateSliceOptions<State, SCR, AFS>): ISlice<State, SCR, AFS, (typeof options)> {
     const {
         name,
         reducers,
         extraReducers,
         persistence,
         persistenceKey,
-        atomStates
+        // @ts-ignore
+        atomFetchers
     } = options;
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey || `REDUX-PERSISTENCE-${name}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
     let reducer: Reducer<State>;
-    let atomActions:AtomActions<ASS>;
+    let atomActions: any;
 
     // 防止重复 key 值
     if (nameSet.has(name)) {
@@ -64,16 +65,16 @@ export function createSlice<
         }
     }
 
-    if (atomStates) {
-        atomActions = Object.keys(atomStates).reduce((pre, aKey) => {
+    if (atomFetchers) {
+        atomActions = Object.keys(atomFetchers).reduce((pre, aKey) => {
             const actionType = `${name}/fetch_${aKey}`;
-            pre[aKey] = createPromiseChunk(actionType, atomStates[aKey]);
+            pre[aKey] = createPromiseChunk(actionType, atomFetchers[aKey]);
             builder.addCase(actionType, (state, action: any) => {
                 const { payload, meta: { isRejected } } = action;
                 if (isRejected) {
-                    state[aKey] = options.initialState[aKey];
+                    // state[aKey] = options.initialState[aKey];
                 } else {
-                    state[aKey] = payload;
+                    // state[aKey] = payload;
                 }
             });
             return pre;
@@ -101,7 +102,7 @@ export function createSlice<
     return {
         name,
         reducer,
-        actions: actions as any,
+        actions,
         atomActions,
-    }
+    } as any
 }
