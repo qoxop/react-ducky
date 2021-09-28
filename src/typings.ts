@@ -7,17 +7,21 @@ export type PayloadAction<P = any, M = never, E = never> = { payload: P, type: s
     ([M] extends [never] ? {} : { meta: M }) &
     ([E] extends [never] ? {} : { error: E });
 
-export interface AnyFunction<T = any> {
-  (...args: any):T
-};
+/**
+ * 设配任何函数
+ */
+export type AnyFunction<T = unknown, Args extends any[] = unknown[]> = (...args: Args) => T;
 
-export type PromiseOrNot<S> =  Promise<S> | S;
-export type PromiseMaybe<S> = S extends Promise<S> ? S : PromiseOrNot<S>;
+/**
+ * Promise 函数定义
+ */
+type PromiseFn<T = unknown, Args extends any[] = unknown[]> = (...args: Args) => Promise<T>;
 
 /**
  * 类型过滤器
  */
-type TypeFilter<T, S> = {[K in keyof S]: S[K] extends T ? K : never}[keyof S]
+type KeysOf<S, TypeFilter = never> = [TypeFilter] extends [never] ? keyof S : {[K in keyof S]: S[K] extends TypeFilter ? K : never}[keyof S];
+
 
 /**
  * 获取 Promise 的返回内容
@@ -82,7 +86,6 @@ export type CaseReducerActions<CRS extends SliceCaseReducers<any>> = {
     CRS[Type] extends AnyFunction ? ActionCreatorForCaseReducer<CRS[Type]> : void
 }
 
-
 /**
  * 异步的原子对象
  */
@@ -93,24 +96,26 @@ export type AtomObject<V = unknown, E = any> = {
   isPending?: boolean;
 }
 
-
-
-
 /**
  * 原子数据获取方法
  */
 export type AtomFetchers<State> = { 
   // 继承了 AtomObject 类型的需要提供 Fetcher 函数
-  [K in TypeFilter<AtomObject, State>]: State[K] extends AtomObject ? (...args: unknown[]) => Promise<State[K]['value']> : void;
+  [K in KeysOf<State, AtomObject>]: State[K] extends AtomObject ? (...args: unknown[]) => Promise<State[K]['value']> : void;
 }
 
 /**
  * 原子数据异步动作
  */
 export type AtomActions<AFS> = {
-  [K in keyof AFS]: AFS[K] extends AnyFunction ?  (...args: Parameters<AFS[K]>) => (dispatch:Dispatch) => ReturnType<AFS[K]> : void;
+  [K in keyof AFS]: AFS[K] extends PromiseFn 
+    ? (...args: Parameters<AFS[K]>) => ((dispatch:Dispatch) => ReturnType<AFS[K]>) :
+    void;
 }
 
+/**
+ * Slice 配置项完全版
+ */
 type TotalCreateSliceOptions<
   STATE extends Object = Object,
   SCR extends SliceCaseReducers<STATE> = {},
@@ -125,11 +130,14 @@ type TotalCreateSliceOptions<
   persistenceKey?: string;
 }
 
+/**
+ * Slice 配置项
+ */
 export type ICreateSliceOptions<
   STATE extends Object = Object,
   SCR extends SliceCaseReducers<STATE> = SliceCaseReducers<STATE>,
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
-> = TypeFilter<AtomObject, STATE> extends never ? // 是否存在 AtomObject 的字段
+> = KeysOf<STATE, AtomObject> extends never ? // 是否存在 AtomObject 的字段
   (Omit<TotalCreateSliceOptions<STATE, SCR, AFS>, 'atomFetchers'>) :
   TotalCreateSliceOptions<STATE, SCR, AFS>
 
@@ -142,10 +150,11 @@ export type ISlice<
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>,
   OPT extends ICreateSliceOptions = ICreateSliceOptions
 > = {
-    name: string,
-    reducer: Reducer<STATE>,
-    actions: CaseReducerActions<SCR>,
-    [k: string]: any
+    name: string;
+    reducer: Reducer<STATE>;
+    actions: CaseReducerActions<SCR>;
+    useSelector: <T>(selector: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
+    getState: () => STATE;
 } & (OPT extends {atomFetchers: any} ? { atomActions: AtomActions<AFS> } : {});
 
 /**
@@ -158,5 +167,6 @@ export interface AsyncThunk<T = any, Ags extends Array<any> = any[]> {
   (...args: Ags): (dispatch:Dispatch) => Promise<T>
 }
 
-export type Selector<S = any, P = any> = (state: S) => P;
+export type Selector<S = unknown, P = unknown> = (state: S) => P;
 export type EqualityFn<P = any> = (last: P, current: P) => boolean;
+export type IsPendingFn<T, S> = (t: T, s: S) => boolean;

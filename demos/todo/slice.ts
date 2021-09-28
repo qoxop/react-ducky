@@ -13,7 +13,7 @@ const initialState:InitialState = {
     filter: 'all',
     dddd: {value: 0, status: 'fulfilled'},
 }
-const { actions, atomActions, reducer } = createSlice({
+const { actions, atomActions, reducer, useSelector } = createSlice({
     name: "todo",
     initialState,
     atomFetchers: {
@@ -42,5 +42,6 @@ const { actions, atomActions, reducer } = createSlice({
 export {
     actions,
     atomActions,
+    
     reducer
 }
