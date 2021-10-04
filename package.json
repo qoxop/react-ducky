@@ -1,5 +1,5 @@
 {
-  "name": "rtk-like",
+  "name": "rs-tools",
   "version": "0.0.2",
   "main": "lib/index.js",
   "repository": "git@github.com:qoxop/rtk-like.git",

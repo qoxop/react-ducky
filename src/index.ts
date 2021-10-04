@@ -1,6 +1,6 @@
-import { useDispatch, useSelector, useStore, useAsyncGetter, useActions, Provider } from './hooks';
+import { useDispatch, useSelector, useStore, useAsyncGetter, useActions, ReduxProvider } from './hooks';
 import { createAction } from './createAction';
-import { createSlice } from './createSlice';
+import { createModel } from './createModel';
 import { createAsyncThunk } from './createAsyncThunk';
 import { createReducer } from './createReducer';
 import { thunkMiddleware } from './ middleware/thunk-middleware';
@@ -11,9 +11,9 @@ export {
   useDispatch,
   useSelector,
   useAsyncGetter,
-  Provider,
+  ReduxProvider,
   createAction,
-  createSlice,
+  createModel,
   createAsyncThunk,
   createReducer,
   thunkMiddleware,

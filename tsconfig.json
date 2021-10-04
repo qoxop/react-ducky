@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "target": "ES5",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "typeRoots": ["node_modules/@types"],

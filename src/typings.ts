@@ -3,19 +3,28 @@ import { Draft } from "immer"
 import { Dispatch, Reducer, Action, AnyAction } from 'redux'
 import { Builder } from "./createReducer";
 
+export type {
+  AnyAction
+}
+
 export type PayloadAction<P = any, M = never, E = never> = { payload: P, type: string } &
     ([M] extends [never] ? {} : { meta: M }) &
     ([E] extends [never] ? {} : { error: E });
 
 /**
+ * 类定义
+ */
+export type Klass<Args extends unknown[] = unknown[], I = any> =  (new (...args: Args) => I);
+
+/**
  * 设配任何函数
  */
-export type AnyFunction<T = unknown, Args extends any[] = unknown[]> = (...args: Args) => T;
+export type AnyFunction<T = any, Args extends any[] = unknown[]> = (...args: Args) => T;
 
 /**
  * Promise 函数定义
  */
-type PromiseFn<T = unknown, Args extends any[] = unknown[]> = (...args: Args) => Promise<T>;
+export type PromiseFn<T = unknown, Args extends any[] = unknown[]> = (...args: Args) => Promise<T>;
 
 /**
  * 类型过滤器
@@ -47,7 +56,7 @@ export type CaseReducerWithPrepare<State, Pa extends PrepareAction = PrepareActi
   reducer: CaseReducer<State, ReturnType<Pa>>
 }
 
-export type SliceCaseReducers<State> = {
+export type ModelCaseReducers<State> = {
   [K: string]: CaseReducer<State> | CaseReducerWithPrepare<State>
 }
 
@@ -80,7 +89,7 @@ export type ActionCreatorForCaseReducer<CR extends AnyFunction> =
 /**
  * 计算所有 ActionCreator 的类型集合
  */
-export type CaseReducerActions<CRS extends SliceCaseReducers<any>> = {
+export type CaseReducerActions<CRS extends ModelCaseReducers<any>> = {
   [Type in keyof CRS]: CRS[Type] extends { prepare: any } ?
     ActionCreatorForCaseReducerWithPrepare<CRS[Type]['prepare']> :
     CRS[Type] extends AnyFunction ? ActionCreatorForCaseReducer<CRS[Type]> : void
@@ -101,7 +110,7 @@ export type AtomObject<V = unknown, E = any> = {
  */
 export type AtomFetchers<State> = { 
   // 继承了 AtomObject 类型的需要提供 Fetcher 函数
-  [K in KeysOf<State, AtomObject>]: State[K] extends AtomObject ? (...args: unknown[]) => Promise<State[K]['value']> : void;
+  [K in KeysOf<State, AtomObject>]: State[K] extends AtomObject ? PromiseFn<State[K]['value'], unknown[]> : void;
 }
 
 /**
@@ -114,48 +123,49 @@ export type AtomActions<AFS> = {
 }
 
 /**
- * Slice 配置项完全版
+ * Model 配置项完全版
  */
-type TotalCreateSliceOptions<
+type TotalCreateModelOptions<
   STATE extends Object = Object,
-  SCR extends SliceCaseReducers<STATE> = {},
+  SCR extends ModelCaseReducers<STATE> = {},
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
 > = {
   name: string;
   initialState: STATE;
   reducers: SCR;
   atomFetchers: AFS;
+  selector?: <A = any>(appState: A) => STATE;
   extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void),
   persistence?: 'session'|'local';
   persistenceKey?: string;
 }
 
 /**
- * Slice 配置项
+ * Model 配置项
  */
-export type ICreateSliceOptions<
+export type CreateModelOptions<
   STATE extends Object = Object,
-  SCR extends SliceCaseReducers<STATE> = SliceCaseReducers<STATE>,
+  MCR extends ModelCaseReducers<STATE> = ModelCaseReducers<STATE>,
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
 > = KeysOf<STATE, AtomObject> extends never ? // 是否存在 AtomObject 的字段
-  (Omit<TotalCreateSliceOptions<STATE, SCR, AFS>, 'atomFetchers'>) :
-  TotalCreateSliceOptions<STATE, SCR, AFS>
+  (Omit<TotalCreateModelOptions<STATE, MCR, AFS>, 'atomFetchers'>) :
+  TotalCreateModelOptions<STATE, MCR, AFS>;
 
 /**
- * Slice 对象数据结构
+ * Model 对象数据结构
  */
-export type ISlice<
+export type Model<
   STATE extends Object = Object,
-  SCR extends SliceCaseReducers<STATE> = SliceCaseReducers<STATE>,
+  MCR extends ModelCaseReducers<STATE> = ModelCaseReducers<STATE>,
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>,
-  OPT extends ICreateSliceOptions = ICreateSliceOptions
+  OPT extends CreateModelOptions = CreateModelOptions
 > = {
     name: string;
     reducer: Reducer<STATE>;
-    actions: CaseReducerActions<SCR>;
-    useSelector: <T>(selector: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
+    actions: CaseReducerActions<MCR>;
     getState: () => STATE;
-} & (OPT extends {atomFetchers: any} ? { atomActions: AtomActions<AFS> } : {});
+    useModel: <T>(selector: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
+} & (OPT extends { atomFetchers: any } ? { atomActions: AtomActions<AFS> } : {});
 
 /**
  * 异步chunk

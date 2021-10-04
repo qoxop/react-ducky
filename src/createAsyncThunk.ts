@@ -1,14 +1,14 @@
 import { Dispatch } from "redux";
-import { AsyncThunk } from "./typings";
+import { AsyncThunk, PromiseFn } from "./typings";
 
-export function createAsyncThunk<T = any, Ags extends Array<unknown> = unknown[]>(
+export function createAsyncThunk<T = any, Args extends Array<unknown> = unknown[]>(
   type: string,
-  asyncTask: (...args: Ags) => Promise<T>
-): AsyncThunk<T, Ags> {
+  asyncTask: PromiseFn<T, Args>
+): AsyncThunk<T, Args> {
     const pending = `${type}/pending`;
     const fulfilled = `${type}/fulfilled`;
     const rejected = `${type}/rejected`;
-    function asyncThunk(...args: Ags) {
+    function asyncThunk(...args: Args) {
       return async (dispatch: Dispatch) => {
         dispatch({ type: pending, meta: { isPending: true }});
         try {
@@ -26,31 +26,38 @@ export function createAsyncThunk<T = any, Ags extends Array<unknown> = unknown[]
   asyncThunk.pending = pending;
   asyncThunk.fulfilled = fulfilled;
   asyncThunk.rejected = rejected;
-  return asyncThunk as AsyncThunk<T, Ags>;
+  return asyncThunk as AsyncThunk<T, Args>;
 }
 
-export function createPromiseChunk<T = any, Ags extends Array<unknown> = unknown[]>(
+export function createAtomChunk<T = any, Ags extends Array<unknown> = unknown[]>(
   type: string,
-  toPromise: (...args: Ags) => Promise<T>
+  fetcher: PromiseFn<T, Ags>
 ) {
   let count = 0;
-  function promiseChunk(...args: Ags) {
+  return function atomChunk(...args: Ags) {
     return (dispatch: Dispatch) => {
-      const promise = toPromise(...args);
+      const promise = fetcher(...args);
       const innerCount = count = (count + 1);
-      dispatch({ type, payload: promise, meta: { isPending: true }})
+      dispatch({ type, payload: { status: 'pending', isPending: true, error: null }});
       promise.then((response) => {
         if (innerCount === count) {
-          dispatch({ type, payload: response, meta: { isPending: false, isFulfilled: true }});
+          dispatch({ type, payload: {
+            status: 'fulfilled',
+            value: response,
+            error: null,
+            isPending: false,
+          }});
         }
       }).catch(error => {
         if (innerCount === count) {
-          dispatch({ type, payload: error, meta: { isPending: false, isRejected: true }})
+          dispatch({ type, payload: {
+            status: 'rejected',
+            error,
+            isPending: false,
+          }});
         }
       });
       return promise;
     }
   }
-  promiseChunk.toString = () => type;
-  return promiseChunk;
 }

@@ -1,36 +1,42 @@
 import { Reducer } from 'redux';
-import { ActionCreator, ICreateSliceOptions, ISlice, SliceCaseReducers, AtomFetchers, AtomActions, AtomObject } from './typings';
+import { ActionCreator, CreateModelOptions, Model, ModelCaseReducers, AtomFetchers, AtomObject, PayloadAction, Selector } from './typings';
 import { Builder, createReducerWithOpt } from "./createReducer";
 import { createAction } from './createAction';
-import { createPromiseChunk } from './createAsyncThunk';
+import { createAtomChunk } from './createAsyncThunk';
+import { useSelector } from './hooks';
 
 const nameSet = new Set();
 
-export function createSlice<
+export function createModel<
     State,
-    SCR extends SliceCaseReducers<State>,
+    MCR extends ModelCaseReducers<State>,
     AFS extends AtomFetchers<State>
->(options: ICreateSliceOptions<State, SCR, AFS>): ISlice<State, SCR, AFS, (typeof options)> {
+>(options: CreateModelOptions<State, MCR, AFS>): Model<State, MCR, AFS, (typeof options)> {
+
     const {
         name,
         reducers,
         extraReducers,
         persistence,
+        selector = (appState: any = {}) => appState[name],
         persistenceKey,
+        initialState,
         // @ts-ignore
         atomFetchers
     } = options;
+
+    // 防止重复 key 值
+    if (nameSet.has(name)) {
+        throw new Error('createSlice name 参数重复～');
+    }
+
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey || `REDUX-PERSISTENCE-${name}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
     let reducer: Reducer<State>;
     let atomActions: any;
-
-    // 防止重复 key 值
-    if (nameSet.has(name)) {
-        throw new Error('createSlice name 参数重复～');
-    }
+    let subState = initialState;
 
     const rKeys = Object.keys(reducers);
     const builder = new Builder<State>();
@@ -68,20 +74,18 @@ export function createSlice<
     if (atomFetchers) {
         atomActions = Object.keys(atomFetchers).reduce((pre, aKey) => {
             const actionType = `${name}/fetch_${aKey}`;
-            pre[aKey] = createPromiseChunk(actionType, atomFetchers[aKey]);
-            builder.addCase(actionType, (state, action: any) => {
-                const { payload, meta: { isRejected } } = action;
-                if (isRejected) {
-                    // state[aKey] = options.initialState[aKey];
-                } else {
-                    // state[aKey] = payload;
-                }
+            // action
+            pre[aKey] = createAtomChunk(actionType, atomFetchers[aKey]);
+            // reducer 
+            builder.addCase(actionType, (state, action: PayloadAction<AtomObject>) => {
+                const { payload } = action;
+                state[aKey] = Object.assign({}, state[aKey], payload);
             });
             return pre;
-        }, {} as any);
+        }, {});
     }
 
-    reducer = createReducerWithOpt(options.initialState, {
+    reducer = createReducerWithOpt(initialState, {
         builder,
         enhanceState: (state) => {
             if (persistence) {
@@ -93,16 +97,21 @@ export function createSlice<
             return state;
         },
         onChange: (data) => {
+            subState = data;
             if (persistence) {
                 storage.setItem(storageKey, JSON.stringify(data));
             }
         },
-    })
-
+    });
+    function useModel<T = any>(subSelector: Selector<State, T> = (s => s as any)) {
+        useSelector((state) => subSelector(selector(state)))
+    }
     return {
         name,
         reducer,
         actions,
         atomActions,
-    } as any
+        useModel,
+        getState: () => subState,
+    } as any;
 }
