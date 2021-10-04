@@ -4,6 +4,7 @@ import { bindActionCreators, Store } from 'redux';
 import { EqualityFn, Selector } from './typings';
 import { isPromise } from './utils/is-type';
 import { OutPromise } from './utils/async'
+import { Controler, $classHooks, ReduxControler } from './controller';
 
 
 export const ReduxContext = createContext<{store?: Store, subscriber?: ReduxSubscriber }>({});
@@ -127,6 +128,24 @@ function useActions<AC extends BParams0, AAC extends BParams0>(slice: { actions:
 const useSelector = createUseSelector();
 const useAsyncGetter = createUseAsyncGetter();
 
+
+function useController<C extends typeof Controler>(CtrlClass: C) {
+  const ctrl = useMemo(() => (new CtrlClass()), []);
+  ctrl[$classHooks]();
+  ctrl.useInit();
+}
+
+function useReduxController<C extends typeof ReduxControler>(CtrlClass: C) {
+  const { store } = useContext(ReduxContext)
+  const ctrl = useMemo(() => (new CtrlClass(store)), []);
+  ctrl[$classHooks]();
+  ctrl.useInit();
+}
+
+function uesCtrlContext<C extends typeof Controler>(CtrlClass: C) {
+  return useContext<InstanceType<C>>(CtrlClass.Context);
+}
+
 const Creators = {
   createUseSelector,
   createUseAsyncGetter,
@@ -139,5 +158,8 @@ export {
   useSelector,
   useAsyncGetter,
   ReduxProvider,
+  useController,
+  useReduxController,
+  uesCtrlContext,
   Creators,
 }

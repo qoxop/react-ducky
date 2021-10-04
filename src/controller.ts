@@ -2,7 +2,7 @@ import { Dispatch, Store } from "redux";
 import { Context, FunctionComponent, createContext, useState, useCallback, useReducer, createElement } from 'react';
 import { Draft, produce } from "immer";
 
-const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$class_hooks';
+export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$class_hooks';
 
 export function withContext(target: any) {
     let CtrlContext: Context<any> = null;
