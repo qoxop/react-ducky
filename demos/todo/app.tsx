@@ -1,34 +1,50 @@
 import React, { useMemo } from 'react';
-import { useSelector, useActions } from 'rtk-like';
+import {bindActionCreators } from 'redux'
+import { ReduxControler, useReduxController, withContext} from 'rtk-like';
 import { TodoItem } from '../typings';
-import { actions, InitialState } from './slice';
+import { actions, useModel as useTodoModel, getState as getTodoState } from './slice';
 import  { Todo, AddTodo, Filter } from '../components';
 
+@withContext
+class TodoController extends ReduxControler {
+    actions: typeof actions;
+    constructor(store) {
+        super(store);
+        this.actions = bindActionCreators(actions, this.dispatch);
+    }
+    useInit() {
+        const { filter, todos } = useTodoModel();
+        const todoArr = useMemo(() => {
+            const data: TodoItem[] = [];
+            Object.keys(todos).forEach(key => {
+                const todo = todos[key];
+                if ((filter === 'unfinished' && !todo.finished) || (filter === 'finished' && todo.finished) || (filter === 'all')) {
+                    data.push(todo);
+                }
+            });
+            return data;
+        }, [todos, filter]);
+        return { filter, todos: todoArr }
+    }
+}
 export function TodoApp() {
-    const { filter, todos } = useSelector((state) => state.todo) as InitialState;
-    const { bindActions } = useActions({ actions });
-    const todoArr = useMemo(() => {
-        const data: TodoItem[] = []
-        Object.keys(todos).forEach(key => {
-            const todo = todos[key];
-            if ((filter === 'unfinished' && !todo.finished) || (filter === 'finished' && todo.finished) || (filter === 'all')) {
-                data.push(todo);
-            }
-        });
-        return data;
-    }, [todos, filter]);
+    const [ctrl, { todos, filter }] = useReduxController(TodoController);
+    const bindActions = ctrl.actions;
     return (
-        <div className="todo-module">
-            <AddTodo onSave={bindActions.addTodo} />
-            <Filter type={filter} onChange={bindActions.setFilter} />
-            <div>
-                {todoArr.map(item => (<Todo
-                    key={item.id}
-                    todo={item}
-                    onToggle={bindActions.toggleTodo}
-                    onDelete={bindActions.delTodo}
-                />))}
+        <TodoController.Provider controller={ctrl}>
+            <div className="todo-module">
+                <AddTodo onSave={ctrl.actions.addTodo} />
+                <Filter type={filter} onChange={bindActions.setFilter} />
+                <div>
+                    {todos.map(item => (<Todo
+                        key={item.id}
+                        todo={item}
+                        onToggle={bindActions.toggleTodo}
+                        onDelete={bindActions.delTodo}
+                    />))}
+                </div>
             </div>
-        </div>
+        </TodoController.Provider>
+        
     )
 }

@@ -1,24 +1,20 @@
-import { AtomObject, createSlice, PayloadAction } from "rtk-like";
+import { createModel, PayloadAction } from "rtk-like";
 import { TodoItem, FilterType } from "../typings";
 
 
 export interface InitialState {
     todos: { [k: string]: TodoItem },
     filter: FilterType,
-    dddd: AtomObject<number>
 }
 
 const initialState:InitialState = { 
     todos: {},
     filter: 'all',
-    dddd: {value: 0, status: 'fulfilled'},
 }
-const { actions, atomActions, reducer, useSelector } = createSlice({
+
+const { actions, reducer, getState, useModel } =  createModel({
     name: "todo",
     initialState,
-    atomFetchers: {
-        dddd: () => Promise.resolve(9)
-    },
     reducers: {
         addTodo(state, action: PayloadAction<TodoItem>) {
             const { payload } = action;
@@ -39,9 +35,10 @@ const { actions, atomActions, reducer, useSelector } = createSlice({
     },
     persistence: 'session',
 });
+
 export {
     actions,
-    atomActions,
-    
-    reducer
+    reducer,
+    getState,
+    useModel
 }

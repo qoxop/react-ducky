@@ -1,15 +1,12 @@
 /** TS 类型体操 */
 import { Draft } from "immer"
+import { WritableDraft } from "immer/dist/internal";
 import { Dispatch, Reducer, Action, AnyAction } from 'redux'
 import { Builder } from "./createReducer";
 
-export type {
-  AnyAction
-}
+export type { AnyAction }
 
-export type PayloadAction<P = any, M = never, E = never> = { payload: P, type: string } &
-    ([M] extends [never] ? {} : { meta: M }) &
-    ([E] extends [never] ? {} : { error: E });
+export type PayloadAction<P = any> = { payload: P, type: string, [k: string]: any };
 
 /**
  * 类定义
@@ -41,33 +38,29 @@ export type ReturnPromiseType<F extends (...args: any) => Promise<any>> = F exte
 /**
  * reducer 方法定义
  */
-export interface CaseReducer<S = any, PAC extends Omit<PayloadAction, 'type'> = any> {
-  (state: Draft<S>, action?: Action<string> & PAC): S | void | Draft<S>
+export interface CaseReducer<S = any, AC extends PayloadAction = any> {
+  (state: WritableDraft<S>, action?: AC): S | void | Draft<S>
 }
 
-export type PrepareAction<P = unknown> =
-    | ((...args: unknown[]) => { payload: P })
-    | ((...args: unknown[]) => { payload: P; meta: any })
-    | ((...args: unknown[]) => { payload: P; error: any })
-    | ((...args: unknown[]) => { payload: P; meta: any; error: any })
+export type PrepareAction<P = unknown> = (...args: unknown[]) => { payload: P }
 
-export type CaseReducerWithPrepare<State, Pa extends PrepareAction = PrepareAction> = {
-  prepare: Pa;
-  reducer: CaseReducer<State, ReturnType<Pa>>
+export type CaseReducerWithPrepare<State> = {
+  prepare: PrepareAction<any>;
+  reducer: CaseReducer<State>
 }
 
 export type ModelCaseReducers<State> = {
   [K: string]: CaseReducer<State> | CaseReducerWithPrepare<State>
 }
 
-export type ActionCreator<P = void>  = P extends void ? ({
+export type ActionCreator<P = never>  = [P] extends [never] ? ({
   type: string;
   match: (action: AnyAction) => boolean;
   (): AnyAction
 }) : ({
   type: string;
   match: (action: AnyAction) => boolean;
-  (payload: P, ...args: unknown[]): PayloadAction<void>
+  (payload: P): PayloadAction<void>
 })
 
 /**
@@ -76,23 +69,12 @@ export type ActionCreator<P = void>  = P extends void ? ({
 export type ActionCreatorForCaseReducerWithPrepare<Prepare extends AnyFunction> = (...p: Parameters<Prepare>) => ReturnType<Prepare> & Action;
 
 /**
- * 计算 CaseReducer 对于的 ActionCreator 的类型
- * 1. 如果 CaseReducer 的第二个参数不传，ActionCreator 不要去传递任何参数
- * 2. 如果 CaseReducer 的第二个参数继承了 PayloadAction<infer P>， ActionCreator 第一个参数要求为 P
- * 3. 若干 CaseReducer 的第二个参数如果没有继承 PayloadAction<infer P>，ActionCreator 不要去传递任何参数
- */
-export type ActionCreatorForCaseReducer<CR extends AnyFunction> = 
-  Parameters<CR>[1] extends undefined ?
-    ActionCreator<void> : 
-    (Parameters<CR>[1] extends PayloadAction<infer P> ? ActionCreator<P> : ActionCreator<void>)
-
-/**
  * 计算所有 ActionCreator 的类型集合
  */
 export type CaseReducerActions<CRS extends ModelCaseReducers<any>> = {
   [Type in keyof CRS]: CRS[Type] extends { prepare: any } ?
     ActionCreatorForCaseReducerWithPrepare<CRS[Type]['prepare']> :
-    CRS[Type] extends AnyFunction ? ActionCreatorForCaseReducer<CRS[Type]> : void
+    CRS[Type] extends CaseReducer<any, PayloadAction<infer P>> ? ActionCreator<P> : ActionCreator<never>
 }
 
 /**
@@ -164,8 +146,9 @@ export type Model<
     reducer: Reducer<STATE>;
     actions: CaseReducerActions<MCR>;
     getState: () => STATE;
-    useModel: <T>(selector: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
+    useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
 } & (OPT extends { atomFetchers: any } ? { atomActions: AtomActions<AFS> } : {});
+
 
 /**
  * 异步chunk

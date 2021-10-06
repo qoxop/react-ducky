@@ -104,7 +104,7 @@ export function createModel<
         },
     });
     function useModel<T = any>(subSelector: Selector<State, T> = (s => s as any)) {
-        useSelector((state) => subSelector(selector(state)))
+        return useSelector((state) => subSelector(selector(state)))
     }
     return {
         name,

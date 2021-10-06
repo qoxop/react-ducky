@@ -5,36 +5,24 @@ import { Draft, produce } from "immer";
 export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$class_hooks';
 
 export function withContext(target: any) {
-    let CtrlContext: Context<any> = null;
-    let CtrlProvider: FunctionComponent<{ controller: any, children: any }> = null;
-    const lazyInit = () => {
-        if (!CtrlContext) {
-            CtrlContext = createContext(null);
-            CtrlProvider = function Provider(props: { controller: unknown, children: unknown }) {
-                return createElement(CtrlContext.Provider, { value: props.controller }, props.children);
-            }
-        }
+    const CtrlContext: Context<any> = createContext(null);
+    function CtrlProvider(props: { controller: unknown, children: unknown }) {
+        return createElement(CtrlContext.Provider, { value: props.controller }, props.children);
     }
     Object.defineProperties(target, {
         'Provider': {
-            get() {
-                lazyInit();
-                return CtrlProvider;
-            }
+            value: CtrlProvider
         },
         'Context': {
-            get() {
-                lazyInit();
-                return CtrlContext;
-            }
+            value: CtrlContext
         }
-    })
+    });
 }
 
 /**
  * 模拟 class 组件行为
  */
-export class Controler<S = {}> {
+export class Controler<S = any> {
     static Context: Context<any> = createContext(null);
     static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
     protected state: S;
@@ -56,7 +44,9 @@ export class Controler<S = {}> {
             this._forceUpdate = val;
         }
     };
-    public useInit() {};
+    public useInit():any {
+        return
+    };
     // 模拟 class组件的 setState、forceUpdate 方法
     [$classHooks]() {
         const [state, setState] = useState(this.state);
@@ -72,7 +62,7 @@ export class Controler<S = {}> {
     }
 }
 
-export class ReduxControler<S = {}> extends Controler<S> {
+export class ReduxControler<S = any> extends Controler<S> {
     protected readonly dispatch: Dispatch;
     protected readonly store: Store;
     constructor(store: Store) {

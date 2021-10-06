@@ -8,8 +8,8 @@ export function Todo(props: {
 }) {
     return (
         <div className="todo">
-            <div className="checkbox" onClick={() => props.onToggle(props.todo.id)}>
-                <input type="checkbox" checked={props.todo.finished} name={props.todo.text} id={props.todo.id} />
+            <div className="checkbox">
+                <input type="checkbox" checked={props.todo.finished} onChange={() => props.onToggle(props.todo.id)}name={props.todo.text} id={props.todo.id} />
             </div>
             <div className={`todo-text ${props.todo.finished ? 'finished' : ''}`}>
                 <span>

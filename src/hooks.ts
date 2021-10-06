@@ -1,7 +1,7 @@
 import { useRef, useMemo, useLayoutEffect, useContext, useReducer, createContext, useEffect, createElement } from 'react';
 import { ReduxSubscriber } from './utils/StateSubscriber';
 import { bindActionCreators, Store } from 'redux';
-import { EqualityFn, Selector } from './typings';
+import { EqualityFn, Klass, Selector } from './typings';
 import { isPromise } from './utils/is-type';
 import { OutPromise } from './utils/async'
 import { Controler, $classHooks, ReduxControler } from './controller';
@@ -75,14 +75,14 @@ function createUseSelector(
   }
 }
 
-function createUseAsyncGetter(
+function createUseGetAsync(
   config: { 
     defaultIsEqual: EqualityFn,
     defaultIsPending: any
   } = { defaultIsEqual: _defaultIsEqual, defaultIsPending: _defaultIsPending }
 ) {
   const { defaultIsEqual, defaultIsPending } = config;
-  return function useAsyncGetter<S = any, P = any>(
+  return function useGetAsync<S = any, P = any>(
     selector: Selector<S, P>,
     options: {
       isEqual?: EqualityFn<P>,
@@ -126,20 +126,22 @@ function useActions<AC extends BParams0, AAC extends BParams0>(slice: { actions:
 }
 
 const useSelector = createUseSelector();
-const useAsyncGetter = createUseAsyncGetter();
+const useGetAsync = createUseGetAsync();
 
 
-function useController<C extends typeof Controler>(CtrlClass: C) {
+function useController<C extends Controler>(CtrlClass: Klass<[], C>):[C, ReturnType<C['useInit']>] {
   const ctrl = useMemo(() => (new CtrlClass()), []);
   ctrl[$classHooks]();
-  ctrl.useInit();
+  const data = ctrl.useInit();
+  return [ctrl, data];
 }
 
-function useReduxController<C extends typeof ReduxControler>(CtrlClass: C) {
+function useReduxController<C extends ReduxControler>(CtrlClass: Klass<[Store], C>): [C, ReturnType<C['useInit']>] {
   const { store } = useContext(ReduxContext)
   const ctrl = useMemo(() => (new CtrlClass(store)), []);
   ctrl[$classHooks]();
-  ctrl.useInit();
+  const data = ctrl.useInit();
+  return [ctrl, data];
 }
 
 function uesCtrlContext<C extends typeof Controler>(CtrlClass: C) {
@@ -148,7 +150,7 @@ function uesCtrlContext<C extends typeof Controler>(CtrlClass: C) {
 
 const Creators = {
   createUseSelector,
-  createUseAsyncGetter,
+  createUseAsyncGetter: createUseGetAsync,
 };
 
 export {
@@ -156,7 +158,7 @@ export {
   useActions,
   useDispatch,
   useSelector,
-  useAsyncGetter,
+  useGetAsync,
   ReduxProvider,
   useController,
   useReduxController,
