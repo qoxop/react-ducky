@@ -1,8 +1,8 @@
 {
   "name": "rs-tools",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "main": "lib/index.js",
-  "repository": "git@github.com:qoxop/rtk-like.git",
+  "repository": "git@github.com:qoxop/rs-tools.git",
   "author": "张集伟 <zhangjw01@mingyuanyun.com>",
   "license": "MIT",
   "description": "在兼容低版本的 redux 和 react-redux 的基础上实现高版本才有的一些便捷的 redux API，比如 useSelector, createSlice 等",
@@ -17,10 +17,8 @@
     "dev": "vite",
     "serve": "vite preview",
     "test": "jest",
-    "full-build": "yarn install && yarn install-peers && node ./build.js",
-    "build": "node ./build.js",
-    "install-peers": "npm-install-peers",
-    "prepublishOnly": "yarn full-build"
+    "build": "yarn install && node ./build.js",
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
@@ -34,7 +32,6 @@
     "immer": "^9.0.5",
     "jest": "^27.1.0",
     "less": "^4.1.1",
-    "npm-install-peers": "^1.2.2",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "redux": "^4.1.1",
@@ -44,10 +41,5 @@
     "tslib": "^2.3.1",
     "typescript": "^4.4.2",
     "vite": "^2.5.4"
-  },
-  "peerDependencies": {
-    "immer": "^9.0.5",
-    "react": "^16.13.1",
-    "redux": "*"
   }
 }

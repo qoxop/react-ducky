@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {bindActionCreators } from 'redux'
-import { ReduxControler, useReduxController, withContext} from 'rtk-like';
+import { ReduxControler, useReduxController, ctrlEnhance} from 'rtk-like';
 import { TodoItem } from '../typings';
-import { actions, useModel as useTodoModel, getState as getTodoState } from './slice';
+import { actions, useModel as useTodoModel } from './slice';
 import  { Todo, AddTodo, Filter } from '../components';
 
-@withContext
+@ctrlEnhance({ bindThis: true })
 class TodoController extends ReduxControler {
     actions: typeof actions;
     constructor(store) {
@@ -24,6 +24,13 @@ class TodoController extends ReduxControler {
             });
             return data;
         }, [todos, filter]);
+        useEffect(() => {
+            setTimeout(() => {
+                this.setState(s => {
+                    s.a += 1;
+                });
+            }, 1000);
+        },[this.state.a]);
         return { filter, todos: todoArr }
     }
 }

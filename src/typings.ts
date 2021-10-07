@@ -140,7 +140,7 @@ export type Model<
   STATE extends Object = Object,
   MCR extends ModelCaseReducers<STATE> = ModelCaseReducers<STATE>,
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>,
-  OPT extends CreateModelOptions = CreateModelOptions
+  OPT = CreateModelOptions
 > = {
     name: string;
     reducer: Reducer<STATE>;

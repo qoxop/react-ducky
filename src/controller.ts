@@ -1,22 +1,44 @@
 import { Dispatch, Store } from "redux";
 import { Context, FunctionComponent, createContext, useState, useCallback, useReducer, createElement } from 'react';
-import { Draft, produce } from "immer";
+import { produce } from "immer";
 
-export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$class_hooks';
+const $setState =  Symbol ? Symbol('$setState') : '$__controller_$_set_state';
+const $forceUpdate =  Symbol ? Symbol('$forceUpdate') : '$__controller_$_force_update';
 
-export function withContext(target: any) {
-    const CtrlContext: Context<any> = createContext(null);
-    function CtrlProvider(props: { controller: unknown, children: unknown }) {
-        return createElement(CtrlContext.Provider, { value: props.controller }, props.children);
-    }
-    Object.defineProperties(target, {
-        'Provider': {
-            value: CtrlProvider
-        },
-        'Context': {
-            value: CtrlContext
+export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hooks';
+export const $bindThis =  Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
+
+export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
+    const {useCtx = true, bindThis = false } = options;
+    return (target: any) => {
+        if (useCtx) {
+            const CtrlContext: Context<any> = createContext(null);
+            const CtrlProvider = (props: { controller: unknown, children: unknown }) => createElement(CtrlContext.Provider, { value: props.controller }, props.children);
+            Object.defineProperties(target, {
+                'Provider': {
+                    value: CtrlProvider
+                },
+                'Context': {
+                    value: CtrlContext
+                }
+            });
         }
-    });
+        if (bindThis) {
+            const protoFnKeys = Object.getOwnPropertyNames(target.prototype).filter(key => {
+                const item = target.prototype[key];
+                return (typeof item === 'function' && !/^use/.test(key) && key !== 'constructor');
+            });
+            Object.defineProperty(target.prototype, $bindThis, {
+                value: function(self:any) {
+                    for(let i = 0; i < protoFnKeys.length; i++) {
+                        const key = protoFnKeys[i];
+                        self[key] = (target.prototype[key] as Function).bind(self);
+                    }
+                }
+            })
+        }
+        return target;
+    }
 }
 
 /**
@@ -25,40 +47,29 @@ export function withContext(target: any) {
 export class Controler<S = any> {
     static Context: Context<any> = createContext(null);
     static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
-    protected state: S;
-    private _setState: (updater: Partial<S> | ((s: Draft<S>) => void)) => void;
-    protected get setState() {
-        return this._setState;
-    }
-    protected set setState(val) {
-        if (!this._setState) {
-            this._setState = val;
+    protected state: S = {} as any;
+    protected readonly setState = (updater: Partial<S> | ((state: S) => void)) => this[$setState](updater);
+    protected readonly forceUpdate = () => this[$forceUpdate]();
+    public useInit(): any {
+        return {};
+    };
+    constructor() {
+        if (this[$bindThis]) {
+            this[$bindThis](this);
         }
     }
-    private _forceUpdate: () => void;
-    protected get forceUpdate() {
-        return this._forceUpdate;
-    };
-    protected set forceUpdate(val) {
-        if (!this._forceUpdate) {
-            this._forceUpdate = val;
-        }
-    };
-    public useInit():any {
-        return
-    };
     // 模拟 class组件的 setState、forceUpdate 方法
     [$classHooks]() {
         const [state, setState] = useState(this.state);
         this.state = state;
-        this.setState = useCallback((updater) => {
+        this[$setState] = useCallback((updater) => {
             if (typeof updater === 'function') {
-                setState(produce(updater));
+                setState(produce<S>(updater));
             } else {
                 setState((oldState) => Object.assign(oldState, updater));
             }
         }, []);
-        this.forceUpdate = useReducer(a => (a + 1), 0)[1];
+        this[$forceUpdate] = useReducer(a => (a + 1), 0)[1];
     }
 }
 

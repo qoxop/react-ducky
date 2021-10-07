@@ -15,7 +15,7 @@ import { createModel } from './createModel';
 import { createAsyncThunk } from './createAsyncThunk';
 import { createReducer } from './createReducer';
 import { thunkMiddleware } from './ middleware/thunk-middleware';
-import { Controler, ReduxControler, withContext } from "./controller"
+import { Controler, ReduxControler, ctrlEnhance } from "./controller"
 
 export {
   useStore,
@@ -35,7 +35,7 @@ export {
   thunkMiddleware,
   Controler,
   ReduxControler,
-  withContext
+  ctrlEnhance,
 }
 
 export * from './typings'
