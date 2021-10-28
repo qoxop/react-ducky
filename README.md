@@ -1,3 +1,42 @@
 # rs-tools
 
-react state tools
+一个用来提升`redux`使用体验, 以及优化复杂组件的逻辑管理的工具库。
+
+## 项目背景
+我很喜欢新版的`redux/react-redux`的`hook`写法(摆脱丑陋的connect函数)，以及`@redux/tookit`中的`createSlice` API。但由于很多原因，部分项目暂时升级不了`redux/react-redux`版本，这个库一开始的目的就是为了实现一套类似的API来优化旧项目的`react/redux`代码。但后来也添加了一些我自己认为比较有用的特性。比如使用 slice 的数据持久化、使用MVC模式组织react组件的工具、结合suspences使用同步方式获取异步Redux状态等。
+
+
+## 安装
+```
+yarn install @qoxop/rs-tools
+```
+
+## 使用
+
+使用 `ReduxProvider` 包裹在你的根组件，传入一个`redux`的`store`
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ReduxProvider } from '@qoxop/rs-tools';
+import { store } from './store';
+import App from './App';
+
+ReactDOM.render(
+      <ReduxProvider store={store}>
+        <React.Suspense fallback={<div>loading...</div>}>
+          <App />
+        </React.Suspense>
+    </React.StrictMode>,
+    document.getElementById('root')
+)
+```
+
+## API
+
+### useSelector
+```ts
+interface UseSelector<S = any, P = any> {
+    (selector: (state:S) => P), isEqual?: (last: P, cur: P) => boolean): P;
+}
+```
