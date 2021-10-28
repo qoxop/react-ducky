@@ -40,3 +40,16 @@ interface UseSelector<S = any, P = any> {
     (selector: (state:S) => P), isEqual?: (last: P, cur: P) => boolean): P;
 }
 ```
+
+### useDispatch
+```
+import { Dispatch } from 'redux'
+interface UseDispatch {
+    (): Dispatch;
+}
+```
+
+### useGetAsync
+与`useSelector`功能类似，不同的是如果，通过selector获取的值是一个pending状态的异步对象，那么改hook将会抛出一个promise的异常，该promise的状态会随异步对象的状态改变而改变。
+
+⚠️注意：该方法需要与React.Suspense结合使用
