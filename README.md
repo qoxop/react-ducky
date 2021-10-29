@@ -11,7 +11,7 @@
 
 ## 安装
 ```
-yarn install @qoxop/rs-tools
+yarn install react-ducky
 ```
 
 ## 使用
@@ -21,7 +21,7 @@ yarn install @qoxop/rs-tools
 ```tsx
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ReduxProvider } from '@qoxop/rs-tools';
+import { ReduxProvider } from 'react-ducky';
 import { store } from './store';
 import App from './App';
 
