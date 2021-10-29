@@ -1,11 +1,11 @@
 {
-  "name": "rs-tools",
+  "name": "react-ducky",
   "version": "0.0.1",
   "main": "lib/index.js",
-  "repository": "git@github.com:qoxop/rs-tools.git",
-  "author": "张集伟 <zhangjw01@mingyuanyun.com>",
+  "repository": "git@github.com:qoxop/react-ducky.git",
+  "author": "张集伟 <1106291186@qq.com>",
   "license": "MIT",
-  "description": "在兼容低版本的 redux 和 react-redux 的基础上实现高版本才有的一些便捷的 redux API，比如 useSelector, createSlice 等",
+  "description": "基于React、Redux 编程范式工具库，使用model对redux状态进行建模，使用mvc模式对业务逻辑进行封装。",
   "keywords": [
     "redux",
     "hooks"

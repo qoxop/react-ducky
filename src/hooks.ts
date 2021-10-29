@@ -75,7 +75,7 @@ function createUseSelector(
   }
 }
 
-function createUseGetAsync(
+function createUseGetAsyncState(
   config: { 
     defaultIsEqual: EqualityFn,
     defaultIsPending: any
@@ -113,11 +113,11 @@ function createUseGetAsync(
 
 type BParams0 = Parameters<typeof bindActionCreators>[0];
 type UseActionsReturn<B, F> = [B, F] & { bindActions: B, fetchAtoms: F };
-function useActions<AC extends BParams0, AAC extends BParams0>(slice: { actions: AC, atomActions?: AAC, [k: string]: any }) {
+function useActions<AC extends BParams0, AAC extends BParams0>(model: { actions: AC, atomActions?: AAC, [k: string]: any }) {
   const { store } = useContext(ReduxContext);
   return useMemo(() => {
-    const bindActions = bindActionCreators(slice.actions || {} as AC, store.dispatch);
-    const fetchAtoms = bindActionCreators(slice.atomActions || {} as AAC, store.dispatch);
+    const bindActions = bindActionCreators(model.actions || {} as AC, store.dispatch);
+    const fetchAtoms = bindActionCreators(model.atomActions || {} as AAC, store.dispatch);
     const actions = [bindActions, fetchAtoms] as UseActionsReturn<typeof bindActions, typeof fetchAtoms>;
     actions.bindActions = bindActions;
     actions.fetchAtoms = fetchAtoms;
@@ -126,7 +126,7 @@ function useActions<AC extends BParams0, AAC extends BParams0>(slice: { actions:
 }
 
 const useSelector = createUseSelector();
-const useGetAsync = createUseGetAsync();
+const useGetAsyncState = createUseGetAsyncState();
 
 
 function useController<C extends Controler>(CtrlClass: Klass<[], C>):[C, ReturnType<C['useInit']>] {
@@ -150,7 +150,7 @@ function uesCtrlContext<C extends typeof Controler>(CtrlClass: C) {
 
 const Creators = {
   createUseSelector,
-  createUseAsyncGetter: createUseGetAsync,
+  createUseAsyncGetter: createUseGetAsyncState,
 };
 
 export {
@@ -158,7 +158,7 @@ export {
   useActions,
   useDispatch,
   useSelector,
-  useGetAsync,
+  useGetAsyncState,
   ReduxProvider,
   useController,
   useReduxController,
