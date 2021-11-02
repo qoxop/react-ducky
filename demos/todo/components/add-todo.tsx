@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { TodoItem } from '../typings';
+import { TodoList } from '../model';
 
 export function AddTodo(props: {
-    onSave: (todo: TodoItem) => void,
+    onSave: (todo: TodoList.TodoItem) => void,
 }) {
     const [text, setText] = useState('');
     const submit = () => {

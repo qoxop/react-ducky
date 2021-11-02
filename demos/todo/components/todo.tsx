@@ -1,8 +1,8 @@
 import React from 'react';
-import { TodoItem } from '../typings';
+import { TodoList } from '../model';
 
 export function Todo(props: { 
-    todo: TodoItem;
+    todo: TodoList.TodoItem;
     onToggle: (id: string) => void;
     onDelete: (id: string) => void;
 }) {

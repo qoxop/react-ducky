@@ -1,13 +1,8 @@
-import React from 'react'
 import { TodoApp } from './todo/app';
+import { reducer, name } from './todo/model';
+import { injectReduce } from './store';
 import "./App.less";
 
-function App() {
-  return (
-    <div className="App">
-      <TodoApp />
-    </div>
-  )
-}
+injectReduce({ key: name, reducer });
 
-export default App
+export default TodoApp

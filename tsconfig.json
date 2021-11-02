@@ -21,7 +21,7 @@
     "sourceMap": false,
     "declaration":true,
     "paths": {
-      "rtk-like": ["./src/index.ts"]
+      "react-ducky": ["./src/index.ts"]
     }
   },
   "include": [

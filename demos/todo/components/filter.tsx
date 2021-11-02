@@ -1,9 +1,9 @@
 import React from 'react';
-import { FilterType } from '../typings';
+import { TodoList } from '../model';
 
 export function Filter(props: { 
-    type: FilterType;
-    onChange: (t: FilterType) => void;
+    type: TodoList.FilterType;
+    onChange: (t: TodoList.FilterType) => void;
 }) {
 
     return (

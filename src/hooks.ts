@@ -129,18 +129,18 @@ const useSelector = createUseSelector();
 const useGetAsyncState = createUseGetAsyncState();
 
 
-function useController<C extends Controler>(CtrlClass: Klass<[], C>):[C, ReturnType<C['useInit']>] {
-  const ctrl = useMemo(() => (new CtrlClass()), []);
-  ctrl[$classHooks]();
-  const data = ctrl.useInit();
+function useController<C extends Controler, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] {
+  const ctrl = useMemo(() => (new CtrlClass(props)), []);
+  ctrl[$classHooks](props);
+  const data = ctrl.useHooks();
   return [ctrl, data];
 }
 
-function useReduxController<C extends ReduxControler>(CtrlClass: Klass<[Store], C>): [C, ReturnType<C['useInit']>] {
+function useReduxController<C extends ReduxControler, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] {
   const { store } = useContext(ReduxContext)
-  const ctrl = useMemo(() => (new CtrlClass(store)), []);
-  ctrl[$classHooks]();
-  const data = ctrl.useInit();
+  const ctrl = useMemo(() => (new CtrlClass(store, props)), []);
+  ctrl[$classHooks](props);
+  const data = ctrl.useHooks();
   return [ctrl, data];
 }
 

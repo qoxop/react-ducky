@@ -44,40 +44,48 @@ export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {})
 /**
  * 模拟 class 组件行为
  */
-export class Controler<S = any> {
+export class Controler<State = any, Props = any> {
     static Context: Context<any> = createContext(null);
     static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
-    protected state: S = {} as any;
-    protected readonly setState = (updater: Partial<S> | ((state: S) => void)) => this[$setState](updater);
-    protected readonly forceUpdate = () => this[$forceUpdate]();
-    public useInit(): any {
+    // class like 
+    state: State = {} as any;
+    props: Props = {}  as any;
+    readonly setState = (updater: Partial<State> | ((state: State) => void)) => this[$setState](updater);
+    readonly forceUpdate = () => this[$forceUpdate]();
+    public useHooks(): any {
         return {};
     };
-    constructor() {
+    constructor(props?: Props) {
+        if (props) {
+            this.props = props;
+        }
         if (this[$bindThis]) {
             this[$bindThis](this);
         }
     }
     // 模拟 class组件的 setState、forceUpdate 方法
-    [$classHooks]() {
+    [$classHooks](props?:Props) {
         const [state, setState] = useState(this.state);
-        this.state = state;
         this[$setState] = useCallback((updater) => {
             if (typeof updater === 'function') {
-                setState(produce<S>(updater));
+                setState(produce<State>(updater));
             } else {
-                setState((oldState) => Object.assign(oldState, updater));
+                setState((oldState) => Object.assign({}, oldState, updater));
             }
         }, []);
         this[$forceUpdate] = useReducer(a => (a + 1), 0)[1];
+        this.state = state;
+        if (props) {
+            this.props = props;
+        }
     }
 }
 
-export class ReduxControler<S = any> extends Controler<S> {
+export class ReduxControler<S = any, P = any> extends Controler<S, P> {
     protected readonly dispatch: Dispatch;
     protected readonly store: Store;
-    constructor(store: Store) {
-        super();
+    constructor(store: Store, props?: P) {
+        super(props);
         this.store = store;
         this.dispatch = store.dispatch;
     }

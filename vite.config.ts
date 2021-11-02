@@ -6,7 +6,7 @@ export default defineConfig({
     plugins: [reactRefresh()],
     resolve: {
         alias: {
-            "rtk-like": '/src/index.ts'
+            "react-ducky": '/src/index.ts'
         }
     }
 })
