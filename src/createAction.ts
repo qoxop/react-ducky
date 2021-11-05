@@ -1,13 +1,19 @@
-import { ActionCreator, AnyAction, AnyFunction } from './typings';
+import { AnyAction, PayloadAction } from './typings';
 
-interface _ActionCreator<P = any> {
+
+
+interface ActionCreator<P = any, Args extends any[]  = any[]> {
   type: string;
   match: (action: AnyAction) => boolean;
-  (...args: any[]):ReturnType<ActionCreator<P>>
+  (...args: Args): PayloadAction<P>
 } 
+type PrepareAction<P, Args extends any[]> = (...args: Args) => Omit<PayloadAction<P>, 'type'>
 
-export function createAction<P = any>(type: string, prepareAction?: AnyFunction): _ActionCreator<P> {
-  function actionCreator(...args: any[]) {
+export function createAction<P = unknown, Args extends any[] = any[], Prepare extends PrepareAction<P, Args> = any>(
+  type: string,
+  prepareAction?: Prepare
+) {
+  function actionCreator(...args: Args) {
     if (prepareAction) {
       let prepared = prepareAction(...args)
       if (!prepared) {
@@ -34,6 +40,7 @@ export function createAction<P = any>(type: string, prepareAction?: AnyFunction)
   actionCreator.type = `${type}`;
 
   actionCreator.match = (action: AnyAction) => (action.type === type);
-
-  return actionCreator as unknown as _ActionCreator<P>
+  type PayloadType = [typeof prepareAction] extends [undefined] ? P : ReturnType<typeof prepareAction>['payload'];
+  type Params = [typeof prepareAction] extends [undefined] ? unknown[] : Parameters<typeof prepareAction>;
+  return actionCreator as unknown as ActionCreator<PayloadType, Params>
 }
