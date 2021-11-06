@@ -1,90 +1,37 @@
 # react-ducky
 
-一个用来提升`redux`使用体验, 以及优化复杂组件的逻辑管理的工具库。
+React-Ducky 是一个基于MVC思想而设计的一个 React & Redux 工具库。
 
-## 项目背景
-我很喜欢新版的`redux/react-redux`的`hook`写法(摆脱丑陋的connect函数)，以及`@redux/tookit`中的`createSlice` API。但由于很多原因，部分项目暂时升级不了`redux/react-redux`版本，这个库一开始的目的就是为了实现一套类似的API来优化旧项目的`react/redux`代码。但后来也添加了一些我自己认为比较有用的特性。比如:
-- 使用 slice 的数据持久化
-- 使用MVC模式组织react组件的工具
-- 结合suspences使用同步方式获取异步Redux状态等。
+## 特性​
+- 🦖 简化 Redux 的书写方式，让你更容易地基于 Redux 进行数据的建模
+- 💥 用 Class 写法组织你的组件逻辑，但又不妨碍你使用 Hooks 的逻辑抽象能力
+- ⏰ 完善的 Typescript 类型提醒
+- 👬 优化路由定义，让你进行路由跳转时更加安全快捷，TODO
 
+[ 👉 查看文档 📝](https://qoxop.github.io/react-ducky-doc/)
+
+## 动机
+
+一开始的动机仅仅只是为了让那些暂时无法升级的 redux/react-redux 的项目可以用上新版的 API（比如 react-redux 提供的 `useSelector`, 以及 toolkit 提供的 `createSlice` 等）。
+
+但后来发现即使用上了这些新的特性还是没有办法很好改善复杂组件或模块的代码。因为事实上，工具只能再很小的程度上去改善你的代码，只有良好的代码设计才能避免你的代码变得臃肿且不可维护。面对一个复杂模块，我们往往需要认真对待以下事项：
+
+1. 对 UI 状态、领域数据进行建模
+2. 对业务逻辑、交互流程进行抽象概括
+3. 以组件化的方式组织 UI 界面
+
+🤔 这就很适合使用 MVC 模式对代码进行设计。所以，React-Ducky 中提供了 `useController`, `createMode` 等方法，用于方便我们使用MVC模式进行代码的编写。
 
 ## 安装
-```
-yarn install react-ducky
-```
-
-## 使用
-
-使用 `ReduxProvider` 包裹在你的根组件，传入一个`redux`的`store`
-
-```tsx
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { ReduxProvider } from 'react-ducky';
-import { store } from './store';
-import App from './App';
-
-ReactDOM.render(
-      <ReduxProvider store={store}>
-        <React.Suspense fallback={<div>loading...</div>}>
-          <App />
-        </React.Suspense>
-    </React.StrictMode>,
-    document.getElementById('root')
-)
+```shell
+yarn add react-ducky
 ```
 
-## API
+## Road map
 
-### useSelector
-```tsx
-interface UseSelector<S = any, P = any> {
-    (selector: (state:S) => P), isEqual?: (last: P, cur: P) => boolean): P;
-}
-```
+以下是规划中的事项，按优先级排序:
 
-### useDispatch
-```
-import { Dispatch } from 'redux'
-interface UseDispatch {
-    (): Dispatch;
-}
-```
-
-### useStore
-
-```tsx
-import { Store } from 'redux'
-interface UseStore {
-    (): Store;
-}
-```
-
-### useGetAsyncState
-
-与`useSelector`功能类似，不同的是，如果通过selector获取的值是一个pending状态的异步对象，那么改hook将会抛出一个promise的异常，该promise的状态会随异步对象的状态改变而改变, 当然，如果该异步对象本书就是一个 promise 则直接将其抛出。example
-
-```tsx
-interface UseSelector<S = any, P = any> {
-    (
-      selector: (state:S) => P), 
-      options?: {
-      	isEqual?: (last: P, cur: P) => boolean;
-				isPending?: (p: P, state?: S) => boolean;
-			}
-    ): P;
-}
-function defaultIsEqual(last: any, cur: any) {
-  return last === cur;
-}
-function defaultIsPending(subState: any) {
-  return subState?.isPending || subState === undefined || subState === null;
-}
-```
-
-⚠️ 注意：该方法需要与React.Suspense结合使用
-
-### createModel
-
-> 文档待完善
+- [ ] 基于初始值 hash 判断 Model 数据持久化缓存的有效性
+- [ ] 单元测试覆盖
+- [ ] 实现路由的 Ts 定义方法，自动生成带类型提醒的跳转方法
+- [ ] 英文文档编写

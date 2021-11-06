@@ -1,11 +1,11 @@
 {
   "name": "react-ducky",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/index.js",
   "repository": "git@github.com:qoxop/react-ducky.git",
   "author": "张集伟 <1106291186@qq.com>",
   "license": "MIT",
-  "description": "基于React、Redux 编程范式工具库，使用model对redux状态进行建模，使用mvc模式对业务逻辑进行封装。",
+  "description": "一个基于 MVC 思想而设计的一个 React & Redux 工具库",
   "keywords": [
     "redux",
     "hooks"
