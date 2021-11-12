@@ -3,7 +3,7 @@ import { ActionCreator, CreateModelOptions, Model, ModelCaseReducers, AtomFetche
 import { Builder, createReducerWithOpt } from "./createReducer";
 import { createAction } from './createAction';
 import { createAtomChunk } from './createAsyncThunk';
-import { useSelector } from './hooks';
+import { useGetAsyncState } from './hooks';
 
 const nameSet = new Set();
 
@@ -103,8 +103,11 @@ export function createModel<
             }
         },
     });
-    function useModel<T = any>(subSelector: Selector<State, T> = (s => s as any)) {
-        return useSelector((state) => subSelector(selector(state)))
+    function useModel<T = any>(
+        subSelector: Selector<State, T> = (s => s as any),
+        config: {} = {}
+    ) {
+        return useGetAsyncState((state) => subSelector(selector(state)), config)
     }
     return {
         name,
