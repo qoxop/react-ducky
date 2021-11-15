@@ -144,7 +144,7 @@ function useReduxController<C extends ReduxControler, P = any>(CtrlClass: Klass<
   return [ctrl, data];
 }
 
-function uesCtrlContext<C extends typeof Controler>(CtrlClass: C) {
+function uesCtrlContext<C  extends Klass & { Context: any } = any>(CtrlClass: C) {
   return useContext<InstanceType<C>>(CtrlClass.Context);
 }
 
