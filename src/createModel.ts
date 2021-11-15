@@ -105,8 +105,11 @@ export function createModel<
     });
     function useModel<T = any>(
         subSelector: Selector<State, T> = (s => s as any),
-        config: {} = {}
+        config: any = {}
     ) {
+        if (!config.usePending) {
+            config.isPending = () => false;
+        }
         return useGetAsyncState((state) => subSelector(selector(state)), config)
     }
     return {
@@ -116,5 +119,5 @@ export function createModel<
         atomActions,
         useModel,
         getState: () => subState,
-    } as any;
+    } as unknown as Model<State, MCR, AFS, (typeof options)>;
 }

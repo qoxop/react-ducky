@@ -146,7 +146,7 @@ export type Model<
     reducer: Reducer<STATE>;
     actions: CaseReducerActions<MCR>;
     getState: () => STATE;
-    useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { isPending?: IsPendingFn<T, STATE>, isEqual?: EqualityFn<T>}) => T;
+    useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { usePending?: IsPendingFn<T, STATE> | boolean, isEqual?: EqualityFn<T>}) => T;
 } & (OPT extends { atomFetchers: any } ? { atomActions: AtomActions<AFS> } : {});
 
 
