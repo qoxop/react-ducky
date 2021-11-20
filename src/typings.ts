@@ -116,7 +116,7 @@ type TotalCreateModelOptions<
   initialState: STATE;
   reducers: SCR;
   atomFetchers: AFS;
-  selector?: <A = any>(appState: A) => STATE;
+  selector?: <A = any>(appState: A) => any;
   extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void),
   persistence?: 'session'|'local';
   persistenceKey?: string;
