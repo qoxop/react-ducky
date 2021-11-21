@@ -4,6 +4,7 @@ import { Builder, createReducerWithOpt } from "./createReducer";
 import { createAction } from './createAction';
 import { createAtomChunk } from './createAsyncThunk';
 import { useGetAsyncState } from './hooks';
+import { LooseStrId } from './utils/str-hash';
 
 const nameSet = new Set();
 
@@ -31,7 +32,8 @@ export function createModel<
     }
 
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
-    const storageKey = persistenceKey || `REDUX-PERSISTENCE-${name}`;
+    const storageKey = persistenceKey ||
+        `REDUX-PERSISTENCE-${name}-${persistence === 'local' ? LooseStrId(JSON.stringify(initialState)) : ''}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
     let reducer: Reducer<State>;
@@ -91,7 +93,12 @@ export function createModel<
             if (persistence) {
                 const stateJson = storage.getItem(storageKey);
                 if (stateJson) {
-                    state = JSON.parse(stateJson)
+                    try {
+                        state = JSON.parse(stateJson)
+                    } catch (error) {
+                        return state;
+                    }
+                    
                 }
             }
             return state;
