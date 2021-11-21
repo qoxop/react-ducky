@@ -33,7 +33,7 @@ export function createModel<
 
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey ||
-        `REDUX-PERSISTENCE-${name}-${persistence === 'local' ? LooseStrId(JSON.stringify(initialState)) : ''}`;
+        `REDUX-PERSISTENCE-${name}${persistence === 'local' ? ('-' + LooseStrId(JSON.stringify(initialState))) : ''}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
     let reducer: Reducer<State>;
