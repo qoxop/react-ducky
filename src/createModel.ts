@@ -105,7 +105,7 @@ export function createModel<
         },
         onChange: (data) => {
             subState = data;
-            if (persistence) {
+            if (persistence) { // TODO: 实现清除功能
                 storage.setItem(storageKey, JSON.stringify(data));
             }
         },
