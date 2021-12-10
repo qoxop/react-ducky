@@ -26,10 +26,10 @@ export function createModel<
         atomFetchers
     } = options;
 
-    // 防止重复 key 值
-    if (nameSet.has(name)) {
-        throw new Error('createSlice name 参数重复～');
-    }
+    // // 防止重复 key 值
+    // if (nameSet.has(name)) {
+    //     throw new Error('createSlice name 参数重复～');
+    // }
 
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey ||
