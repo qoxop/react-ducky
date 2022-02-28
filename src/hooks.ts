@@ -58,7 +58,7 @@ function _useSelector<S = any, P = any>(
       }
     });
     return () => subscriber.remove(symbolKey);
-  }, [store, selector, isEqual]);
+  }, [store]);
 
   return { subState, store, subscriber };
 }
