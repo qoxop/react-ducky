@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { bindActionCreators, Store } from 'redux'
-import { ReduxControler } from 'react-ducky';
+import { ReduxController } from 'react-ducky';
 import { actions, useModel as useTodoModel, TodoList } from './model';
 
-export class TodoController extends ReduxControler {
+export class TodoController extends ReduxController {
     actions: typeof actions;
     constructor(store:Store) {
         super(store);

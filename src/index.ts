@@ -15,7 +15,8 @@ import { createModel } from './createModel';
 import { createAsyncThunk } from './createAsyncThunk';
 import { createReducer } from './createReducer';
 import { thunkMiddleware } from './ middleware/thunk-middleware';
-import { Controler, ReduxControler, ctrlEnhance } from "./controller"
+import { duckyMiddleware } from './ middleware/ducky-middleware';
+import { Controller, ReduxController, ctrlEnhance } from "./controller"
 
 export {
   useStore,
@@ -33,8 +34,9 @@ export {
   createAsyncThunk,
   createReducer,
   thunkMiddleware,
-  Controler,
-  ReduxControler,
+  duckyMiddleware,
+  Controller,
+  ReduxController,
   ctrlEnhance,
 }
 

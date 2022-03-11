@@ -44,7 +44,7 @@ export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {})
 /**
  * 模拟 class 组件行为
  */
-export class Controler<State = any, Props = any> {
+export class Controller<State = any, Props = any> {
     static Context: Context<any> = createContext(null);
     static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
     // class like 
@@ -81,7 +81,7 @@ export class Controler<State = any, Props = any> {
     }
 }
 
-export class ReduxControler<S = any, P = any> extends Controler<S, P> {
+export class ReduxController<S = any, P = any> extends Controller<S, P> {
     protected readonly dispatch: Dispatch;
     protected readonly store: Store;
     constructor(store: Store, props?: P) {

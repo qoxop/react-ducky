@@ -112,11 +112,10 @@ type TotalCreateModelOptions<
   SCR extends ModelCaseReducers<STATE> = {},
   AFS extends AtomFetchers<STATE> = AtomFetchers<STATE>
 > = {
-  name: string;
   initialState: STATE;
   reducers: SCR;
   atomFetchers: AFS;
-  selector?: <A = any>(appState: A) => any;
+  statePaths: string[];
   extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void),
   persistence?: 'session'|'local';
   persistenceKey?: string;

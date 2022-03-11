@@ -1,7 +1,7 @@
 {
   "name": "react-ducky",
-  "version": "0.1.0",
-  "main": "lib/index.js",
+  "version": "0.1.1",
+  "main": "index.js",
   "repository": "git@github.com:qoxop/react-ducky.git",
   "author": "张集伟 <1106291186@qq.com>",
   "license": "MIT",
@@ -10,21 +10,16 @@
     "redux",
     "hooks"
   ],
-  "files": [
-    "lib"
-  ],
   "scripts": {
     "dev": "vite",
     "serve": "vite preview",
     "test": "jest",
     "build": "node ./build.js",
-    "prepublishOnly": "yarn build"
-  },
-  "dependencies": {
-    "immer": "^9.0.5"
+    "debug": "yarn build && cd ./lib && yarn link"
   },
   "peerDependencies": {
-    "redux": "*"
+    "redux": "*",
+    "immer": "^9.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
@@ -40,6 +35,7 @@
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "redux": "^4.1.2",
+    "immer": "^9.0.5",
     "rollup": "^2.56.3",
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-ts": "^1.4.0",

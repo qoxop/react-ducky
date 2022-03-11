@@ -5,8 +5,18 @@ import { createAction } from './createAction';
 import { createAtomChunk } from './createAsyncThunk';
 import { useGetAsyncState } from './hooks';
 import { LooseStrId } from './utils/str-hash';
+import { getStore } from './ middleware/ducky-middleware';
 
-const nameSet = new Set();
+const createSelector = (paths: string[], def: any = null) => state => {
+    let subState = state;
+    for (const p of paths) {
+        if (!subState) {
+            return def;
+        }
+        subState = subState[p];
+    }
+    return subState;
+}
 
 export function createModel<
     State,
@@ -15,25 +25,21 @@ export function createModel<
 >(options: CreateModelOptions<State, MCR, AFS>): Model<State, MCR, AFS, (typeof options)> {
 
     const {
-        name,
         reducers,
         extraReducers,
         persistence,
-        selector = (appState: any = {}) => appState[name],
+        statePaths,
         persistenceKey,
         initialState,
         // @ts-ignore
         atomFetchers
     } = options;
 
-    // // 防止重复 key 值
-    // if (nameSet.has(name)) {
-    //     throw new Error('createSlice name 参数重复～');
-    // }
-
+    const prefix = statePaths.join('.');
+    const selector = createSelector(statePaths)
     const storage = window[`${persistence}Storage`] || window.sessionStorage;
     const storageKey = persistenceKey ||
-        `REDUX-PERSISTENCE-${name}${persistence === 'local' ? ('-' + LooseStrId(JSON.stringify(initialState))) : ''}`;
+        `REDUX-PERSISTENCE-${prefix}${persistence === 'local' ? ('-' + LooseStrId(JSON.stringify(initialState))) : ''}`;
 
     let actions: Record<string, ActionCreator<any>> = {};
     let reducer: Reducer<State>;
@@ -45,7 +51,7 @@ export function createModel<
 
     rKeys.forEach((rKey) => {
         const reduceCase = reducers[rKey];
-        const actionType = `${name}/${rKey}`;
+        const actionType = `${prefix}/${rKey}`;
         if (typeof reduceCase === 'function') {
             builder.addCase(actionType, reduceCase);
             actions[rKey] = createAction(actionType, (payload: any, meta?: any, error?: any) => ({ 
@@ -75,7 +81,7 @@ export function createModel<
 
     if (atomFetchers) {
         atomActions = Object.keys(atomFetchers).reduce((pre, aKey) => {
-            const actionType = `${name}/fetch_${aKey}`;
+            const actionType = `${prefix}/fetch_${aKey}`;
             // action
             pre[aKey] = createAtomChunk(actionType, atomFetchers[aKey]);
             // reducer 
@@ -119,12 +125,18 @@ export function createModel<
         }
         return useGetAsyncState((state) => subSelector(selector(state)), config)
     }
+    const getState = () => {
+        const store = getStore();
+        if (store) {
+            return selector(store.getState());
+        }
+        return subState;
+    }
     return {
-        name,
         reducer,
         actions,
         atomActions,
         useModel,
-        getState: () => subState,
+        getState,
     } as unknown as Model<State, MCR, AFS, (typeof options)>;
 }

@@ -1,5 +1,6 @@
-const rollup = require('rollup');
+const fs = require('fs');
 const path = require('path');
+const rollup = require('rollup');
 const rollupTypescript = require('rollup-plugin-ts');
 const { terser } = require('rollup-plugin-terser');
 
@@ -20,5 +21,10 @@ async function build() {
     format: 'commonjs',
     file: './lib/index.js',
   });
+  const pkgJson = require('./package.json');
+  delete pkgJson.devDependencies;
+  delete pkgJson.scripts;
+  fs.writeFileSync(path.resolve(__dirname, './lib/package.json'), JSON.stringify(pkgJson, null, '\t'));
 }
+
 build();

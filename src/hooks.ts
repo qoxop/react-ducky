@@ -4,7 +4,7 @@ import { bindActionCreators, Store } from 'redux';
 import { EqualityFn, Klass, Selector } from './typings';
 import { isPromise } from './utils/is-type';
 import { OutPromise } from './utils/async'
-import { Controler, $classHooks, ReduxControler } from './controller';
+import { Controller, $classHooks, ReduxController } from './controller';
 
 
 export const ReduxContext = createContext<{store?: Store, subscriber?: ReduxSubscriber }>({});
@@ -129,14 +129,14 @@ const useSelector = createUseSelector();
 const useGetAsyncState = createUseGetAsyncState();
 
 
-function useController<C extends Controler, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] {
+function useController<C extends Controller, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] {
   const ctrl = useMemo(() => (new CtrlClass(props)), []);
   ctrl[$classHooks](props);
   const data = ctrl.useHooks();
   return [ctrl, data];
 }
 
-function useReduxController<C extends ReduxControler, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] {
+function useReduxController<C extends ReduxController, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] {
   const { store } = useContext(ReduxContext)
   const ctrl = useMemo(() => (new CtrlClass(store, props)), []);
   ctrl[$classHooks](props);
