@@ -16,7 +16,7 @@ describe('actionCreator check', () => {
 });
 
 describe('action check', () => {
-  test(`witdout prepareAction`, () => {
+  test(`without prepareAction`, () => {
     const actionCreator = createAction('test-createAction');
     expect(actionCreator({a: 1, b: 2}, {pending: true}, {msg: '666'})).toEqual({
       type: 'test-createAction',
@@ -34,7 +34,7 @@ describe('action check', () => {
       payload: {a: 1, b: 2},
     });
   });
-  test(`witd prepareAction`, () => {
+  test(`with prepareAction`, () => {
     const actionCreator = createAction('test-createAction', (p: string, m: any) => {
       return {payload: 'name=' + p, meta: m}
     });
