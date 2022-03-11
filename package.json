@@ -15,7 +15,8 @@
     "serve": "vite preview",
     "test": "jest",
     "build": "node ./build.js",
-    "debug": "yarn build && cd ./lib && yarn link"
+    "debug": "yarn build && cd ./lib && yarn link",
+    "put": "yarn build && cd ./lib && npm publish"
   },
   "peerDependencies": {
     "redux": "*",
