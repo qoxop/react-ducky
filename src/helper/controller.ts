@@ -1,6 +1,9 @@
-import { Dispatch, Store } from "redux";
-import { Context, FunctionComponent, createContext, useState, useCallback, useReducer, createElement } from 'react';
+/**
+ * 控制器
+ */
 import { produce } from "immer";
+import { Dispatch, Store } from "redux";
+import { Context, FunctionComponent, createContext, useState, useReducer, createElement } from 'react';
 
 const $setState =  Symbol ? Symbol('$setState') : '$__controller_$_set_state';
 const $forceUpdate =  Symbol ? Symbol('$forceUpdate') : '$__controller_$_force_update';
@@ -8,6 +11,12 @@ const $forceUpdate =  Symbol ? Symbol('$forceUpdate') : '$__controller_$_force_u
 export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hooks';
 export const $bindThis =  Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
 
+/**
+ * Controller 装饰器：
+ * @param options.useCtx 提供 React Provider 、Context 等属性
+ * @param options.bindThis 自动给方法绑定 this 对象
+ * @returns
+ */
 export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
     const {useCtx = true, bindThis = false } = options;
     return (target: any) => {
@@ -42,7 +51,7 @@ export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {})
 }
 
 /**
- * 模拟 class 组件行为
+ * 控制器 - 模拟 class 组件行为
  */
 export class Controller<State = any, Props = any> {
     static Context: Context<any> = createContext(null);
@@ -66,21 +75,25 @@ export class Controller<State = any, Props = any> {
     // 模拟 class组件的 setState、forceUpdate 方法
     [$classHooks](props?:Props) {
         const [state, setState] = useState(this.state);
-        this[$setState] = useCallback((updater) => {
-            if (typeof updater === 'function') {
-                setState(produce<State>(updater));
-            } else {
-                setState((oldState) => Object.assign({}, oldState, updater));
-            }
-        }, []);
         this[$forceUpdate] = useReducer(a => (a + 1), 0)[1];
         this.state = state;
-        if (props) {
-            this.props = props;
+        this.props = props;
+        if (!this[$setState]) {
+            // 只赋值一次
+            this[$setState] = (updater) => {
+                if (typeof updater === 'function') {
+                    setState(produce<State>(updater));
+                } else {
+                    setState((oldState) => Object.assign({}, oldState, updater));
+                }
+            }
         }
     }
 }
 
+/**
+ * ReduxController 结合 Redux 使用的控制器
+ */
 export class ReduxController<S = any, P = any> extends Controller<S, P> {
     protected readonly dispatch: Dispatch;
     protected readonly store: Store;

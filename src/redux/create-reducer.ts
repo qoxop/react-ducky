@@ -2,7 +2,7 @@ import produce from "immer";
 import {
     PayloadAction,
     CaseReducer
-} from "./typings";
+} from "../typings";
 
 export class Builder<S> {
     default?: CaseReducer<S> ;
@@ -17,7 +17,7 @@ export class Builder<S> {
         this.equal = {};
         this.match = [];
     }
-    addCase(type: string, reducer: CaseReducer < S > ) {
+    addCase(type: string, reducer: CaseReducer<S> ) {
         if (this.equal[type]) {
             console.warn('builder.addCase -> add some type case~');
         } else {

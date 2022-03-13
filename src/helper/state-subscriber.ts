@@ -1,5 +1,5 @@
 import { Store, Unsubscribe } from 'redux';
-import { Selector } from '../typings'
+import { Selector } from '../typings';
 
 type Handler = {
     callback: (state: any) => boolean | void,
