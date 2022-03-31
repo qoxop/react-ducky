@@ -88,7 +88,7 @@ type CreateModelOptions<
   STATE extends Record<string, any>,
   CRS extends ModelCaseReducers<STATE>,
   SF extends StateFetch<STATE> = StateFetch<STATE>
-> =  CreateModelCommonOptions<STATE, CRS, SF> | (CreateModelCommonOptions<STATE, CRS, SF> & CacheOptions);
+> = CreateModelCommonOptions<STATE, CRS, SF> | (CreateModelCommonOptions<STATE, CRS, SF> & CacheOptions);
 
 
 /**

@@ -59,3 +59,4 @@ export type TypeClip<S, OptionalKeys extends keyof S, DelKeys extends keyof S = 
 export type Selector<S = unknown, P = unknown> = (state: S) => P;
 export type IsEqual<P = any> = (last: P, current: P) => boolean;
 export type IsPending<T> = (t: T) => boolean;
+

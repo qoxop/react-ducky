@@ -53,6 +53,7 @@ export {
   ctrlEnhance,
   useCtrlContext,
 }
+
 export { 
   createFetchHandler,
   createPaginationHandler,
@@ -63,4 +64,4 @@ export {
   thunkMiddleware,
 }
 
-export * from './typings'
+export * from './typings';
