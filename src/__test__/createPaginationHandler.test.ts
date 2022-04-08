@@ -109,7 +109,4 @@ describe('测试分页函数 - createPaginationHandler', () => {
     expect(DATA.page_index).toBe(2);
     expect(DATA.list.length).toBe(10);
   });
-
-  test('一个请求处理多分数据源', async () => {
-  });
 })

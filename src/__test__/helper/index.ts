@@ -6,4 +6,3 @@ export const delay = <T = any>(ms: number, data: T = null, error: any = null) =>
       resolve(data);
     }
   }, ms));
-

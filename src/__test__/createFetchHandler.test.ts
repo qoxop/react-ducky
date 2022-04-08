@@ -1,65 +1,56 @@
-import { createFetchHandler, AlwayResolve } from "../utils/async";
+import { createFetchHandler, AlwayResolve as AR} from "../utils/async";
+import { delay } from "./helper";
+
+const request = async ({  mValue, delay: d = 10 }: { mValue: any, identifier?: string, delay?: number }) => {
+  await delay(d)
+  return mValue
+};
 
 describe('测试加载函数 - createFetchHandler', () => {
+  let DATA = {};
+  let finallyRequest = request;
+  const afterFn = jest.fn();
+  const beforeFn = jest.fn();
+  beforeEach(() => {
+    DATA = {};
+    finallyRequest = createFetchHandler({
+      fetcher: request,
+      after: ([data, [{identifier}]]) => {
+        DATA[identifier || 'def'] = data;
+      },
+      identifier: ({ identifier }) => identifier,
+    });
+    afterFn.mockClear();
+    beforeFn.mockClear();
+  });
   test('多个重复相同请求只响应最后一个', async () => {
-    
+    const result_1 = AR(finallyRequest({ mValue: 'A', delay: 30 }));
+    await delay(1)
+    const result_2 = AR(finallyRequest({ mValue: 'B', delay: 20 }));
+    await delay(1)
+    const result_3 = AR(finallyRequest({ mValue: 'C', delay: 10 }));
+    await expect(result_1).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_2).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_3).resolves.toEqual(['C', null]);
+    expect(DATA['def']).toBe('C')    
   });
   test('一个请求处理多分数据源', async () => {
-    
-  });
-  // 处理单个数据
-  test('createFetchHandler - handle single data', async () => {
-    const fetchAfter = jest.fn();
-    let times = 5;
-    const finallyFetch = createFetchHandler({
-      fetcher: (...args: any[]) => (new Promise((resolve) => {
-        setTimeout(() => resolve(args[0]), (--times) * 2);
-      })),
-      after: fetchAfter
-    });
-    
-    const dataArr = await Promise.all([
-      AlwayResolve(finallyFetch(1)),
-      AlwayResolve(finallyFetch(2)),
-      AlwayResolve(finallyFetch(3)),
-      AlwayResolve(finallyFetch(4)),
-    ]);
-    // fail case
-    expect(dataArr[0][1]).toEqual(new Error('invalid response ~'));
-    // success one 
-    expect(dataArr[3][0]).toBe(4);
-    expect(dataArr[3][1]).toBe(null);
-    expect(fetchAfter.mock.calls.length).toBe(1);
-    expect(fetchAfter.mock.calls[0][0][0]).toBe(4);
-  });
-  // 处理多个数据
-  test('createFetchHandler - handle multi data', async () => {
-    const fetchAfter = jest.fn();
-    let times = 10;
-    const finallyFetch = createFetchHandler({
-      fetcher: (type: string, query: string) => (new Promise<string>((resolve) => {
-        setTimeout(() => resolve(query), (--times) * 2);
-      })),
-      after: fetchAfter,
-      identifier: (type: string) => type,
-    });
-    
-    const dataArr = await Promise.all([
-      AlwayResolve(finallyFetch('fetch-bar', '1')),
-      AlwayResolve(finallyFetch('fetch-bar', '2')),
-      AlwayResolve(finallyFetch('fetch-bar', '3')),
-      AlwayResolve(finallyFetch('fetch-foo', '4')),
-      AlwayResolve(finallyFetch('fetch-foo', '5')),
-      AlwayResolve(finallyFetch('fetch-foo', '6')),
-    ]);
-    // fail case
-    expect(dataArr[0][1]).toEqual(new Error('invalid response ~'));
-    expect(dataArr[3][1]).toEqual(new Error('invalid response ~'));
-    // success one 
-    expect(dataArr[2][0]).toBe('3');
-    expect(dataArr[2][1]).toBe(null);
-    expect(dataArr[5][0]).toBe('6');
-    expect(dataArr[5][1]).toBe(null);
-    expect(fetchAfter.mock.calls.length).toBe(2);
+    const result_x1 = AR(finallyRequest({ mValue: 'A', identifier: 'x', delay: 30 }));
+    const result_y1 = AR(finallyRequest({ mValue: 'A', identifier: 'y',  delay: 30 }));
+    await delay(1)
+    const result_x2 = AR(finallyRequest({ mValue: 'B', identifier: 'x',  delay: 20 }));
+    const result_y2 = AR(finallyRequest({ mValue: 'B', identifier: 'y',  delay: 20 }));
+    await delay(1)
+    const result_x3 = AR(finallyRequest({ mValue: 'C', identifier: 'x',  delay: 10 }));
+    const result_y3 = AR(finallyRequest({ mValue: 'C', identifier: 'y',  delay: 10 }));
+
+    await expect(result_x1).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_x2).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_x3).resolves.toEqual(['C', null]);
+    expect(DATA['x']).toBe('C') 
+    await expect(result_y1).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_y2).resolves.toEqual([null, new Error('invalid response ~')]);
+    await expect(result_y3).resolves.toEqual(['C', null]);
+    expect(DATA['y']).toBe('C') 
   });
 })
