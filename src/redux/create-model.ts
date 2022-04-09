@@ -31,6 +31,7 @@ import {
   CaseReducerWithOtherAction,
   CaseReducerWithPayloadAction,
 } from "../typings";
+import { current } from 'immer';
 
 /**
  * reducer case 方法集合对象
@@ -66,6 +67,7 @@ type CreateModelOptions<
   MCRA extends ModelCaseReducerActions<STATE>,
   SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
 > = {
+  name?: string;
   statePaths: string[];
   initialState: STATE;
   reducers: MCRA;
@@ -84,7 +86,7 @@ type Model<
   MCRA extends ModelCaseReducerActions<STATE>,
   SIF extends StateItemFetcher<STATE>,
 > = {
-  name: string;
+  name?: string;
   reducer: Reducer<STATE>;
   actions: CaseReducerActions<MCRA>;
   getState: () => STATE;
@@ -147,7 +149,8 @@ function createModel<
 
   let actions: Record<string, ActionCreator<any>> = {};
   let reducer: Reducer<STATE>;
-  let fetch: SIF;
+  // @ts-ignore
+  let fetch: SIF = {};
   let { state: subState, storeItem } = handleCache(options);
 
   const builder = new Builder<STATE>();
@@ -191,7 +194,7 @@ function createModel<
         }
       });
       builder.addCase(fetchingType, (state) => {
-        state[fKey] = setPending(state[fKey], true);
+        state[fKey] = setPending((state[fKey]), true);
       });
       builder.addCase(fetchedType, (state, action: ExtendAction<{ data, error }>) => {
         const  { data, error } = action;

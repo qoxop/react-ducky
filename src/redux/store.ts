@@ -16,9 +16,13 @@ const getReduxDispatch = () => checkStore() && store.dispatch;
 const setReduxStore = (_store: Store) => store = _store;
 
 
-const initReduxStore = <STATE>(rootReducerRecord: ReducerRecord, initState: any, enhancer?: any) => {
-  store = createStore(combineReducers(rootReducerRecord), initState, enhancer);
-  const mergeReducer = (reducers: ReducerRecord, force: boolean = false) => {
+const initReduxStore = <STATE = any>(rootReducerRecord: ReducerRecord, initState: any, enhancer?: any) => {
+  store = createStore(
+    Object.keys(rootReducerRecord).length ? combineReducers(rootReducerRecord): (state) => state,
+    initState,
+    enhancer
+  );
+  const updateReducer = (reducers: ReducerRecord, force: boolean = false) => {
     let hasNew = false;
     for (const key in reducers) {
         if (
@@ -35,7 +39,7 @@ const initReduxStore = <STATE>(rootReducerRecord: ReducerRecord, initState: any,
   }
   return {
     store: store as Store<STATE, AnyAction>,
-    mergeReducer
+    updateReducer
   }
 }
 

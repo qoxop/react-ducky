@@ -2,6 +2,7 @@ export const getTypeString = (val: unknown): string => Object.prototype.toString
 
 export const isMap = (val: unknown): val is Map<any, any> => getTypeString(val) === '[object Map]';
 export const isSet = (val: unknown): val is Set<any> => getTypeString(val) === '[object Set]';
+export const isArray = (val: unknown): val is Array<any> => val instanceof Array;
 
 export const isDate = (val: unknown): val is Date => val instanceof Date;
 export const isFunction = (val: unknown): val is Function => typeof val === 'function';

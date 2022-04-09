@@ -39,8 +39,14 @@ export class ReduxSubscriber extends Subscriber<any> {
     constructor(store: Store) {
         super();
         this.store = store;
+        let delayExecute: () => void;
         this.unsubscribe = this.store.subscribe(() => {
-            this.emit(this.store.getState());
+            const execute = delayExecute = () => this.emit(this.store.getState());
+            Promise.resolve().then(() => {
+                if (delayExecute === execute) {
+                    delayExecute();
+                }
+            })            
         });
     }
     public destroy() {
