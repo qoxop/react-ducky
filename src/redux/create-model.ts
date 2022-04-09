@@ -35,18 +35,18 @@ import {
 /**
  * reducer case 方法集合对象
  */
-type ModelCaseReducers<State> = Record<string, CaseReducer<State>>
+type ModelCaseReducerActions<STATE> = Record<string, (...args: [STATE, any?]) => any|void>
 
 /**
  * 计算所有 ActionCreator 的类型集合
- * CRS CaseReducers
+ * MCRA CaseReducers
  */
-export type CaseReducerActions<CRS> = {
-  [key in keyof CRS]: CRS[key] extends CaseReducerWithoutAction<any> ?
+export type CaseReducerActions<MCRA> = {
+  [key in keyof MCRA]: MCRA[key] extends CaseReducerWithoutAction<any> ?
     ActionCreator :
-    CRS[key] extends CaseReducerWithPayloadAction<any, infer P> ?
+    MCRA[key] extends CaseReducerWithPayloadAction<any, infer P> ?
     ActionCreator<P> :
-    CRS[key] extends CaseReducerWithOtherAction<any, infer O> ?
+    MCRA[key] extends CaseReducerWithOtherAction<any, infer O> ?
     ActionCreator<O> :
     never;
 }
@@ -54,31 +54,8 @@ export type CaseReducerActions<CRS> = {
 /**
  * State 数据获取方法
  */
-type StateFetch<State> = {
-  [key in keyof State]?: PromiseFn<State[key]>
-}
-
-/**
- * 创建 model 的通用参数
- */
-type CreateModelCommonOptions<
-  STATE extends ValidObj,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE> = StateFetch<STATE>
-> = {
-  statePaths: string[];
-  initialState: STATE;
-  reducers: CRS;
-  fetch?: SF;
-  extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void);
-}
-
-/**
- * 持久化配置
- */
-export type CacheOptions = {
-  cacheStorage: 'session'|'local'|Storage;
-  cacheKey: string;
+type StateItemFetcher<STATE = any> = {
+  [key in keyof STATE]?: PromiseFn<STATE[key]>
 }
 
 /**
@@ -86,9 +63,17 @@ export type CacheOptions = {
  */
 type CreateModelOptions<
   STATE extends Record<string, any>,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE> = StateFetch<STATE>
-> = CreateModelCommonOptions<STATE, CRS, SF> | (CreateModelCommonOptions<STATE, CRS, SF> & CacheOptions);
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
+> = {
+  statePaths: string[];
+  initialState: STATE;
+  reducers: MCRA;
+  fetch?: SIF;
+  extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void);
+  cacheKey?: string;
+  cacheStorage?: 'session'|'local'|Storage;
+}
 
 
 /**
@@ -96,16 +81,16 @@ type CreateModelOptions<
  */
 type Model<
   STATE extends ValidObj,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE>,
-  OPT = CreateModelOptions<STATE, CRS, SF>
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE>,
 > = {
   name: string;
   reducer: Reducer<STATE>;
-  actions: CaseReducerActions<CRS>;
+  actions: CaseReducerActions<MCRA>;
   getState: () => STATE;
   useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { useThrow?: boolean | ((subState: any) => boolean); eq?: IsEqual<T>}) => T;
-} & (OPT extends { fetch: any } ? { fetch: SF } : {});
+  fetch: SIF;
+};
 
 const createSelector = (paths: string[], def: any = null) => state => {
   let subState = state;
@@ -119,8 +104,8 @@ const createSelector = (paths: string[], def: any = null) => state => {
 }
 
 const handleCache = (options: CreateModelOptions<any, any, any>) => {
-  if ('cacheKey' in options) {
-    const { cacheKey, cacheStorage } = options;
+  if (options.cacheKey) {
+    const { cacheKey, cacheStorage = 'session' } = options;
     let storeItem:StoreItem<any> = null;
     if (cacheStorage === 'session') {
       storeItem = createSessionItem(cacheKey);
@@ -142,12 +127,14 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
   }
 }
 
-const createModel =
-<State extends Record<string, any>, CRS extends ModelCaseReducers<State>, SF extends StateFetch<State>>
-(
-  options:  CreateModelOptions<State, CRS, SF>,
+function createModel<
+  STATE extends Record<string, any>,
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE> = {}
+>(
+  options:  CreateModelOptions<STATE, MCRA, SIF>,
   store?: Store
-):Model<State, CRS, SF, CreateModelOptions<State, CRS, SF>> => {
+):Model<STATE, MCRA, SIF> {
   const {
     statePaths,
     reducers,
@@ -159,11 +146,11 @@ const createModel =
   const Dispatch = () => (store || getStore()).dispatch;
 
   let actions: Record<string, ActionCreator<any>> = {};
-  let reducer: Reducer<State>;
-  let fetch: SF;
+  let reducer: Reducer<STATE>;
+  let fetch: SIF;
   let { state: subState, storeItem } = handleCache(options);
 
-  const builder = new Builder<State>();
+  const builder = new Builder<STATE>();
   for (const rKey in reducers) {
     const reduceCase = reducers[rKey];
     const actionType = `${prefix}/${rKey}`;
@@ -227,7 +214,7 @@ const createModel =
     },
   });
 
-  const useModel = <T = any>(subSelector?: Selector<State, T>, config?: UseSelectorOptions<T>)  => (
+  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config?: UseSelectorOptions<T>)  => (
     useSelector((state) => subSelector ? subSelector(selector(state)) : selector(state), config)
   );
 
@@ -244,4 +231,3 @@ const createModel =
 }
 
 export default createModel;
-

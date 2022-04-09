@@ -3,6 +3,7 @@ import { Draft, WritableDraft } from 'immer/dist/internal';
 import { Action, AnyAction } from 'redux';
 
 export type ValidObj = { [k:string]: any };
+export type EmptyObj = { [k in any]: never };
 
 export type { AnyAction }
 
@@ -60,3 +61,6 @@ export type Selector<S = unknown, P = unknown> = (state: S) => P;
 export type IsEqual<P = any> = (last: P, current: P) => boolean;
 export type IsPending<T> = (t: T) => boolean;
 
+export interface DefaultRootState {
+  [key: string]: any;
+}

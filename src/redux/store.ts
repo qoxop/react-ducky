@@ -1,4 +1,4 @@
-import { Store, createStore, Reducer, combineReducers } from "redux";
+import { Store, createStore, Reducer, combineReducers, AnyAction } from "redux";
 
 type ReducerRecord =  { [key: string]: Reducer };
 
@@ -16,7 +16,7 @@ const getReduxDispatch = () => checkStore() && store.dispatch;
 const setReduxStore = (_store: Store) => store = _store;
 
 
-const initReduxStore = (rootReducerRecord: ReducerRecord, initState: any, enhancer?: any) => {
+const initReduxStore = <STATE>(rootReducerRecord: ReducerRecord, initState: any, enhancer?: any) => {
   store = createStore(combineReducers(rootReducerRecord), initState, enhancer);
   const mergeReducer = (reducers: ReducerRecord, force: boolean = false) => {
     let hasNew = false;
@@ -34,7 +34,7 @@ const initReduxStore = (rootReducerRecord: ReducerRecord, initState: any, enhanc
     }
   }
   return {
-    store,
+    store: store as Store<STATE, AnyAction>,
     mergeReducer
   }
 }

@@ -13,7 +13,7 @@ import {
   bindActionCreators,
 } from 'redux';
 
-import { IsEqual, Klass, Selector } from '../typings';
+import { DefaultRootState, IsEqual, Klass, Selector } from '../typings';
 import { isPending, OutPromise } from '../utils/async';
 import { ReduxSubscriber } from '../helper/state-subscriber';
 import { $classHooks, Controller, ReduxController } from '../helper/controller';
@@ -42,7 +42,7 @@ type UseSelectorOptions<P> = {
   eq?: IsEqual<P>,
   useThrow?: boolean | ((subState: P) => boolean);
 }
-const useSelector = <S = any, P = any>(selector: Selector<S, P>, options: UseSelectorOptions<P> = {}) => {
+const useSelector = <S = DefaultRootState, P = any>(selector: Selector<S, P>, options: UseSelectorOptions<P> = {}) => {
   const { eq, useThrow } = useMemo(() => ({
     eq: options.eq || defEq,
     useThrow: options.useThrow === true ? isPending : (typeof options.useThrow === 'function' ? options.useThrow : null)
