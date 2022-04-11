@@ -1,6 +1,6 @@
 import { Reducer, Store } from 'redux';
 
-import { getStore } from './store'
+import { getStore as _getStore } from './store'
 import {
   Builder,
   createReducerWithOpt,
@@ -30,8 +30,9 @@ import {
   CaseReducerWithoutAction,
   CaseReducerWithOtherAction,
   CaseReducerWithPayloadAction,
+  XOR,
 } from "../typings";
-import { current } from 'immer';
+import { setProperty } from '../utils/object';
 
 /**
  * reducer case 方法集合对象
@@ -59,10 +60,8 @@ type StateItemFetcher<STATE = any> = {
   [key in keyof STATE]?: PromiseFn<STATE[key]>
 }
 
-/**
- * Model 配置项
- */
-type CreateModelOptions<
+// XOR
+type BaseOptions<
   STATE extends Record<string, any>,
   MCRA extends ModelCaseReducerActions<STATE>,
   SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
@@ -73,10 +72,21 @@ type CreateModelOptions<
   reducers: MCRA;
   fetch?: SIF;
   extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void);
-  cacheKey?: string;
-  cacheStorage?: 'session'|'local'|Storage;
+}
+type CacheOptions = {
+  cacheKey: string;
+  cacheStorage: 'session'|'local'|Storage;
+  cacheVersion?: string;
 }
 
+/**
+ * Model 配置项
+ */
+type CreateModelOptions<
+  STATE extends Record<string, any>,
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
+> = XOR<BaseOptions<STATE, MCRA, SIF>, BaseOptions<STATE, MCRA, SIF> & CacheOptions>
 
 /**
  * Model 对象数据结构
@@ -115,12 +125,12 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
       storeItem = createPersistenceItem(
         cacheStorage === 'local' ? localStorage : cacheStorage,
         cacheKey,
-        options.initialState
+        options.cacheVersion || JSON.stringify(options.initialState)
       )
     }
     return {
       storeItem,
-      state: storeItem.get()
+      state: storeItem.get() || options.initialState
     }
   }
   return {
@@ -135,7 +145,7 @@ function createModel<
   SIF extends StateItemFetcher<STATE> = {}
 >(
   options:  CreateModelOptions<STATE, MCRA, SIF>,
-  store?: Store
+  getStore: () => Store = _getStore
 ):Model<STATE, MCRA, SIF> {
   const {
     statePaths,
@@ -145,7 +155,7 @@ function createModel<
   } = options;
   const prefix = statePaths.join('_').toUpperCase();
   const selector = createSelector(statePaths);
-  const Dispatch = () => (store || getStore()).dispatch;
+  const Dispatch = () => getStore().dispatch;
 
   let actions: Record<string, ActionCreator<any>> = {};
   let reducer: Reducer<STATE>;
@@ -199,7 +209,7 @@ function createModel<
       builder.addCase(fetchedType, (state, action: ExtendAction<{ data, error }>) => {
         const  { data, error } = action;
         if (error) {
-          state[fKey] = Object.assign(Object(state[fKey]), { error });
+          state[fKey] = setProperty(setPending(state[fKey], false), 'error', error);
         } else {
           state[fKey] = data;
         }
@@ -221,7 +231,7 @@ function createModel<
     useSelector((state) => subSelector ? subSelector(selector(state)) : selector(state), config)
   );
 
-  const getState = () => selector((store || getStore()).getState());
+  const getState = () => selector(getStore().getState());
 
   return {
     fetch,

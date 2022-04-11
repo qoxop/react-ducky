@@ -1,5 +1,5 @@
 import { PromiseFn, TypeClip } from "../typings";
-import { isArray } from "./is-type";
+import { removeProperty, setProperty } from "./object";
 
 enum FetchStatus {
     'LOADING' = 1,
@@ -146,21 +146,11 @@ const isPending = <T = any>(obj:T) => obj && obj[PENDING_KEY] === true;
  */
 const setPending = <T>(obj:T, pending: boolean) => {
 	if (pending) {
-		return Object.assign(isArray(obj) ? [] : {}, Object(obj), { [PENDING_KEY]: true } );
+    return setProperty(obj, PENDING_KEY, true);
 	}
-	if (obj && obj[PENDING_KEY]) {
-		delete obj[PENDING_KEY];
-	}
-	return obj;
+	return removeProperty(obj, PENDING_KEY);
 };
-function AsyncObj(data: Object) {
-  this[PENDING_KEY] = true;
-  this.data = data
-  data.valueOf
-}
-AsyncObj.prototype.valueOf = function () {
-  return this.valueOf()
-}
+
 export {
 	isPending,
 	setPending,

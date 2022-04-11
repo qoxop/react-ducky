@@ -1,4 +1,4 @@
-import { AlwayResolve, OutPromise } from "../utils/async";
+import { AlwayResolve, OutPromise } from "../../utils/async";
 
 describe('基础函数测试', () => {
   test('OutPromise', async () => {
