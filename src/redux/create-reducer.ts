@@ -1,8 +1,10 @@
 import produce from "immer";
 import {
-    PayloadAction,
-    CaseReducer
+    CaseReducer,
+    ValidObj,
+    AnyAction,
 } from "../typings";
+import { isFunction } from "../utils/is-type";
 
 export class Builder<S> {
     default?: CaseReducer<S> ;
@@ -10,7 +12,7 @@ export class Builder<S> {
         [k: string]: CaseReducer<S> ;
     };
     match: Array<{
-        matcher: (action: PayloadAction) => boolean;
+        matcher: (action: AnyAction) => boolean;
         reducer: CaseReducer<S> ;
     }>;
     constructor() {
@@ -25,7 +27,7 @@ export class Builder<S> {
         }
         return this;
     };
-    addMatcher(matcher: (action: PayloadAction) => boolean, reducer: CaseReducer < S > ) {
+    addMatcher(matcher: (action: AnyAction) => boolean, reducer: CaseReducer < S > ) {
         this.match.push({
             reducer,
             matcher
@@ -45,7 +47,7 @@ export function createReducerWithOpt<State>(
         builder?: Builder<State>,
         enhanceState?: (state:State) => State,
         onChange?: (data: State) => void;
-    }
+    } = {}
 ) {
     let {
         callback,
@@ -53,16 +55,16 @@ export function createReducerWithOpt<State>(
         enhanceState,
         onChange,
     } = options;
-    if (enhanceState) {
+    if (isFunction(enhanceState)) {
         initialState = enhanceState(initialState)
     }
     if (!builder) {
         builder = new Builder<State>();
     }
-    if (callback) {
+    if (isFunction(callback)) {
         callback(builder);
     }
-    const reducer = (state = initialState, action: PayloadAction) => {
+    const reducer = (state = initialState, action: AnyAction) => {
         const handler = builder.equal[action.type];
         let data: any = state;
         let hasChange = false;
@@ -74,20 +76,21 @@ export function createReducerWithOpt<State>(
                 }
             });
             hasChange = true;
-        } else if (builder.match.length) {
-            data = produce(data, (draft) => {
-                for (let m = 0; m < builder.match.length; m++) {
-                    const mt = builder.match[m];
-                    if (mt.matcher(action)) {
-                        const result = mt.reducer(draft, action);
-                        if (result) {
-                            return result;
-                        }
+        } else if (builder.match?.length) {
+            const matches = builder.match.filter(m => m.matcher(action));
+            if (matches.length) {
+                data = produce(data, (draft) => {
+                    let result = null;
+                    for (const match of matches) {
+                        result = match.reducer(result || draft, action);
                     }
-                }
-            });
-            hasChange = true;
-        } else if (builder.default) {
+                    if (result) {
+                        return result;
+                    }
+                });
+                hasChange = true;
+            }
+        } else if (isFunction(builder.default)) {
             data = produce(data, (draft) => {
                 const result = builder.default(draft, action);
                 if (result) {
@@ -96,7 +99,7 @@ export function createReducerWithOpt<State>(
             });
             hasChange = true;
         }
-        if (onChange && hasChange) {
+        if (isFunction(onChange) && hasChange) {
             onChange(data);
         }
         return data as State;
@@ -104,7 +107,7 @@ export function createReducerWithOpt<State>(
     return reducer;
 }
 
-export const createReducer = <State>(
+export const createReducer = <State extends ValidObj>(
     initialState: State,
     callback: (builder: Builder<State>) => void
 ) => createReducerWithOpt<State>(initialState, { callback });

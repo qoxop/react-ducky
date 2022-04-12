@@ -13,7 +13,7 @@ beforeAll(() => {
   redux = initReduxStore<any>({}, {});
 });
 
-describe('createModel 的基本用法', () => {
+describe('createModel 基本用法', () => {
   const model = createModel({
     initialState: {
       count: 0,
@@ -70,7 +70,7 @@ describe('createModel 的基本用法', () => {
   });
 });
 
-describe('createModel 的异步用法', () => {
+describe('createModel 异步用法', () => {
   const nArray = (n: number)=> 'n'.repeat(n).split('');
   const model = createModel({
     initialState: {

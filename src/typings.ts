@@ -33,7 +33,7 @@ export type CaseReducerWithoutAction<STATE> = {
 /**
  * reducer case 方法
  */
-export type CaseReducer<State> = CaseReducerWithOtherAction<State> | CaseReducerWithPayloadAction<State> | CaseReducerWithoutAction<State>
+export type CaseReducer<STATE> = (state: STATE, action?: AnyAction) => STATE | void;
 
 /**
  * 类定义

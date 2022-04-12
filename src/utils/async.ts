@@ -136,7 +136,7 @@ const PENDING_KEY = Symbol('PENDING_KEY');
  * @param obj
  * @returns 
  */
-const isPending = <T = any>(obj:T) => obj && obj[PENDING_KEY] === true;
+const isPending = <T = any>(obj:T) => !!(obj && obj[PENDING_KEY] === true);
 
 /**
  * 设置加载中标识

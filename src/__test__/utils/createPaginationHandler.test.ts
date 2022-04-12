@@ -1,5 +1,5 @@
-import { createPaginationHandler, AlwayResolve } from "../utils/async";
-import { delay } from "./helper";
+import { createPaginationHandler, AlwayResolve } from "../../utils/async";
+import { delay } from "../helper";
 
 const loadData = async ({ pageIndex, pageSize, mValue, delay: d = 10 }: { pageIndex: number, pageSize: number, mValue: string, delay?: number }) => {
   await delay(d)

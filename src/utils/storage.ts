@@ -12,8 +12,9 @@ const createPersistenceItem = <T>(storage: Storage, key: string, hash?: string):
     const atom = {
         get(){
             try {
-                const { v } = JSON.parse(storage.getItem(key) || '{}');
-                return v;
+                const str = storage.getItem(key);
+                if (!str) return null
+                return JSON.parse(str).v;
             } catch (error) {
                 return null;
             }
@@ -40,8 +41,9 @@ const createPersistenceItem = <T>(storage: Storage, key: string, hash?: string):
 const createSessionItem = <T>(key: string):StoreItem<T> => ({
     get(){
         try {
-            const { v } = JSON.parse(sessionStorage.getItem(key) || '{}');
-            return v;
+            const str = sessionStorage.getItem(key);
+            if (!str) return null
+            return JSON.parse(str).v;
         } catch (error) {
             return null;
         }
