@@ -34,6 +34,7 @@ function withPageHook<T = FunctionLike<[any], any>>(
       if (isFunction(onEnter)) {
         onEnter(action);
       }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     useEffect(() => () => {
       Promise.resolve().then(() => {

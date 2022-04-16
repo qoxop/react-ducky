@@ -3,22 +3,24 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:qoxop/react-ducky.git",
-  "author": "张集伟 <1106291186@qq.com>",
+  "author": "🥱 张集伟 <1106291186@qq.com>",
   "license": "MIT",
-  "description": "一个基于 MVC 思想而设计的一个 React & Redux 工具库",
+  "description": "一个基于 React + Redux 的状态管理工具库 🐳 ",
   "keywords": [
+    "react",
     "redux",
-    "hooks"
+    "hooks",
+    "state toolkit"
   ],
   "scripts": {
     "dev": "vite",
     "serve": "vite preview",
     "test": "jest",
     "test-report": "jest && npx serve ./coverage/lcov-report",
-    "lint": "eslint",
+    "lint": "eslint .",
     "build": "node ./build.js",
     "debug": "yarn build && cd ./lib && yarn link",
-    "put": "yarn build && cd ./lib && npm publish"
+    "put": "yarn test && yarn build && cd ./lib && npm publish"
   },
   "peerDependencies": {
     "immer": "^9.0.5",

@@ -62,7 +62,7 @@ type FetchHandlerOptions<Args extends any[], Resp = any> = {
  * @description 当段时间内发起多个请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理
  * @returns 
  */
-const createFetchHandler = <Args extends unknown[], Resp, T>({ fetcher, after, before, identifier }: FetchHandlerOptions<Args,Resp>) => {
+const createFetchHandler = <Args extends unknown[], Resp>({ fetcher, after, before, identifier }: FetchHandlerOptions<Args,Resp>) => {
   let statusMap: Record<string, FetchStatus|undefined> = {}
   let fetchIndexMap:Record<string, number> = {};
   return async (...args: Args) => {

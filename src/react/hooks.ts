@@ -69,9 +69,11 @@ const useSelector = <S = DefaultRootState, P = any>(
     useThrow: options.useThrow === true
       ? isPending
       : (isFunction(options.useThrow) ? options.useThrow : null),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
   const { subscriber, store } = useContext(ReduxContext);
   const [forceTimes, forceRender] = useReducer((s) => s + 1, 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const subState = useMemo(() => selector(store.getState()), [store, forceTimes]);
   const subStateRef = useRef<P>(subState);
 
@@ -91,6 +93,7 @@ const useSelector = <S = DefaultRootState, P = any>(
       }
     });
     return () => subscriber.remove(symbolKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
 
   if (isThrow) {
@@ -118,6 +121,7 @@ const useSelector = <S = DefaultRootState, P = any>(
  * @returns
  */
 const useController = <C extends Controller, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const ctrl = useMemo(() => (new CtrlClass(props)), []);
   ctrl[$classHooks](props);
   const data = ctrl.useHooks();
@@ -132,6 +136,7 @@ const useController = <C extends Controller, P = any>(CtrlClass: Klass<[P?], C>,
  */
 const useReduxController = <C extends ReduxController, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] => {
   const { store } = useContext(ReduxContext);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const ctrl = useMemo(() => (new CtrlClass(store, props)), []);
   ctrl[$classHooks](props);
   const data = ctrl.useHooks();
@@ -192,6 +197,7 @@ const usePageEffect = (options: {
         });
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
 
@@ -201,9 +207,11 @@ const usePageEffect = (options: {
  * @returns
  */
 const usePageState = <T>(init: T | (() => T), suffix = '') => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const pageKey = useMemo(() => `${getPageKey()}${suffix}`, []);
   const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageKey));
   // 组件销毁时保存
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => setPageState(stateRef.current, pageKey), [stateRef]);
   return [state, setState];
 };
