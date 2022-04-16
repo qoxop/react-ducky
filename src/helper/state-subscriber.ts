@@ -1,13 +1,13 @@
 import { Store, Unsubscribe } from 'redux';
-import { Selector } from '../typings';
+import { DefaultRootState, Selector } from '../typings';
 
 type Handler = {
     callback: (state: any) => boolean | void,
     once?: boolean
 }
 
-export class Subscriber<S = unknown> {
-    private listeners: Map<Symbol, Handler> = new Map();
+class Subscriber<S = unknown> {
+    private listeners: Map<symbol, Handler> = new Map();
     public emit(state: S) {
         this.listeners.forEach((handler, key, map) => {
             const handled = handler.callback(state);
@@ -16,16 +16,16 @@ export class Subscriber<S = unknown> {
             }
         });
     }
-    public add<O extends boolean|void>(key: Symbol, handler: (state: any) => O, once?: O) {
+    public add<O extends boolean|void>(key: symbol, handler: (state: any) => O, once?: O) {
         this.listeners.set(key, {
             callback: handler,
             once: !!once,
         });
     }
-    public remove(key: Symbol) {
+    public remove(key: symbol) {
         this.listeners.delete(key);
     }
-    public has(key: Symbol) {
+    public has(key: symbol) {
         return this.listeners.has(key);
     }
     public clear() {
@@ -33,7 +33,7 @@ export class Subscriber<S = unknown> {
     }
 }
 
-export class ReduxSubscriber extends Subscriber<any> {
+class ReduxSubscriber<STATE = DefaultRootState> extends Subscriber<STATE> {
     store: Store;
     unsubscribe: Unsubscribe;
     constructor(store: Store) {
@@ -61,4 +61,9 @@ export class ReduxSubscriber extends Subscriber<any> {
         }
         return this.store.getState();
     }
+}
+
+export {
+    Subscriber,
+    ReduxSubscriber,
 }

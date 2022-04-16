@@ -1,16 +1,16 @@
 import React from 'react';
 import { renderHook } from '@testing-library/react-hooks/dom';
-import { ReduxProvider } from '../../hooks/redux-hooks';
-import createModel from '../../redux/create-model';
-import { initReduxStore } from '../../redux/store';
+import { ReduxProvider } from '../../react/context';
+import { createModel } from '../../redux/create-model';
+import { initStore } from '../../redux/store';
 import { ExtendAction, PayloadAction } from '../../typings';
-import { AlwayResolve, isPending } from '../../utils/async';
+import { alwayResolve, isPending } from '../../utils/async';
 import { delay, repeat, repeatAsync } from '../helper';
 import { createPersistenceItem } from '../../utils/storage';
 
 let redux: any = null;
 beforeAll(() => {
-  redux = initReduxStore<any>({}, {});
+  redux = initStore<any>({}, {});
 });
 
 describe('createModel 基本用法', () => {
@@ -26,8 +26,8 @@ describe('createModel 基本用法', () => {
       minus(state, action: ExtendAction<{ count: number }>) {
         state.count -= action.count;
       },
-      reset: (state) => {
-        state.count = 0;
+      reset: () => {
+        return { count: 0 }
       }
     }
   });
@@ -39,6 +39,10 @@ describe('createModel 基本用法', () => {
 
   test('生成 reducer 函数', () => {
     expect(typeof model.reducer).toBe('function');
+    const actionPrefix = 'count'.toUpperCase();
+    expect(model.reducer({ count: 1 }, { type: `${actionPrefix}/add`, payload: 1 })).toEqual({ count: 2 });
+    expect(model.reducer({ count: 1 }, { type: `${actionPrefix}/minus`, count: 1 })).toEqual({ count: 0 });
+    expect(model.reducer({ count: 1 }, { type: `${actionPrefix}/reset` })).toEqual({ count: 0 });
   });
 
   test('生成 actions 对象 ', () => {
@@ -136,7 +140,7 @@ describe('createModel 异步用法', () => {
     expect(model.getState().bool.valueOf()).toBe(false);
     expect(+model.getState().bool).toBe(0);
   
-    const [data, _] = await AlwayResolve(waitForDone);
+    const [data, _] = await alwayResolve(waitForDone);
     /** check pending */
     expect(isPending(model.getState().bool)).toBe(false);
     /** simple value */
@@ -152,7 +156,7 @@ describe('createModel 异步用法', () => {
     expect(model.getState().number.valueOf()).toBe(0);
     expect(model.getState().number + 11).toBe(11);
 
-    const [data, _] = await AlwayResolve(waitForDone);
+    const [data, _] = await alwayResolve(waitForDone);
     /** check pending */
     expect(isPending(model.getState().number)).toBe(false);
     /** simple value */
@@ -167,7 +171,7 @@ describe('createModel 异步用法', () => {
     expect(model.getState().string.valueOf()).toBe('bar');
     expect(`test-${model.getState().string}`).toBe('test-bar');
 
-    const [data, _] = await AlwayResolve(waitForDone);
+    const [data, _] = await alwayResolve(waitForDone);
     /** check pending */
     expect(isPending(model.getState().string)).toBe(false);
     /** simple value */
@@ -183,7 +187,7 @@ describe('createModel 异步用法', () => {
       /** ref value */
       expect(model.getState().error.valueOf()).toBe(null);
 
-      const [_, error] = await AlwayResolve(waitForDone);
+      const [_, error] = await alwayResolve(waitForDone);
       /** check pending */
       expect(isPending(model.getState().error)).toBe(false);
       expect(error).toEqual(new Error('error'));
@@ -222,7 +226,7 @@ describe('createModel 使用缓存数据', () => {
   test('use localStorage to init model state', () => {
     expect(storage.get()).toEqual({ x: 2, y: 3 })
     const newModel: ReturnType<typeof initModel> = initModel({x: 0, y: 1}, () => newRedux.store); 
-    const newRedux = initReduxStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
     expect(newModel.getState()).toEqual({ x: 2, y: 3 })
   });
 
@@ -230,7 +234,7 @@ describe('createModel 使用缓存数据', () => {
   test('change initState\'s data struct', () => {
     expect(storage.get()).toEqual({ x: 2, y: 3 })
     const newModel: ReturnType<typeof initModel> = initModel({ x: 0, y: 1, z: 2 }, () => newRedux.store); 
-    const newRedux = initReduxStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
     expect(newModel.getState()).toEqual({ x: 0, y: 1, z: 2 })
     newModel.actions.update({ x: 2, y: 2 })
   });
@@ -239,7 +243,7 @@ describe('createModel 使用缓存数据', () => {
   test('update cacheVersion', () => {
     expect(storage.get()).toEqual({ x: 2, y: 2, z: 2 });
     const newModel: ReturnType<typeof initModel> = initModel({ x: 0, y: 1, z: 2 }, () => newRedux.store, 'v2'); 
-    const newRedux = initReduxStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
     expect(newModel.getState()).toEqual({ x: 0, y: 1, z: 2 })
   });
 

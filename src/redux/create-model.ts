@@ -1,24 +1,10 @@
-import { Reducer, Store } from 'redux';
-
+import { Store, Reducer } from 'redux';
+import { setProperty } from '../utils/object';
 import { getStore as _getStore } from './store'
-import {
-  Builder,
-  createReducerWithOpt,
-} from "./create-reducer";
-import {
-  useSelector,
-  UseSelectorOptions,
-} from "../hooks/redux-hooks";
-import { 
-  isPending,
-  setPending,
-  createFetchHandler,
-} from "../utils/async";
-import { 
-  StoreItem,
-  createPersistenceItem,
-  createSessionItem,
-} from "../utils/storage";
+import { Builder, createReducerWithOpt } from "./create-reducer";
+import { useSelector, UseSelectorOptions } from "../react/hooks";
+import { isPending, setPending, createFetchHandler } from "../utils/async";
+import { StoreItem, createPersistenceItem, createSessionItem, } from "../utils/storage";
 import { 
   IsEqual,
   ValidObj,
@@ -32,7 +18,6 @@ import {
   CaseReducerWithPayloadAction,
   XOR,
 } from "../typings";
-import { setProperty } from '../utils/object';
 
 /**
  * reducer case 方法集合对象
@@ -43,7 +28,7 @@ type ModelCaseReducerActions<STATE> = Record<string, (...args: [STATE, any?]) =>
  * 计算所有 ActionCreator 的类型集合
  * MCRA CaseReducers
  */
-export type CaseReducerActions<MCRA> = {
+type CaseReducerActions<MCRA> = {
   [key in keyof MCRA]: MCRA[key] extends CaseReducerWithoutAction<any> ?
     ActionCreator :
     MCRA[key] extends CaseReducerWithPayloadAction<any, infer P> ?
@@ -243,4 +228,6 @@ function createModel<
   } as any;
 }
 
-export default createModel;
+export {
+  createModel
+};

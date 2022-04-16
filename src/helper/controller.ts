@@ -8,8 +8,8 @@ import { Context, FunctionComponent, createContext, useState, useReducer, create
 const $setState =  Symbol ? Symbol('$setState') : '$__controller_$_set_state';
 const $forceUpdate =  Symbol ? Symbol('$forceUpdate') : '$__controller_$_force_update';
 
-export const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hooks';
-export const $bindThis =  Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
+const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hooks';
+const $bindThis =  Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
 
 /**
  * Controller 装饰器：
@@ -17,7 +17,7 @@ export const $bindThis =  Symbol ? Symbol('$bindThis') : '$__controller_$_bind_t
  * @param options.bindThis 自动给方法绑定 this 对象
  * @returns
  */
-export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
+function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
     const {useCtx = true, bindThis = false } = options;
     return (target: any) => {
         if (useCtx) {
@@ -53,7 +53,7 @@ export function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {})
 /**
  * 控制器 - 模拟 class 组件行为
  */
-export class Controller<State = any, Props = any> {
+class Controller<State = any, Props = any> {
     static Context: Context<any> = createContext(null);
     static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
     // class like 
@@ -94,7 +94,7 @@ export class Controller<State = any, Props = any> {
 /**
  * ReduxController 结合 Redux 使用的控制器
  */
-export class ReduxController<S = any, P = any> extends Controller<S, P> {
+class ReduxController<S = any, P = any> extends Controller<S, P> {
     protected readonly dispatch: Dispatch;
     protected readonly store: Store;
     constructor(store: Store, props?: P) {
@@ -102,4 +102,12 @@ export class ReduxController<S = any, P = any> extends Controller<S, P> {
         this.store = store;
         this.dispatch = store.dispatch;
     }
+}
+
+export {
+    Controller,
+    ReduxController,
+    ctrlEnhance,
+    $classHooks,
+    $bindThis,
 }

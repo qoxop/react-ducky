@@ -11,7 +11,7 @@ enum FetchStatus {
  * @param void
  * @returns { promise: Promise<T>; resolve: (data?: T) => void; reject: (error?: T) => void;}
  */
-const OutPromise = <T = any|void>() => {
+const outPromise = <T = any|void>() => {
     const data: {
         promise: Promise<T>;
         resolve: (data?: T) => void;
@@ -25,12 +25,12 @@ const OutPromise = <T = any|void>() => {
 }
 
 /**
- * AlwayResolve 
+ * alwayResolve 
  * @description 将一个 promise 转化成一个永不报错的新 promise，把错误信息包装在返回结果中
  * @param ps
  * @returns [response, error]
  */
-const AlwayResolve = async <D>(ps: Promise<D>): Promise<[(D|null), any]> => {
+const alwayResolve = async <D>(ps: Promise<D>): Promise<[(D|null), any]> => {
     try {
         const data = await ps;
         return [data, null];
@@ -73,7 +73,7 @@ const createFetchHandler = <Args extends unknown[], Resp, T>({ fetcher, after, b
     fetchIndexMap[key] = (fetchIndexMap[key] || 0) + 1;
     const closureFetchIndex = fetchIndexMap[key];
     // 拦截响应
-    const [data, error] = await AlwayResolve(ps);
+    const [data, error] = await alwayResolve(ps);
     if (closureFetchIndex === fetchIndexMap[key]) { // 闭包内与闭包外相同
       statusMap[key] = FetchStatus.UNACTIVE;
       after && after([data, args, error]);
@@ -96,7 +96,7 @@ type PaginationHandlerOptions<Args extends any[], Resp = any> = FetchHandlerOpti
  * @description 限制发起分页请求必须是非 loading 状态(上一个请求结束之后)
  * @returns paging
  */
-const createPaginationHandler = <A extends unknown[], D, T>({ fetcher, after, before, isReset, identifier }: PaginationHandlerOptions<A,D>) => {
+const createPaginationHandler = <A extends unknown[], D>({ fetcher, after, before, isReset, identifier }: PaginationHandlerOptions<A,D>) => {
 	let statusMap: Record<string, FetchStatus|undefined> = {}
 	let fetchIndexMap:Record<string, number> = {};
 	return async (...args: A) => {
@@ -116,7 +116,7 @@ const createPaginationHandler = <A extends unknown[], D, T>({ fetcher, after, be
 		// 拦截响应
 		if (ps) {
 			before && before(args);
-			const [data, error] = await AlwayResolve(ps);
+			const [data, error] = await alwayResolve(ps);
 			if (closureFetchIndex === fetchIndexMap[key]) { // 闭包内与闭包外相同
 				statusMap[key] = FetchStatus.UNACTIVE;
 				after && after([data, args, error]);
@@ -154,8 +154,8 @@ const setPending = <T>(obj:T, pending: boolean) => {
 export {
 	isPending,
 	setPending,
-	OutPromise,
-	AlwayResolve,
+	outPromise,
+	alwayResolve,
 	createFetchHandler,
 	createPaginationHandler,
 }

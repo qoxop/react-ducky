@@ -16,6 +16,10 @@ describe('reducer', () => {
       .addCase('minus', (state, action: PayloadAction<number>) => {
         state.count -= action.payload;
       })
+      .addCase('add', () => {
+        // never throw
+        throw new Error("some case");
+      })
       .addCase('reset', (state, action: PayloadAction<number>) => {
         state.count = action.payload;
       })

@@ -14,6 +14,7 @@
     "dev": "vite",
     "serve": "vite preview",
     "test": "jest",
+    "test-report": "jest && npx serve ./coverage/lcov-report",
     "build": "node ./build.js",
     "debug": "yarn build && cd ./lib && yarn link",
     "put": "yarn build && cd ./lib && npm publish"
@@ -39,6 +40,8 @@
     "less": "^4.1.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0",
     "react-test-renderer": "^18.0.0",
     "redux": "^4.1.2",
     "rollup": "^2.56.3",

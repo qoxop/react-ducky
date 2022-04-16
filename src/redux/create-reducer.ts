@@ -6,7 +6,7 @@ import {
 } from "../typings";
 import { isFunction } from "../utils/is-type";
 
-export class Builder<S> {
+class Builder<S> {
     default?: CaseReducer<S> ;
     equal: {
         [k: string]: CaseReducer<S> ;
@@ -40,7 +40,7 @@ export class Builder<S> {
     }
 }
 
-export function createReducerWithOpt<State>(
+function createReducerWithOpt<State>(
     initialState: State,
     options: {
         callback?: (builder: Builder<State>) => void,
@@ -107,7 +107,13 @@ export function createReducerWithOpt<State>(
     return reducer;
 }
 
-export const createReducer = <State extends ValidObj>(
+const createReducer = <State extends ValidObj>(
     initialState: State,
     callback: (builder: Builder<State>) => void
 ) => createReducerWithOpt<State>(initialState, { callback });
+
+export {
+    Builder,
+    createReducer,
+    createReducerWithOpt,
+}
