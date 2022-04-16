@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PageActionContext } from './context';
 import { isFunction } from '../utils/is-type';
 import { PageAction, getCurrentPageAction } from '../utils/history';
+import { FunctionLike } from '../typings';
 
 const {
-  useContext,
+  useState,
   useEffect,
-  useLayoutEffect
+  useContext,
+  useLayoutEffect,
 } = React;
+
 /**
  * 增强路由组件，增加前进后退钩子
  * @param Component
- * @param opt 
+ * @param opt
  * @returns
  */
-function withPageHook<T = (props: any) => any>(
+function withPageHook<T = FunctionLike<[any], any>>(
   Component: T,
   opt: {
-    onEnter?: (action?: PageAction) => void;
-    onLeave?: (action?: PageAction) => void;
-  }
+    onEnter?: FunctionLike<[PageAction?], void>;
+    onLeave?: FunctionLike<[PageAction?], void>;
+  },
 ): T {
   const { onEnter, onLeave } = opt;
   const WithHookComponent:React.FC = (props) => {
@@ -28,22 +31,26 @@ function withPageHook<T = (props: any) => any>(
     useLayoutEffect(() => {
       // 延后渲染, 确保相关工作执行完毕
       Promise.resolve().then(() => setCanRender(true));
-      isFunction(onEnter) && onEnter(action);
+      if (isFunction(onEnter)) {
+        onEnter(action);
+      }
     }, []);
     useEffect(() => () => {
       Promise.resolve().then(() => {
-        isFunction(onLeave) && onLeave(getCurrentPageAction());
+        if (isFunction(onLeave)) {
+          onLeave(getCurrentPageAction());
+        }
       });
     }, []);
     if (canRender) {
       // @ts-ignore
-      return <Component {...props} />
+      return <Component {...props} />;
     }
     return null;
-  }
-  return WithHookComponent as unknown as T
+  };
+  return WithHookComponent as unknown as T;
 }
 
 export {
-  withPageHook
-}
+  withPageHook,
+};

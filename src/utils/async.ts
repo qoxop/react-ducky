@@ -1,9 +1,9 @@
-import { PromiseFn, TypeClip } from "../typings";
+import { PromiseFn } from "../typings";
 import { removeProperty, setProperty } from "./object";
 
 enum FetchStatus {
-    'LOADING' = 1,
-    'UNACTIVE' = 2
+  'LOADING' = 1,
+  'UNACTIVE' = 2
 }
 
 /**
@@ -12,16 +12,16 @@ enum FetchStatus {
  * @returns { promise: Promise<T>; resolve: (data?: T) => void; reject: (error?: T) => void;}
  */
 const outPromise = <T = any|void>() => {
-    const data: {
-        promise: Promise<T>;
-        resolve: (data?: T) => void;
-        reject: (error?: T) => void;
-    } = { resolve: null, reject: null, promise: null }
-    data.promise = new Promise((resolve, reject) => {
-        data.resolve = resolve;
-        data.reject = reject;
-    });
-    return data;
+  const data: {
+    promise: Promise<T>;
+    resolve: (data?: T) => void;
+    reject: (error?: T) => void;
+  } = { resolve: null, reject: null, promise: null }
+  data.promise = new Promise((resolve, reject) => {
+    data.resolve = resolve;
+    data.reject = reject;
+  });
+  return data;
 }
 
 /**
@@ -31,31 +31,31 @@ const outPromise = <T = any|void>() => {
  * @returns [response, error]
  */
 const alwayResolve = async <D>(ps: Promise<D>): Promise<[(D|null), any]> => {
-    try {
-        const data = await ps;
-        return [data, null];
-    } catch (error) {
-        return [null, error]
-    }
+  try {
+    const data = await ps;
+    return [data, null];
+  } catch (error) {
+    return [null, error];
+  }
 }
 
 /**
  * 分批请求处理函数配置项
  */
 type FetchHandlerOptions<Args extends any[], Resp = any> = {
-    fetcher: PromiseFn<Resp, Args>;
-    /**
-     * 请求结束后的回调方法
-     */
-    after?: (result: [Resp, Args, any]) => void;
-    /**
-     * 请求前的回调方法
-     */
-    before?: (args: Args) => void;
-    /**
-     * 用于一个请求处理多份数据的情况，避免错误拦截
-     */
-    identifier?: (...args: Args) => string;
+  fetcher: PromiseFn<Resp, Args>;
+  /**
+   * 请求结束后的回调方法
+   */
+  after?: (result: [Resp, Args, any]) => void;
+  /**
+   * 请求前的回调方法
+   */
+  before?: (args: Args) => void;
+  /**
+   * 用于一个请求处理多份数据的情况，避免错误拦截
+   */
+  identifier?: (...args: Args) => string;
 }
 /**
  * 创建一个请求处理函数

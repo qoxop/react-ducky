@@ -1,28 +1,29 @@
 import { Store, Reducer } from 'redux';
 import { setProperty } from '../utils/object';
-import { getStore as _getStore } from './store'
-import { Builder, createReducerWithOpt } from "./create-reducer";
-import { useSelector, UseSelectorOptions } from "../react/hooks";
-import { isPending, setPending, createFetchHandler } from "../utils/async";
-import { StoreItem, createPersistenceItem, createSessionItem, } from "../utils/storage";
-import { 
+import { getStore as _getStore } from './store';
+import { Builder, createReducerWithOpt } from './create-reducer';
+import { useSelector, UseSelectorOptions } from '../react/hooks';
+import { isPending, setPending, createFetchHandler } from '../utils/async';
+import { StoreItem, createPersistenceItem, createSessionItem } from '../utils/storage';
+import {
   IsEqual,
   ValidObj,
   Selector,
   PromiseFn,
   CaseReducer,
   ExtendAction,
+  FunctionLike,
   ActionCreator,
   CaseReducerWithoutAction,
   CaseReducerWithOtherAction,
   CaseReducerWithPayloadAction,
   XOR,
-} from "../typings";
+} from '../typings';
 
 /**
  * reducer case 方法集合对象
  */
-type ModelCaseReducerActions<STATE> = Record<string, (...args: [STATE, any?]) => any|void>
+type ModelCaseReducerActions<STATE> = Record<string, FunctionLike<[STATE, any?], any|void>>
 
 /**
  * 计算所有 ActionCreator 的类型集合
@@ -56,8 +57,9 @@ type BaseOptions<
   initialState: STATE;
   reducers: MCRA;
   fetch?: SIF;
-  extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void);
+  extraReducers?: Record<string, CaseReducer<STATE>> | FunctionLike<[Builder<STATE>], void>;
 }
+
 type CacheOptions = {
   cacheKey: string;
   cacheStorage: 'session'|'local'|Storage;
@@ -85,20 +87,27 @@ type Model<
   reducer: Reducer<STATE>;
   actions: CaseReducerActions<MCRA>;
   getState: () => STATE;
-  useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { useThrow?: boolean | ((subState: any) => boolean); eq?: IsEqual<T>}) => T;
+  /* eslint-disable no-unused-vars */
+  useModel: <T = STATE>(
+    selector?: Selector<STATE, T>,
+    config?: {
+      useThrow?: boolean | ((subState: any) => boolean);
+      eq?: IsEqual<T>
+    }
+  ) => T;
   fetch: SIF;
 };
 
-const createSelector = (paths: string[], def: any = null) => state => {
+const createSelector = (paths: string[], def: any = null) => (state) => {
   let subState = state;
   for (const p of paths) {
-      if (!subState) {
-          return def;
-      }
-      subState = subState[p];
+    if (!subState) {
+      return def;
+    }
+    subState = subState[p];
   }
   return subState;
-}
+};
 
 const handleCache = (options: CreateModelOptions<any, any, any>) => {
   if (options.cacheKey) {
@@ -110,27 +119,28 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
       storeItem = createPersistenceItem(
         cacheStorage === 'local' ? localStorage : cacheStorage,
         cacheKey,
-        options.cacheVersion || JSON.stringify(options.initialState)
-      )
+        options.cacheVersion || JSON.stringify(options.initialState),
+      );
     }
     return {
       storeItem,
-      state: storeItem.get() || options.initialState
-    }
+      state: storeItem.get() || options.initialState,
+    };
   }
   return {
     storeItem: null,
-    state: options.initialState
-  }
-}
+    state: options.initialState,
+  };
+};
 
 function createModel<
   STATE extends Record<string, any>,
   MCRA extends ModelCaseReducerActions<STATE>,
+  // eslint-disable-next-line @typescript-eslint/ban-types
   SIF extends StateItemFetcher<STATE> = {}
 >(
-  options:  CreateModelOptions<STATE, MCRA, SIF>,
-  getStore: () => Store = _getStore
+  options: CreateModelOptions<STATE, MCRA, SIF>,
+  getStore: () => Store = _getStore,
 ):Model<STATE, MCRA, SIF> {
   const {
     statePaths,
@@ -142,42 +152,39 @@ function createModel<
   const selector = createSelector(statePaths);
   const Dispatch = () => getStore().dispatch;
 
-  let actions: Record<string, ActionCreator<any>> = {};
+  const actions: Record<string, ActionCreator<any>> = {};
   let reducer: Reducer<STATE>;
   // @ts-ignore
-  let fetch: SIF = {};
+  const fetch: SIF = {};
   let { state: subState, storeItem } = handleCache(options);
 
   const builder = new Builder<STATE>();
-  for (const rKey in reducers) {
+  for (const rKey of Object.getOwnPropertyNames(reducers)) {
     const reduceCase = reducers[rKey];
     const actionType = `${prefix}/${rKey}`;
     builder.addCase(actionType, reduceCase);
-    actions[rKey] = (arg: any) => {
-      return Dispatch()({
-        type: actionType,
-        ...(arg && typeof arg === 'object' ? arg : {}),
-        payload: arg,
-      });
-    };
+    actions[rKey] = (arg: any) => Dispatch()({
+      type: actionType,
+      ...(arg && typeof arg === 'object' ? arg : {}),
+      payload: arg,
+    });
   }
 
   if (extraReducers) {
     if (typeof extraReducers === 'function') {
-        extraReducers(builder)
+      extraReducers(builder);
     } else if (typeof extraReducers === 'object') {
-      for (const eKey in extraReducers) {
+      for (const eKey of Object.getOwnPropertyNames(extraReducers)) {
         builder.addCase(eKey, extraReducers[eKey]);
       }
     }
   }
 
   if (fetches && typeof fetches === 'object') {
-    for (const fKey in fetches) {
+    for (const fKey of Object.getOwnPropertyNames(fetches)) {
       const fetcher = fetches[fKey];
       const fetchingType = `${prefix}/fetching-${fKey}`;
       const fetchedType = `${prefix}/fetched-${fKey}`;
-
       // @ts-ignore
       fetch[fKey] = createFetchHandler({
         fetcher,
@@ -185,17 +192,20 @@ function createModel<
           Dispatch()({ type: fetchedType, data, error });
         },
         before() {
-          Dispatch()({ type: fetchingType })
-        }
+          Dispatch()({ type: fetchingType });
+        },
       });
       builder.addCase(fetchingType, (state) => {
+        // @ts-ignore
         state[fKey] = setPending((state[fKey]), true);
       });
       builder.addCase(fetchedType, (state, action: ExtendAction<{ data, error }>) => {
-        const  { data, error } = action;
+        const { data, error } = action;
         if (error) {
+          // @ts-ignore
           state[fKey] = setProperty(setPending(state[fKey], false), 'error', error);
         } else {
+          // @ts-ignore
           state[fKey] = data;
         }
       });
@@ -205,15 +215,15 @@ function createModel<
   reducer = createReducerWithOpt(subState, {
     builder,
     onChange: (data) => {
-        subState = data;
-        if (storeItem) {
-          storeItem.set(data);
-        }
+      subState = data;
+      if (storeItem) {
+        storeItem.set(data);
+      }
     },
   });
 
-  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config?: UseSelectorOptions<T>)  => (
-    useSelector((state) => subSelector ? subSelector(selector(state)) : selector(state), config)
+  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config?: UseSelectorOptions<T>) => (
+    useSelector((state) => (subSelector ? subSelector(selector(state)) : selector(state)), config)
   );
 
   const getState = () => selector(getStore().getState());
@@ -229,5 +239,5 @@ function createModel<
 }
 
 export {
-  createModel
+  createModel,
 };
