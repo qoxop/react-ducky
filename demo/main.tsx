@@ -6,6 +6,6 @@ import { enhanceHistory } from '../src'
 
 enhanceHistory();
 
-window.addEventListener('routeAction', e => console.log(e['_routeAction']));
+window.addEventListener('pageAction', e => console.log(e['_pageAction']));
 
 ReactDom.render(<Provider><App /></Provider>, document.getElementById('root'));

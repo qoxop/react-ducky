@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Route, Routes, Link } from 'react-router-dom';
+import {fetchImgs} from './utils/mock';
 
 const A = () => {
+  const [imgs, setImgs] = useState<string[]>([])
+  useEffect(() => {
+    fetchImgs(10).then(setImgs)
+  }, [])
   return <div>
     <h1>A page</h1>
     <p><Link to="/a" replace>replace self</Link></p>
@@ -13,6 +18,9 @@ const A = () => {
     <p><Link to="/b">push b</Link></p>
     <p><Link to="/c">push c</Link></p>
     <p><Link to="/d">push d</Link></p>
+    <div>
+      {imgs.map((item, index) => <img key={index + item} src={item} alt="666" />)}
+    </div>
   </div>
 }
 const B = () => {
