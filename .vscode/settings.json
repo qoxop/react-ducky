@@ -5,6 +5,7 @@
     "lcov",
     "localstorage",
     "MCRA",
+    "mockjs",
     "struct"
   ]
 }

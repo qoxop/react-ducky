@@ -213,7 +213,7 @@ const usePageState = <T>(init: T | (() => T), suffix = '') => {
   // 组件销毁时保存
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => () => setPageState(stateRef.current, pageKey), [stateRef]);
-  return [state, setState];
+  return [state, setState] as const;
 };
 
 export {

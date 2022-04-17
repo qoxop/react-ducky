@@ -15,13 +15,14 @@ const checkStore = () => {
 const getStore = () => checkStore() && store;
 const setStore = (_store: Store) => store = _store;
 
+// TODO：考虑一下多实例的情况
 const initStore = <STATE = any>(
-  rootReducerRecord: ReducerRecord,
-  initState: any,
+  rootReducerRecord: ReducerRecord = {},
+  initState: any = {},
   enhancer?: any,
 ) => {
   store = createStore(
-    Object.keys(rootReducerRecord).length ? combineReducers(rootReducerRecord) : (state) => state,
+    Object.keys(rootReducerRecord || {}).length ? combineReducers(rootReducerRecord) : (state = initState) => state,
     initState,
     enhancer,
   );

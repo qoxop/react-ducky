@@ -1,11 +1,11 @@
 import React from 'react';
 import { HashRouter } from 'react-router-dom'
-import { ReduxProvider, initStore } from '../src';
+import { ReduxProvider, initStore } from 'react-ducky';
 
 export const {
   store,
   updateReducer,
-} = initStore({}, {})
+} = initStore();
 
 export const Provider:React.FC = ({ children }) => {
   return (
