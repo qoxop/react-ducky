@@ -1,3 +1,4 @@
+import { delay } from "../../utils/services";
 import { TodoItem } from "./model.type";
 
 export const fetchMyTodo = (): Promise<TodoItem[]> => {
@@ -8,7 +9,7 @@ export const fetchMyTodo = (): Promise<TodoItem[]> => {
     expired: Mock.Random.date('YYYY-MM-dd'),
     finished: Mock.Random.boolean(),
   }))
-  return Promise.resolve(data);
+  return delay(1000, data);
 }
 
 export const updateMyTodo = (todo: TodoItem): Promise<TodoItem> => {

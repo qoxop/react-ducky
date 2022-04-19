@@ -3,6 +3,7 @@ import ReactDom from "react-dom";
 import { App } from "./app";
 import { Provider } from "./provider";
 import { enhanceHistory } from '../src'
+import './style.less';
 
 enhanceHistory();
 

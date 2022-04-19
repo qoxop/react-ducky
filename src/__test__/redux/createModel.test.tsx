@@ -10,7 +10,7 @@ import { createPersistenceItem } from '../../utils/storage';
 
 let redux: any = null;
 beforeAll(() => {
-  redux = initStore<any>({}, {});
+  redux = initStore<any>({});
 });
 
 describe('createModel 基本用法', () => {
@@ -226,7 +226,7 @@ describe('createModel 使用缓存数据', () => {
   test('use localStorage to init model state', () => {
     expect(storage.get()).toEqual({ x: 2, y: 3 })
     const newModel: ReturnType<typeof initModel> = initModel({x: 0, y: 1}, () => newRedux.store); 
-    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({reducerRecord: { persistence: newModel.reducer }});
     expect(newModel.getState()).toEqual({ x: 2, y: 3 })
   });
 
@@ -234,7 +234,7 @@ describe('createModel 使用缓存数据', () => {
   test('change initState\'s data struct', () => {
     expect(storage.get()).toEqual({ x: 2, y: 3 })
     const newModel: ReturnType<typeof initModel> = initModel({ x: 0, y: 1, z: 2 }, () => newRedux.store); 
-    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({ reducerRecord: { persistence: newModel.reducer } });
     expect(newModel.getState()).toEqual({ x: 0, y: 1, z: 2 })
     newModel.actions.update({ x: 2, y: 2 })
   });
@@ -243,7 +243,7 @@ describe('createModel 使用缓存数据', () => {
   test('update cacheVersion', () => {
     expect(storage.get()).toEqual({ x: 2, y: 2, z: 2 });
     const newModel: ReturnType<typeof initModel> = initModel({ x: 0, y: 1, z: 2 }, () => newRedux.store, 'v2'); 
-    const newRedux = initStore<any>({ persistence: newModel.reducer }, {});
+    const newRedux = initStore<any>({reducerRecord: { persistence: newModel.reducer }});
     expect(newModel.getState()).toEqual({ x: 0, y: 1, z: 2 })
   });
 

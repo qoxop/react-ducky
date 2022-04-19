@@ -16,13 +16,18 @@ const getStore = () => checkStore() && store;
 const setStore = (_store: Store) => store = _store;
 
 // TODO：考虑一下多实例的情况
-const initStore = <STATE = any>(
-  rootReducerRecord: ReducerRecord = {},
-  initState: any = {},
-  enhancer?: any,
-) => {
+type InitStoreOption = {
+  reducerRecord?: ReducerRecord;
+  initState?: any;
+  enhancer?: any;
+}
+const initStore = <STATE = any>({
+  reducerRecord = {},
+  initState = {},
+  enhancer,
+}: InitStoreOption) => {
   store = createStore(
-    Object.keys(rootReducerRecord || {}).length ? combineReducers(rootReducerRecord) : (state = initState) => state,
+    Object.keys(reducerRecord).length ? combineReducers(reducerRecord) : (state = initState) => state,
     initState,
     enhancer,
   );
@@ -31,14 +36,14 @@ const initStore = <STATE = any>(
     for (const key in reducers) {
       if (
         Object.prototype.hasOwnProperty.call(reducers, key)
-          && (!rootReducerRecord[key] || force)
+          && (!reducerRecord[key] || force)
       ) {
         hasNew = true;
-        rootReducerRecord[key] = reducers[key];
+        reducerRecord[key] = reducers[key];
       }
     }
     if (hasNew) {
-      store.replaceReducer(combineReducers(rootReducerRecord));
+      store.replaceReducer(combineReducers(reducerRecord));
     }
   };
   return {

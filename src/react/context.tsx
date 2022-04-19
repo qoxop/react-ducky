@@ -29,14 +29,14 @@ const ReduxProvider:React.FC<{ store: Store }> = ({ store, children }) => {
 const PageActionContext = createContext<PageAction>('replace');
 
 const PageActionProvider:React.FC = ({ children }) => {
-  const [routeAction, setPageAction] = useState(getCurrentPageAction);
-  const updatePageAction = useCallback((e:any) => setPageAction(e['_routeAction']), [setPageAction]);
+  const [pageAction, setPageAction] = useState(getCurrentPageAction);
+  const updatePageAction = useCallback((e:any) => setPageAction(e['_pageAction']), [setPageAction]);
   useLayoutEffect(() => {
-    window.addEventListener('routeAction', updatePageAction);
-    return () => window.removeEventListener('routeAction', updatePageAction);
+    window.addEventListener('pageAction', updatePageAction);
+    return () => window.removeEventListener('pageAction', updatePageAction);
   }, [updatePageAction]);
   return (
-    <PageActionContext.Provider value={routeAction}>
+    <PageActionContext.Provider value={pageAction}>
       {children}
     </PageActionContext.Provider>
   );
