@@ -20,6 +20,6 @@ yarn add react-ducky
 ```
 
 ## 使用
-
+暂不可用
 
 
