@@ -1,48 +1,59 @@
-import { Store, createStore, Reducer, combineReducers } from "redux";
+import {
+  Store, Reducer, AnyAction, createStore, combineReducers,
+} from 'redux';
 
-type ReducerRecord =  { [key: string]: Reducer };
+type ReducerRecord = { [key: string]: Reducer };
 
 let store:Store = null;
 
 const checkStore = () => {
-    if (!store) {
-        throw new Error('please execute initReduxDucky(store)');
-    }
-    return true
-}
+  if (!store) {
+    throw new Error('store 未初始化');
+  }
+  return true;
+};
 const getStore = () => checkStore() && store;
-const getReduxState = () => checkStore() && store.getState();
-const getReduxDispatch = () => checkStore() && store.dispatch;
-const setReduxStore = (_store: Store) => store = _store;
+const setStore = (_store: Store) => store = _store;
 
-
-const initReduxStore = (rootReducerRecord: ReducerRecord, initState: any, enhancer?: any) => {
-  store = createStore(combineReducers(rootReducerRecord), initState, enhancer);
-  const mergeReducer = (reducers: ReducerRecord, force: boolean = false) => {
+// TODO：考虑一下多实例的情况
+type InitStoreOption = {
+  reducerRecord?: ReducerRecord;
+  initState?: any;
+  enhancer?: any;
+}
+const initStore = <STATE = any>({
+  reducerRecord = {},
+  initState = {},
+  enhancer,
+}: InitStoreOption) => {
+  store = createStore(
+    Object.keys(reducerRecord).length ? combineReducers(reducerRecord) : (state = initState) => state,
+    initState,
+    enhancer,
+  );
+  const updateReducer = (reducers: ReducerRecord, force = false) => {
     let hasNew = false;
     for (const key in reducers) {
-        if (
-          Object.prototype.hasOwnProperty.call(reducers, key)
-          && (!rootReducerRecord[key] || force)
-        ) {
-          hasNew = true;
-          rootReducerRecord[key] = reducers[key];
-        }
+      if (
+        Object.prototype.hasOwnProperty.call(reducers, key)
+          && (!reducerRecord[key] || force)
+      ) {
+        hasNew = true;
+        reducerRecord[key] = reducers[key];
+      }
     }
     if (hasNew) {
-      store.replaceReducer(combineReducers(rootReducerRecord));
+      store.replaceReducer(combineReducers(reducerRecord));
     }
-  }
+  };
   return {
-    store,
-    mergeReducer
-  }
-}
+    store: store as Store<STATE, AnyAction>,
+    updateReducer,
+  };
+};
 
 export {
   getStore,
-  getReduxState,
-  setReduxStore,
-  initReduxStore,
-  getReduxDispatch,
-}
+  setStore,
+  initStore,
+};

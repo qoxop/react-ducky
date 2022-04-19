@@ -1,5 +1,5 @@
-import { createFetchHandler, AlwayResolve as AR} from "../utils/async";
-import { delay } from "./helper";
+import { createFetchHandler, alwayResolve as AR} from "../../utils/async";
+import { delay } from "../helper";
 
 const request = async ({  mValue, delay: d = 10 }: { mValue: any, identifier?: string, delay?: number }) => {
   await delay(d)

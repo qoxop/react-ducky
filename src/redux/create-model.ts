@@ -1,52 +1,40 @@
-import { Reducer, Store } from 'redux';
-
-import { getStore } from './store'
+import { Store, Reducer } from 'redux';
+import { setProperty } from '../utils/object';
+import { getStore as _getStore } from './store';
+import { Builder, createReducerWithOpt } from './create-reducer';
+import { useSelector, UseSelectorOptions } from '../react/hooks';
+import { isPending, setPending, createFetchHandler } from '../utils/async';
+import { StoreItem, createPersistenceItem, createSessionItem } from '../utils/storage';
 import {
-  Builder,
-  createReducerWithOpt,
-} from "./create-reducer";
-import {
-  useSelector,
-  UseSelectorOptions,
-} from "../hooks/redux-hooks";
-import { 
-  isPending,
-  setPending,
-  createFetchHandler,
-} from "../utils/async";
-import { 
-  StoreItem,
-  createPersistenceItem,
-  createSessionItem,
-} from "../utils/storage";
-import { 
   IsEqual,
   ValidObj,
   Selector,
   PromiseFn,
   CaseReducer,
   ExtendAction,
+  FunctionLike,
   ActionCreator,
   CaseReducerWithoutAction,
   CaseReducerWithOtherAction,
   CaseReducerWithPayloadAction,
-} from "../typings";
+  XOR,
+} from '../typings';
 
 /**
  * reducer case 方法集合对象
  */
-type ModelCaseReducers<State> = Record<string, CaseReducer<State>>
+type ModelCaseReducerActions<STATE> = Record<string, FunctionLike<[STATE, any?], any|void>>
 
 /**
  * 计算所有 ActionCreator 的类型集合
- * CRS CaseReducers
+ * MCRA CaseReducers
  */
-export type CaseReducerActions<CRS> = {
-  [key in keyof CRS]: CRS[key] extends CaseReducerWithoutAction<any> ?
+type CaseReducerActions<MCRA> = {
+  [key in keyof MCRA]: MCRA[key] extends CaseReducerWithoutAction<any> ?
     ActionCreator :
-    CRS[key] extends CaseReducerWithPayloadAction<any, infer P> ?
+    MCRA[key] extends CaseReducerWithPayloadAction<any, infer P> ?
     ActionCreator<P> :
-    CRS[key] extends CaseReducerWithOtherAction<any, infer O> ?
+    MCRA[key] extends CaseReducerWithOtherAction<any, infer O> ?
     ActionCreator<O> :
     never;
 }
@@ -54,31 +42,28 @@ export type CaseReducerActions<CRS> = {
 /**
  * State 数据获取方法
  */
-type StateFetch<State> = {
-  [key in keyof State]?: PromiseFn<State[key]>
+type StateItemFetcher<STATE = any> = {
+  [key in keyof STATE]?: PromiseFn<STATE[key]>
 }
 
-/**
- * 创建 model 的通用参数
- */
-type CreateModelCommonOptions<
-  STATE extends ValidObj,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE> = StateFetch<STATE>
+// XOR
+type BaseOptions<
+  STATE extends Record<string, any>,
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
 > = {
+  name?: string;
   statePaths: string[];
   initialState: STATE;
-  reducers: CRS;
-  fetch?: SF;
-  extraReducers?: Record<string, CaseReducer<STATE>> | ((builder: Builder<STATE>) => void);
+  reducers: MCRA;
+  fetch?: SIF;
+  extraReducers?: Record<string, CaseReducer<STATE>> | FunctionLike<[Builder<STATE>], void>;
 }
 
-/**
- * 持久化配置
- */
-export type CacheOptions = {
-  cacheStorage: 'session'|'local'|Storage;
+type CacheOptions = {
   cacheKey: string;
+  cacheStorage: 'session'|'local'|Storage;
+  cacheVersion?: string;
 }
 
 /**
@@ -86,41 +71,47 @@ export type CacheOptions = {
  */
 type CreateModelOptions<
   STATE extends Record<string, any>,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE> = StateFetch<STATE>
-> = CreateModelCommonOptions<STATE, CRS, SF> | (CreateModelCommonOptions<STATE, CRS, SF> & CacheOptions);
-
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
+> = XOR<BaseOptions<STATE, MCRA, SIF>, BaseOptions<STATE, MCRA, SIF> & CacheOptions>
 
 /**
  * Model 对象数据结构
  */
 type Model<
   STATE extends ValidObj,
-  CRS extends ModelCaseReducers<STATE>,
-  SF extends StateFetch<STATE>,
-  OPT = CreateModelOptions<STATE, CRS, SF>
+  MCRA extends ModelCaseReducerActions<STATE>,
+  SIF extends StateItemFetcher<STATE>,
 > = {
-  name: string;
+  name?: string;
   reducer: Reducer<STATE>;
-  actions: CaseReducerActions<CRS>;
+  actions: CaseReducerActions<MCRA>;
   getState: () => STATE;
-  useModel: <T = STATE>(selector?: Selector<STATE, T>, config?: { useThrow?: boolean | ((subState: any) => boolean); eq?: IsEqual<T>}) => T;
-} & (OPT extends { fetch: any } ? { fetch: SF } : {});
+  /* eslint-disable no-unused-vars */
+  useModel: <T = STATE>(
+    selector?: Selector<STATE, T>,
+    config?: {
+      useThrow?: boolean | ((subState: any) => boolean);
+      eq?: IsEqual<T>
+    }
+  ) => T;
+  fetch: SIF;
+};
 
-const createSelector = (paths: string[], def: any = null) => state => {
+const createSelector = (paths: string[], def: any = null) => (state) => {
   let subState = state;
   for (const p of paths) {
-      if (!subState) {
-          return def;
-      }
-      subState = subState[p];
+    if (!subState) {
+      return def;
+    }
+    subState = subState[p];
   }
   return subState;
-}
+};
 
 const handleCache = (options: CreateModelOptions<any, any, any>) => {
-  if ('cacheKey' in options) {
-    const { cacheKey, cacheStorage } = options;
+  if (options.cacheKey) {
+    const { cacheKey, cacheStorage = 'session' } = options;
     let storeItem:StoreItem<any> = null;
     if (cacheStorage === 'session') {
       storeItem = createSessionItem(cacheKey);
@@ -128,26 +119,29 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
       storeItem = createPersistenceItem(
         cacheStorage === 'local' ? localStorage : cacheStorage,
         cacheKey,
-        options.initialState
-      )
+        options.cacheVersion || JSON.stringify(options.initialState),
+      );
     }
     return {
       storeItem,
-      state: storeItem.get()
-    }
+      state: storeItem.get() || options.initialState,
+    };
   }
   return {
     storeItem: null,
-    state: options.initialState
-  }
-}
+    state: options.initialState,
+  };
+};
 
-const createModel =
-<State extends Record<string, any>, CRS extends ModelCaseReducers<State>, SF extends StateFetch<State>>
-(
-  options:  CreateModelOptions<State, CRS, SF>,
-  store?: Store
-):Model<State, CRS, SF, CreateModelOptions<State, CRS, SF>> => {
+function createModel<
+  STATE extends Record<string, any>,
+  MCRA extends ModelCaseReducerActions<STATE>,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  SIF extends StateItemFetcher<STATE> = {}
+>(
+  options: CreateModelOptions<STATE, MCRA, SIF>,
+  getStore: () => Store = _getStore,
+):Model<STATE, MCRA, SIF> {
   const {
     statePaths,
     reducers,
@@ -156,43 +150,41 @@ const createModel =
   } = options;
   const prefix = statePaths.join('_').toUpperCase();
   const selector = createSelector(statePaths);
-  const Dispatch = () => (store || getStore()).dispatch;
+  const Dispatch = () => getStore().dispatch;
 
-  let actions: Record<string, ActionCreator<any>> = {};
-  let reducer: Reducer<State>;
-  let fetch: SF;
+  const actions: Record<string, ActionCreator<any>> = {};
+  let reducer: Reducer<STATE>;
+  // @ts-ignore
+  const fetch: SIF = {};
   let { state: subState, storeItem } = handleCache(options);
 
-  const builder = new Builder<State>();
-  for (const rKey in reducers) {
+  const builder = new Builder<STATE>();
+  for (const rKey of Object.getOwnPropertyNames(reducers)) {
     const reduceCase = reducers[rKey];
     const actionType = `${prefix}/${rKey}`;
     builder.addCase(actionType, reduceCase);
-    actions[rKey] = (arg: any) => {
-      return Dispatch()({
-        type: actionType,
-        ...(arg && typeof arg === 'object' ? arg : {}),
-        payload: arg,
-      });
-    };
+    actions[rKey] = (arg: any) => Dispatch()({
+      type: actionType,
+      ...(arg && typeof arg === 'object' ? arg : {}),
+      payload: arg,
+    });
   }
 
   if (extraReducers) {
     if (typeof extraReducers === 'function') {
-        extraReducers(builder)
+      extraReducers(builder);
     } else if (typeof extraReducers === 'object') {
-      for (const eKey in extraReducers) {
+      for (const eKey of Object.getOwnPropertyNames(extraReducers)) {
         builder.addCase(eKey, extraReducers[eKey]);
       }
     }
   }
 
   if (fetches && typeof fetches === 'object') {
-    for (const fKey in fetches) {
+    for (const fKey of Object.getOwnPropertyNames(fetches)) {
       const fetcher = fetches[fKey];
       const fetchingType = `${prefix}/fetching-${fKey}`;
       const fetchedType = `${prefix}/fetched-${fKey}`;
-
       // @ts-ignore
       fetch[fKey] = createFetchHandler({
         fetcher,
@@ -200,17 +192,20 @@ const createModel =
           Dispatch()({ type: fetchedType, data, error });
         },
         before() {
-          Dispatch()({ type: fetchingType })
-        }
+          Dispatch()({ type: fetchingType });
+        },
       });
       builder.addCase(fetchingType, (state) => {
-        state[fKey] = setPending(state[fKey], true);
+        // @ts-ignore
+        state[fKey] = setPending((state[fKey]), true);
       });
       builder.addCase(fetchedType, (state, action: ExtendAction<{ data, error }>) => {
-        const  { data, error } = action;
+        const { data, error } = action;
         if (error) {
-          state[fKey] = Object.assign(Object(state[fKey]), { error });
+          // @ts-ignore
+          state[fKey] = setProperty(setPending(state[fKey], false), 'error', error);
         } else {
+          // @ts-ignore
           state[fKey] = data;
         }
       });
@@ -220,18 +215,18 @@ const createModel =
   reducer = createReducerWithOpt(subState, {
     builder,
     onChange: (data) => {
-        subState = data;
-        if (storeItem) {
-          storeItem.set(data);
-        }
+      subState = data;
+      if (storeItem) {
+        storeItem.set(data);
+      }
     },
   });
 
-  const useModel = <T = any>(subSelector?: Selector<State, T>, config?: UseSelectorOptions<T>)  => (
-    useSelector((state) => subSelector ? subSelector(selector(state)) : selector(state), config)
+  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config?: UseSelectorOptions<T>) => (
+    useSelector((state) => (subSelector ? subSelector(selector(state)) : selector(state)), config)
   );
 
-  const getState = () => selector((store || getStore()).getState());
+  const getState = () => selector(getStore().getState());
 
   return {
     fetch,
@@ -243,5 +238,6 @@ const createModel =
   } as any;
 }
 
-export default createModel;
-
+export {
+  createModel,
+};

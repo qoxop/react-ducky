@@ -1,110 +1,126 @@
-import produce from "immer";
+import produce from 'immer';
 import {
-    PayloadAction,
-    CaseReducer
-} from "../typings";
+  CaseReducer,
+  ValidObj,
+  AnyAction,
+  FunctionLike,
+} from '../typings';
+import { isFunction } from '../utils/is-type';
 
-export class Builder<S> {
-    default?: CaseReducer<S> ;
-    equal: {
-        [k: string]: CaseReducer<S> ;
-    };
-    match: Array<{
-        matcher: (action: PayloadAction) => boolean;
-        reducer: CaseReducer<S> ;
-    }>;
-    constructor() {
-        this.equal = {};
-        this.match = [];
+class Builder<S> {
+  default?: CaseReducer<S>;
+
+  equal: {
+    [k: string]: CaseReducer<S> ;
+  };
+
+  match: Array<{
+    matcher: FunctionLike<[AnyAction], boolean>;
+    reducer: CaseReducer<S> ;
+  }>;
+
+  constructor() {
+    this.equal = {};
+    this.match = [];
+  }
+
+  addCase(type: string, reducer: CaseReducer<S>) {
+    if (this.equal[type]) {
+      console.warn('builder.addCase -> add some type case~');
+    } else {
+      this.equal[type] = reducer;
     }
-    addCase(type: string, reducer: CaseReducer<S> ) {
-        if (this.equal[type]) {
-            console.warn('builder.addCase -> add some type case~');
-        } else {
-            this.equal[type] = reducer;
-        }
-        return this;
-    };
-    addMatcher(matcher: (action: PayloadAction) => boolean, reducer: CaseReducer < S > ) {
-        this.match.push({
-            reducer,
-            matcher
-        });
-        return this;
-    };
-    addDefaultCase(reducer: CaseReducer<S>) {
-        this.default = reducer;
-        return this;
-    }
+    return this;
+  }
+
+  addMatcher(matcher: FunctionLike<[AnyAction], boolean>, reducer: CaseReducer < S >) {
+    this.match.push({
+      reducer,
+      matcher,
+    });
+    return this;
+  }
+
+  addDefaultCase(reducer: CaseReducer<S>) {
+    this.default = reducer;
+    return this;
+  }
 }
 
-export function createReducerWithOpt<State>(
-    initialState: State,
-    options: {
-        callback?: (builder: Builder<State>) => void,
-        builder?: Builder<State>,
-        enhanceState?: (state:State) => State,
-        onChange?: (data: State) => void;
-    }
+function createReducerWithOpt<State>(
+  initialState: State,
+  options: {
+    callback?: FunctionLike<[Builder<State>], void>,
+    builder?: Builder<State>,
+    enhanceState?: FunctionLike<[State], State>,
+    onChange?: FunctionLike<[State], void>;
+  } = {},
 ) {
-    let {
-        callback,
-        builder,
-        enhanceState,
-        onChange,
-    } = options;
-    if (enhanceState) {
-        initialState = enhanceState(initialState)
+  let { builder } = options;
+  const { callback, enhanceState, onChange } = options;
+
+  if (isFunction(enhanceState)) {
+    initialState = enhanceState(initialState);
+  }
+  if (!builder) {
+    builder = new Builder<State>();
+  }
+  if (isFunction(callback)) {
+    callback(builder);
+  }
+  const reducer = (state:State, action: AnyAction) => {
+    if (state === null || state === undefined) {
+      state = initialState;
     }
-    if (!builder) {
-        builder = new Builder<State>();
-    }
-    if (callback) {
-        callback(builder);
-    }
-    const reducer = (state = initialState, action: PayloadAction) => {
-        const handler = builder.equal[action.type];
-        let data: any = state;
-        let hasChange = false;
-        if (handler) {
-            data = produce(data, (draft) => {
-                const result = handler(draft, action);
-                if (result) {
-                    return result;
-                }
-            });
-            hasChange = true;
-        } else if (builder.match.length) {
-            data = produce(data, (draft) => {
-                for (let m = 0; m < builder.match.length; m++) {
-                    const mt = builder.match[m];
-                    if (mt.matcher(action)) {
-                        const result = mt.reducer(draft, action);
-                        if (result) {
-                            return result;
-                        }
-                    }
-                }
-            });
-            hasChange = true;
-        } else if (builder.default) {
-            data = produce(data, (draft) => {
-                const result = builder.default(draft, action);
-                if (result) {
-                    return result;
-                }
-            });
-            hasChange = true;
+    const handler = builder.equal[action.type];
+    let data: any = state;
+    let hasChange = false;
+    if (handler) {
+      data = produce(data, (draft) => {
+        const result = handler(draft, action);
+        if (result) {
+          return result;
         }
-        if (onChange && hasChange) {
-            onChange(data);
+      });
+      hasChange = true;
+    } else if (builder.match?.length) {
+      const matches = builder.match.filter((m) => m.matcher(action));
+      if (matches.length) {
+        data = produce(data, (draft) => {
+          let result = null;
+          for (const match of matches) {
+            result = match.reducer(result || draft, action);
+          }
+          if (result) {
+            return result;
+          }
+        });
+        hasChange = true;
+      }
+    } else if (isFunction(builder.default)) {
+      data = produce(data, (draft) => {
+        const result = builder.default(draft, action);
+        if (result) {
+          return result;
         }
-        return data as State;
+      });
+      hasChange = true;
     }
-    return reducer;
+    if (isFunction(onChange) && hasChange) {
+      onChange(data);
+    }
+    return data as State;
+  };
+  return reducer;
 }
 
-export const createReducer = <State>(
-    initialState: State,
-    callback: (builder: Builder<State>) => void
+const createReducer = <State extends ValidObj>(
+  initialState: State,
+  callback: FunctionLike<[Builder<State>], void>,
 ) => createReducerWithOpt<State>(initialState, { callback });
+
+export {
+  Builder,
+  createReducer,
+  createReducerWithOpt,
+};
