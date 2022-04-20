@@ -1,0 +1,37 @@
+{
+  "name": "react-ducky",
+  "version": "1.0.0",
+  "author": "🥱 张集伟 <1106291186@qq.com>",
+  "description": "一个基于 React + Redux 的状态管理工具库 🐳 ",
+  "keywords": [
+    "react",
+    "redux",
+    "hooks",
+    "state toolkit"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "module": "index.esm.js",
+  "typings": "index.d.ts",
+  "repository": {
+    "url": "git@github.com:qoxop/react-ducky.git",
+    "type": "git",
+    "directory": "packages/ducky"
+  },
+  "bugs": {
+    "url": "https://github.com/qoxop/react-ducky/issues"
+  },
+  "scripts": {
+    "build": "node ./build/index.js",
+    "test": "jest",
+    "debug": "yarn build && cd ./dist && yarn link"
+  },
+  "peerDependencies": {
+    "immer": "^9.0.5",
+    "react": "^17.0.0",
+    "redux": "*"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1"
+  }
+}

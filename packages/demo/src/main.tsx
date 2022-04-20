@@ -2,7 +2,7 @@ import React from "react";
 import ReactDom from "react-dom";
 import { App } from "./app";
 import { Provider } from "./provider";
-import { enhanceHistory } from '../src'
+import { enhanceHistory } from 'react-ducky'
 import './style.less';
 
 enhanceHistory();

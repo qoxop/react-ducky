@@ -14,10 +14,8 @@ import {
   ExtendAction,
   FunctionLike,
   ActionCreator,
-  CaseReducerWithoutAction,
-  CaseReducerWithOtherAction,
-  CaseReducerWithPayloadAction,
   XOR,
+  PayloadAction,
 } from '../typings';
 
 /**
@@ -26,31 +24,32 @@ import {
 type ModelCaseReducerActions<STATE> = Record<string, FunctionLike<[STATE, any?], any|void>>
 
 /**
- * 计算所有 ActionCreator 的类型集合
- * MCRA CaseReducers
+ * 推导 model.actions 对象类型
  */
-type CaseReducerActions<MCRA> = {
-  [key in keyof MCRA]: MCRA[key] extends CaseReducerWithoutAction<any> ?
+type InferModelActions<MCRA> = {
+  [key in keyof MCRA]: MCRA[key] extends (state: any) => any ?
     ActionCreator :
-    MCRA[key] extends CaseReducerWithPayloadAction<any, infer P> ?
+    MCRA[key] extends (state: any, action: PayloadAction<infer P>) => any ?
     ActionCreator<P> :
-    MCRA[key] extends CaseReducerWithOtherAction<any, infer O> ?
+    MCRA[key] extends (state: any, action: ExtendAction<infer O>) => any ?
     ActionCreator<O> :
     never;
 }
 
 /**
- * State 数据获取方法
+ * 推导 model.fetch 对象类型
  */
-type StateItemFetcher<STATE = any> = {
+type InferModelFetch<STATE = any> = {
   [key in keyof STATE]?: PromiseFn<STATE[key]>
 }
 
-// XOR
-type BaseOptions<
+/**
+ * model 基础配置
+ */
+type ModelBaseOptions<
   STATE extends Record<string, any>,
   MCRA extends ModelCaseReducerActions<STATE>,
-  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
+  SIF extends InferModelFetch<STATE> = InferModelFetch<STATE>
 > = {
   name?: string;
   statePaths: string[];
@@ -60,7 +59,10 @@ type BaseOptions<
   extraReducers?: Record<string, CaseReducer<STATE>> | FunctionLike<[Builder<STATE>], void>;
 }
 
-type CacheOptions = {
+/**
+ * 缓存配置
+ */
+type ModelCacheOptions = {
   cacheKey: string;
   cacheStorage: 'session'|'local'|Storage;
   cacheVersion?: string;
@@ -72,8 +74,8 @@ type CacheOptions = {
 type CreateModelOptions<
   STATE extends Record<string, any>,
   MCRA extends ModelCaseReducerActions<STATE>,
-  SIF extends StateItemFetcher<STATE> = StateItemFetcher<STATE>
-> = XOR<BaseOptions<STATE, MCRA, SIF>, BaseOptions<STATE, MCRA, SIF> & CacheOptions>
+  SIF extends InferModelFetch<STATE> = InferModelFetch<STATE>
+> = XOR<ModelBaseOptions<STATE, MCRA, SIF>, ModelBaseOptions<STATE, MCRA, SIF> & ModelCacheOptions>
 
 /**
  * Model 对象数据结构
@@ -81,11 +83,11 @@ type CreateModelOptions<
 type Model<
   STATE extends ValidObj,
   MCRA extends ModelCaseReducerActions<STATE>,
-  SIF extends StateItemFetcher<STATE>,
+  SIF extends InferModelFetch<STATE>,
 > = {
   name?: string;
   reducer: Reducer<STATE>;
-  actions: CaseReducerActions<MCRA>;
+  actions: InferModelActions<MCRA>;
   getState: () => STATE;
   /* eslint-disable no-unused-vars */
   useModel: <T = STATE>(
@@ -133,11 +135,14 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
   };
 };
 
+/**
+ * 创建一个基于 Redux 的模型
+ */
 function createModel<
   STATE extends Record<string, any>,
   MCRA extends ModelCaseReducerActions<STATE>,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  SIF extends StateItemFetcher<STATE> = {}
+  SIF extends InferModelFetch<STATE> = {}
 >(
   options: CreateModelOptions<STATE, MCRA, SIF>,
   getStore: () => Store = _getStore,
@@ -241,3 +246,12 @@ function createModel<
 export {
   createModel,
 };
+export type {
+  InferModelFetch,
+  InferModelActions,
+  ModelCacheOptions,
+  ModelCaseReducerActions,
+  CreateModelOptions,
+  ModelBaseOptions,
+  Model,
+}

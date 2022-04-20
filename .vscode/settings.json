@@ -6,6 +6,8 @@
     "localstorage",
     "MCRA",
     "mockjs",
-    "struct"
+    "qoxop",
+    "struct",
+    "tailwindcss"
   ]
 }

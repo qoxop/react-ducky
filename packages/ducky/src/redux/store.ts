@@ -15,18 +15,18 @@ const checkStore = () => {
 const getStore = () => checkStore() && store;
 const setStore = (_store: Store) => store = _store;
 
-// TODO：考虑一下多实例的情况
 type InitStoreOption = {
   reducerRecord?: ReducerRecord;
   initState?: any;
   enhancer?: any;
 }
+
 const initStore = <STATE = any>({
   reducerRecord = {},
   initState = {},
   enhancer,
 }: InitStoreOption) => {
-  store = createStore(
+  const _store = createStore(
     Object.keys(reducerRecord).length ? combineReducers(reducerRecord) : (state = initState) => state,
     initState,
     enhancer,
@@ -43,11 +43,14 @@ const initStore = <STATE = any>({
       }
     }
     if (hasNew) {
-      store.replaceReducer(combineReducers(reducerRecord));
+      _store.replaceReducer(combineReducers(reducerRecord));
     }
   };
+  if (!store) {
+    store = _store
+  }
   return {
-    store: store as Store<STATE, AnyAction>,
+    store: _store as Store<STATE, AnyAction>,
     updateReducer,
   };
 };
@@ -57,3 +60,7 @@ export {
   setStore,
   initStore,
 };
+export type {
+  ReducerRecord,
+  InitStoreOption
+}

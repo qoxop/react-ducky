@@ -7,7 +7,7 @@
     "strict": false,
     "isolatedModules": true,
     "allowJs": false,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -18,14 +18,10 @@
     "jsx": "react",
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": false,
-    "declaration":true,
-    "paths": {
-      "react-ducky": ["./src/index.ts"]
-    }
+    "sourceMap": true,
+    "declaration": false
   },
   "include": [
     "./src/**/*",
-    "./demo/**/*",
   ]
 }
