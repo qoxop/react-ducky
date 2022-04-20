@@ -1,7 +1,7 @@
 
 <h3 align="center">
-  <a href="./demo/logo.png">
-  <img src="./demo/logo.png?raw=true" alt="React-Ducky Logo" width="500">
+  <a href="./images/logo.png">
+  <img src="./images/logo.png?raw=true" alt="React-Ducky Logo" width="500">
   </a>
 </h3>
 <h3 align="center">
