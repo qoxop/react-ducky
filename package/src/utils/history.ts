@@ -1,12 +1,12 @@
+import { PageAction } from '../typings';
 import { isFunction } from './is-type';
 import { createSessionItem } from './storage';
-
-type PageAction = 'push'|'replace'|'forward'|'goBack'
 
 let executed = false;
 let currentPageAction:PageAction = 'replace';
 
 const EventName = 'pageAction';
+
 /**
  * 获取当前页面的路由动作
  * @returns
@@ -86,7 +86,7 @@ const enhanceHistory = () => {
             const restKeys = [];
             for (const storageKey of allKeys) {
               if (storageKey.indexOf(deleteKey) === 0) {
-                sessionStorage.removeItem(deleteKey);
+                sessionStorage.removeItem(storageKey);
               } else {
                 restKeys.push(storageKey);
               }
@@ -128,7 +128,7 @@ const enhanceHistory = () => {
   let lastPageKey = getPageKey();
   const handle = (eventType: 'popstate'|'pushState'|'replaceState') => {
     const currentPageKey = getPageKey();
-    const event = new Event(EventName);
+    
     switch (eventType) {
       case 'pushState':
         currentPageAction = 'push';
@@ -145,6 +145,7 @@ const enhanceHistory = () => {
           currentPageAction = 'forward';
         }
     }
+    const event = new Event(EventName);
     event[`_${EventName}`] = currentPageAction;
     window.dispatchEvent(event);
     lastPageKey = currentPageKey;
@@ -165,6 +166,7 @@ export {
   enhanceHistory,
   getCurrentPageAction,
 };
+
 export type {
   PageAction,
 };

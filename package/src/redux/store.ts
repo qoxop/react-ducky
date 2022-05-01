@@ -1,49 +1,87 @@
 import {
-  Store, Reducer, AnyAction, createStore, combineReducers,
+  Store,
+  Reducer,
+  compose,
+  AnyAction,
+  createStore,
+  combineReducers,
+  applyMiddleware,
 } from 'redux';
+import { DefaultRootState } from '../typings';
+import { RouteActionType } from './middleware';
 
-type ReducerRecord = { [key: string]: Reducer };
+type ReducerRecord = Record<string, Reducer>;
 
 let store:Store = null;
 
 const checkStore = () => {
-  if (!store) {
-    throw new Error('store 未初始化');
-  }
+  if (!store) throw new Error('store 未初始化');
   return true;
 };
 const getStore = () => checkStore() && store;
 const setStore = (_store: Store) => store = _store;
 
 type InitStoreOption = {
-  reducerRecord?: ReducerRecord;
+  isDev?: boolean;
   initState?: any;
-  enhancer?: any;
+  middleware?: any[];
+  reducerRecord?: ReducerRecord;
+  rootReducers?: ReducerRecord;
 }
 
+const createEnhancer = (middleware: any[], isDev = false) => {
+  // @ts-ignore
+  const composeEnhancers = isDev && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : compose;
+  return composeEnhancers(applyMiddleware(...middleware));
+}
+
+const createRootReducer = (rootReducers: ReducerRecord, reducerRecord?: ReducerRecord) => {
+  const mainReducer = reducerRecord && Object.keys(reducerRecord).length ? 
+    combineReducers(reducerRecord) :
+    (state: DefaultRootState) => state;
+  return (state:DefaultRootState, action: AnyAction) => {
+    switch (action.type) {
+      case RouteActionType:
+        return { ...state, _CURRENT_ROUTE: action.payload };
+      default:
+        const { _CURRENT_ROUTE, ...otherState } = state;
+        return { 
+          ...(rootReducers[action.type] ? rootReducers[action.type](otherState, action) : mainReducer(otherState, action)),
+          _CURRENT_ROUTE
+        };
+    }
+  }
+}
+
+/**
+ * 初始化 redux store
+ * @param InitStoreOption
+ * @returns 
+ */
 const initStore = <STATE = any>({
-  reducerRecord = {},
+  isDev = false,
   initState = {},
-  enhancer,
+  middleware = [],
+  reducerRecord = {},
+  rootReducers = {},
 }: InitStoreOption) => {
+
   const _store = createStore(
-    Object.keys(reducerRecord).length ? combineReducers(reducerRecord) : (state = initState) => state,
+    createRootReducer(rootReducers, reducerRecord),
     initState,
-    enhancer,
+    createEnhancer(middleware, isDev),
   );
+
   const updateReducer = (reducers: ReducerRecord, force = false) => {
     let hasNew = false;
     for (const key in reducers) {
-      if (
-        Object.prototype.hasOwnProperty.call(reducers, key)
-          && (!reducerRecord[key] || force)
-      ) {
-        hasNew = true;
+      if (Object.prototype.hasOwnProperty.call(reducers, key) && (!reducerRecord[key] || force)) {
         reducerRecord[key] = reducers[key];
+        hasNew = true;
       }
     }
     if (hasNew) {
-      _store.replaceReducer(combineReducers(reducerRecord));
+      _store.replaceReducer(createRootReducer(rootReducers, reducerRecord));
     }
   };
   if (!store) {
@@ -60,7 +98,8 @@ export {
   setStore,
   initStore,
 };
+
 export type {
+  InitStoreOption,
   ReducerRecord,
-  InitStoreOption
 }

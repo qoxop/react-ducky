@@ -3,7 +3,7 @@
     "experimentalDecorators": true,
     "target": "ES5",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": ["node_modules/@types", "@types"],
     "strict": false,
     "isolatedModules": true,
     "allowJs": false,
@@ -19,9 +19,19 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "declaration": false
+    "declaration": false,
+    "noImplicitAny": false,
+    "paths": {
+      "src/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@components": ["./src/components/index.ts"],
+      "@pages/*": ["./src/pages/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@services/*": ["./src/services/*"],
+    }
   },
   "include": [
     "./src/**/*",
+    "./@types/**/*"
   ]
 }

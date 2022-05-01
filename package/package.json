@@ -1,6 +1,6 @@
 {
   "name": "react-ducky",
-  "version": "1.0.0",
+  "version": "1.1.1-beta",
   "author": "🥱 张集伟 <1106291186@qq.com>",
   "description": "一个基于 React + Redux 的状态管理工具库 🐳 ",
   "keywords": [
@@ -16,7 +16,7 @@
   "repository": {
     "url": "git@github.com:qoxop/react-ducky.git",
     "type": "git",
-    "directory": "packages/ducky"
+    "directory": "package/"
   },
   "bugs": {
     "url": "https://github.com/qoxop/react-ducky/issues"
@@ -24,12 +24,15 @@
   "scripts": {
     "build": "node ./build/index.js",
     "test": "jest",
-    "debug": "yarn build && cd ./dist && yarn link"
+    "debug": "pnpm build && cd ./dist && pnpm link"
   },
   "peerDependencies": {
-    "immer": "^9.0.5",
-    "react": "^17.0.0",
-    "redux": "*"
+    "@types/react": "^16.8 || ^17.0 || ^18.0",
+    "@types/react-dom": "^16.8 || ^17.0 || ^18.0",
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0",
+    "redux": "^4",
+		"immer": "^9"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1"

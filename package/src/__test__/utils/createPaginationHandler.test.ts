@@ -1,4 +1,5 @@
 import { createPaginationHandler, alwayResolve } from "../../utils/async";
+import { FETCHER_TYPE_ERROR, INVALID_REQUEST_ERROR } from "../../utils/constants";
 import { delay } from "../helper";
 
 const loadData = async ({ pageIndex, pageSize, mValue, delay: d = 10 }: { pageIndex: number, pageSize: number, mValue: string, delay?: number }) => {
@@ -27,7 +28,7 @@ describe('测试分页函数 - createPaginationHandler', () => {
     finallyFetch = createPaginationHandler({
       fetcher: loadData,
       isReset: ({ pageIndex }) => pageIndex === 1,
-      after: ([data, [{ pageIndex }]]) => {
+      after: ([data, [{ pageIndex }], error]) => {
         if (pageIndex === 1) {
           DATA.list = data.list;
           DATA.total = data.total;
@@ -38,7 +39,7 @@ describe('测试分页函数 - createPaginationHandler', () => {
         DATA.loading_page = false;
         afterFn();
       },
-      before: ([{ pageIndex }]) => {
+      before: ({ pageIndex }) => {
         DATA.loading_page = pageIndex;
         beforeFn();
       }
@@ -72,15 +73,15 @@ describe('测试分页函数 - createPaginationHandler', () => {
     // load more fail
     const [result, load_err] = await load_more_result;
     expect(result).toBe(null);
-    expect(load_err).toEqual(new Error('invalid request ~'));
+    expect(load_err).toEqual(new Error(INVALID_REQUEST_ERROR));
   });
-
-  test('第一个操作只能是 reset', async () => {
-    // load more request
-    const [data, err] = await alwayResolve(finallyFetch({ pageIndex: 2, pageSize: 5, mValue: 'a' }));
-    expect(err).toEqual(new Error('invalid request ~'));
-    expect(data).toBe(null);
-  });
+  // 缓存场景下不支持该用例
+  // test('第一个操作只能是 reset', async () => {
+  //   // load more request
+  //   const [data, err] = await alwayResolve(finallyFetch({ pageIndex: 2, pageSize: 5, mValue: 'a' }));
+  //   expect(err).toEqual(new Error(INVALID_REQUEST_ERROR));
+  //   expect(data).toBe(null);
+  // });
 
   test('load more 操作可以被 reset 取消', async () => {
     // reset request
@@ -116,7 +117,7 @@ describe('测试分页函数 - createPaginationHandler', () => {
     });
     const [ data, error ] = await alwayResolve(fn(1));
     expect(data).toBe(null);
-    expect(error).toEqual(new Error('invalid action ~'))
+    expect(error).toEqual(new Error(FETCHER_TYPE_ERROR))
   });
   test('fetcher 请求失败', async () => {
     const fn = createPaginationHandler({

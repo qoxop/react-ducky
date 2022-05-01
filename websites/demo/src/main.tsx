@@ -1,12 +1,15 @@
 import React from "react";
-import ReactDom from "react-dom";
+import * as ReactDOMClient from "react-dom/client";
 import { App } from "./app";
 import { Provider } from "./provider";
-import { enhanceHistory } from 'react-ducky'
 import './style.less';
 
-enhanceHistory();
 
-window.addEventListener('pageAction', e => console.log(e['_pageAction']));
+const rootElement = document.getElementById("root");
+const root = ReactDOMClient.createRoot(rootElement);
 
-ReactDom.render(<Provider><App /></Provider>, document.getElementById('root'));
+root.render(
+  <Provider>
+    <App />
+  </Provider>
+);

@@ -1,6 +1,15 @@
-import { createModel, PayloadAction } from 'react-ducky';
-import { fetchMyTodo, updateMyTodo } from './service';
-import { TodoItem } from './model.type';
+import { 
+  createModel, 
+  PayloadAction
+} from 'react-ducky';
+import { updateReducer } from 'src/provider';
+
+export type TodoItem = {
+  id: string,
+  title: string;
+  expired: string;
+  finished: boolean;
+}
 
 const todoModel = createModel({
   statePaths: ['todo'],
@@ -14,13 +23,19 @@ const todoModel = createModel({
         state.list[index].finished = !state.list[index].finished;
       }
     },
+    add: (state, action: PayloadAction<TodoItem>) => {
+      state.list.unshift({
+        ...action.payload,
+        id: Mock.Random.guid(),
+      });
+    },
     update: (state, action: PayloadAction<TodoItem>) => {
       const { payload: newTodo } = action;
       const index = state.list.findIndex(item => item.id === newTodo.id);
       if (index > -1) {
         state.list[index] = newTodo;
       } else {
-        state.list.push(newTodo)
+        state.list.unshift(newTodo)
       }
     },
     del: (state, action:PayloadAction<string>) => {
@@ -30,27 +45,13 @@ const todoModel = createModel({
       state.list = [];
     }
   },
-  fetch: {
-    list: () => fetchMyTodo()
-  },
   cacheKey: 'my-todo-model',
   cacheStorage: 'session',
 });
 
-// rewrite actions 
-export const todoActions = {
-  ...todoModel.actions,
-  update: async (item: TodoItem) => {
-    const newItem = await updateMyTodo(item);
-    todoModel.actions.update(newItem);
-  },
-  del: (id: string) => {
-    // TODO delete service
-    todoModel.actions.del(id);
-  },
-  fetchList: todoModel.fetch.list,
-}
-
-export const todoReducer = todoModel.reducer;
+export const todoActions = todoModel.actions;
 export const useTodoModel = todoModel.useModel;
 export const getTodoState = todoModel.getState;
+
+// connect to redux
+updateReducer({ todo: todoModel.reducer });

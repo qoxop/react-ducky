@@ -2,17 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-// .container {
-//   @media screen and (min-width: 768px) {
-//     max-width: 768px;
-//     min-width: 70%;
-//     margin: 0 auto;
-//   }
-//   @media screen and (max-width: 768px) {
-//     width: 100%;
-//   }
-// }
-// body, div {
-//   margin: 0;
-//   padding: 0;
-// }
+
+body {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.85);
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-variant: tabular-nums;
+    line-height: 1.5715;
+    background-color: #fff;
+    font-feature-settings: 'tnum';
+    height: 100vh;
+}
+.textHideNum(@num) {
+  .text-hide-@{num} {
+      overflow : hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: @num;
+      -webkit-box-orient: vertical;
+  }
+}
+.textHideNum(1);
+.textHideNum(2);
+.textHideNum(3);
+.textHideNum(4);
+
+@keyframes loading-cycle {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
+.loading-animation {
+  animation: loading-cycle 0.8s infinite linear;
+}
+.date-picker-wrapper {
+  width: 120px;
+  .react-datepicker-wrapper {
+    height: 100%;
+    .react-datepicker__input-container {
+      height: 100%;
+      input {
+        width: 120px;
+        text-align: center;
+        min-height: 100%;
+        outline: none;
+      }
+    }
+  }
+}

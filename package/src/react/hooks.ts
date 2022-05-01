@@ -1,11 +1,11 @@
-import React from 'react';
 import { Store } from 'redux';
+import React, { useCallback } from 'react';
 
 import { isFunction } from '../utils/is-type';
 import { isPending, outPromise } from '../utils/async';
 import { ReduxContext, PageActionContext } from './context';
 import {
-  DefaultRootState, FunctionLike, IsEqual, Klass, Selector,
+  DefaultRootState, FunctionLike, IsEqual, Klass, Selector, T_OrReturnT,
 } from '../typings';
 import { $classHooks, Controller, ReduxController } from '../helper/controller';
 import {
@@ -15,37 +15,21 @@ import {
   getPageState,
   setPageState,
 } from '../utils/history';
+import { getInit, shallowEqual } from '../utils/helper';
 
 const {
   useRef,
   useMemo,
   useEffect,
-  useState,
   useContext,
   useReducer,
-  useLayoutEffect,
 } = React;
 
 type UseSelectorOptions<P> = {
   eq?: IsEqual<P>,
   useThrow?: boolean | FunctionLike<[P], boolean>;
 }
-
-// TODO： 移动到 utils 中
-/**
- *  浅对比
- * @param last
- * @param cur
- * @returns
- */
-const defEq = <T>(last: T, cur: T) => {
-  if (last === cur) return true;
-  if (cur && last && typeof cur === 'object' && typeof last === 'object') {
-    const curKeys = Object.keys(cur);
-    return curKeys.every((k) => cur[k] === last[k]) && curKeys.length === Object.keys(last).length;
-  }
-  return false;
-};
+type SetState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
 
 /**
  * 获取 Redux 的 Dispatch 方法
@@ -64,7 +48,7 @@ const useSelector = <S = DefaultRootState, P = any>(
   options: UseSelectorOptions<P> = {},
 ) => {
   const { eq, useThrow: isThrow } = useMemo(() => ({
-    eq: options.eq || defEq,
+    eq: options.eq || shallowEqual,
     // eslint-disable-next-line no-nested-ternary
     useThrow: options.useThrow === true
       ? isPending
@@ -78,12 +62,13 @@ const useSelector = <S = DefaultRootState, P = any>(
   const subStateRef = useRef<P>(subState);
 
   // 添加订阅
-  useLayoutEffect(() => {
+  useEffect(() => {
     const symbolKey = Symbol('use-selector');
     const _newSubState = selector(store.getState());
     if (!eq(_newSubState, subStateRef.current)) {
       Promise.resolve().then(forceRender);
       subStateRef.current = _newSubState;
+      
     }
     subscriber.add(symbolKey, (appState) => {
       const newSubState = selector(appState);
@@ -147,7 +132,12 @@ const useCtrlContext = <C extends Klass & { Context: any } = any>(CtrlClass: C) 
   useContext<InstanceType<C>>(CtrlClass.Context)
 );
 
-const usePropRef = <P>(prop: P) => {
+/**
+ * 使用 useRef 保留对最新 props 的引用
+ * @param prop
+ * @returns
+ */
+const usePropRef = <P>(prop: P): React.MutableRefObject<P> => {
   const propRef = useRef(prop);
   if (propRef.current !== prop) {
     propRef.current = prop;
@@ -155,10 +145,27 @@ const usePropRef = <P>(prop: P) => {
   return propRef;
 };
 
-const useStateRef = <T>(init: T|(() => T)) => {
-  const [state, setState] = useState(init);
-  const stateRef = usePropRef(state);
-  return [state, setState, stateRef] as const;
+
+/**
+ * 用 ref 实现的 useState，用于保留对最新 state 的引用
+ * @param init 初始值
+ * @returns [T, SetState<T>, React.MutableRefObject<T>]
+ */
+const useStateRef = <T>(init: T_OrReturnT<T>): [T, SetState<T>, React.MutableRefObject<T>] => {
+  const [_, forceUpdate] = useReducer(s => s + 1, 0);
+  const stateRef = useRef(getInit(init));
+  const setState = useCallback((data: T_OrReturnT<T>, preventUpdate?: boolean) => {
+    if (isFunction(data)) {
+      stateRef.current = data(stateRef.current);
+    } else {
+      stateRef.current = data;
+    }
+    if (!preventUpdate) {
+      forceUpdate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return [stateRef.current, setState, stateRef];
 };
 
 /**
@@ -206,14 +213,20 @@ const usePageEffect = (options: {
  * @param init
  * @returns
  */
-const usePageState = <T>(init: T | (() => T), suffix = '') => {
+const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetState<T>] => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pageKey = useMemo(() => `${getPageKey()}${suffix}`, []);
   const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageKey));
-  // 组件销毁时保存
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => () => setPageState(stateRef.current, pageKey), [stateRef]);
-  return [state, setState] as const;
+  // 组件销毁时保存状态
+  const storeValue = useCallback(() => setPageState(stateRef.current, pageKey), []); // destroy by refresh
+  useEffect(() => {
+    window.addEventListener('beforeunload', storeValue);
+    return () => {
+      storeValue();
+      window.removeEventListener('beforeunload', storeValue);
+    }
+  }, []);
+  return [state, setState];
 };
 
 export {
@@ -229,5 +242,6 @@ export {
 };
 
 export type {
+  SetState,
   UseSelectorOptions,
 };

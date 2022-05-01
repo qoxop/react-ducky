@@ -1,22 +1,23 @@
 import produce from 'immer';
 import {
-  CaseReducer,
+  ReducerCase,
   ValidObj,
   AnyAction,
   FunctionLike,
 } from '../typings';
+import { ACTION_TYPE_DUPLICATE_WARN } from '../utils/constants';
 import { isFunction } from '../utils/is-type';
 
 class Builder<S> {
-  default?: CaseReducer<S>;
+  default?: ReducerCase<S>;
 
   equal: {
-    [k: string]: CaseReducer<S> ;
+    [k: string]: ReducerCase<S> ;
   };
 
   match: Array<{
     matcher: FunctionLike<[AnyAction], boolean>;
-    reducer: CaseReducer<S> ;
+    reducer: ReducerCase<S>;
   }>;
 
   constructor() {
@@ -24,16 +25,16 @@ class Builder<S> {
     this.match = [];
   }
 
-  addCase(type: string, reducer: CaseReducer<S>) {
+  addCase(type: string, reducer: ReducerCase<S>) {
     if (this.equal[type]) {
-      console.warn('builder.addCase -> add some type case~');
+      console.warn(ACTION_TYPE_DUPLICATE_WARN);
     } else {
       this.equal[type] = reducer;
     }
     return this;
   }
 
-  addMatcher(matcher: FunctionLike<[AnyAction], boolean>, reducer: CaseReducer < S >) {
+  addMatcher(matcher: FunctionLike<[AnyAction], boolean>, reducer: ReducerCase < S >) {
     this.match.push({
       reducer,
       matcher,
@@ -41,7 +42,7 @@ class Builder<S> {
     return this;
   }
 
-  addDefaultCase(reducer: CaseReducer<S>) {
+  addDefaultCase(reducer: ReducerCase<S>) {
     this.default = reducer;
     return this;
   }

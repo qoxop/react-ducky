@@ -1,50 +1,68 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Store } from 'redux';
+import { setStore } from '../redux/store';
 import { ReduxSubscriber } from '../helper/state-subscriber';
-import { getCurrentPageAction, PageAction } from '../utils/history';
+import { PageAction } from '../utils/history';
+import { useSelector } from './hooks';
 
 const {
-  useMemo,
   createContext,
-  useEffect,
   useLayoutEffect,
-  useCallback,
-  useState,
 } = React;
 
 const ReduxContext = createContext<{store?: Store, subscriber?: ReduxSubscriber }>({});
 
-const ReduxProvider:React.FC<{ store: Store }> = ({ store, children }) => {
-  const contextValue = useMemo(() => ({
-    store,
-    subscriber: new ReduxSubscriber(store),
-  }), [store]);
-  useEffect(() => contextValue.subscriber.destroy, [contextValue]);
+const ReduxProvider:React.FC<{ store: Store, children: any, setDefault?: boolean }> = ({
+  store,
+  children,
+  setDefault = false
+}) => {
+  const contextValueRef = useRef({store, subscriber: null as ReduxSubscriber});
+  if (!contextValueRef.current.subscriber) {
+    if (setDefault) {
+      setStore(store);
+    }
+    contextValueRef.current.subscriber = new ReduxSubscriber(store);
+  }
+  useLayoutEffect(() => {
+    // https://github.com/facebook/react/issues/24425
+    contextValueRef.current.subscriber.startListen();
+    return contextValueRef.current.subscriber.destroy.bind(contextValueRef.current.subscriber);
+  }, [contextValueRef]);
   return (
-    <ReduxContext.Provider value={contextValue}>
+    <ReduxContext.Provider value={contextValueRef.current}>
       {children}
     </ReduxContext.Provider>
   );
 };
+
 const PageActionContext = createContext<PageAction>('replace');
 
-const PageActionProvider:React.FC = ({ children }) => {
-  const [pageAction, setPageAction] = useState(getCurrentPageAction);
-  const updatePageAction = useCallback((e:any) => setPageAction(e['_pageAction']), [setPageAction]);
-  useLayoutEffect(() => {
-    window.addEventListener('pageAction', updatePageAction);
-    return () => window.removeEventListener('pageAction', updatePageAction);
-  }, [updatePageAction]);
+/**
+ * 提供路由跳转信息
+ */
+const PageActionProvider:React.FC<{children: any}> = ({ children }) => {
+  const { method } = useSelector(state => state._CURRENT_ROUTE) || {};
   return (
-    <PageActionContext.Provider value={pageAction}>
+    <PageActionContext.Provider value={method}>
       {children}
     </PageActionContext.Provider>
   );
 };
 
+/**
+ * DuckyProvider
+ */
+const DuckyProvider:React.FC<{children: any, store: Store}> = ({ store, children }) => (
+  <ReduxProvider store={store} setDefault={true}>
+    <PageActionProvider>{children}</PageActionProvider>
+  </ReduxProvider>
+);
+
 export {
   ReduxContext,
   ReduxProvider,
+  DuckyProvider,
   PageActionContext,
   PageActionProvider,
 };

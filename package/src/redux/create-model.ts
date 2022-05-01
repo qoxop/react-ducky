@@ -10,13 +10,14 @@ import {
   ValidObj,
   Selector,
   PromiseFn,
-  CaseReducer,
+  ReducerCase,
   ExtendAction,
   FunctionLike,
   ActionCreator,
   XOR,
   PayloadAction,
 } from '../typings';
+import { current } from 'immer';
 
 /**
  * reducer case 方法集合对象
@@ -56,7 +57,7 @@ type ModelBaseOptions<
   initialState: STATE;
   reducers: MCRA;
   fetch?: SIF;
-  extraReducers?: Record<string, CaseReducer<STATE>> | FunctionLike<[Builder<STATE>], void>;
+  extraReducers?: Record<string, ReducerCase<STATE>> | FunctionLike<[Builder<STATE>], void>;
 }
 
 /**
@@ -169,8 +170,8 @@ function createModel<
     const actionType = `${prefix}/${rKey}`;
     builder.addCase(actionType, reduceCase);
     actions[rKey] = (arg: any) => Dispatch()({
-      type: actionType,
       ...(arg && typeof arg === 'object' ? arg : {}),
+      type: actionType,
       payload: arg,
     });
   }
@@ -207,8 +208,16 @@ function createModel<
       builder.addCase(fetchedType, (state, action: ExtendAction<{ data, error }>) => {
         const { data, error } = action;
         if (error) {
-          // @ts-ignore
-          state[fKey] = setProperty(setPending(state[fKey], false), 'error', error);
+          // 发生错误时，清空加载中的标识
+          const originValue = state[fKey]?.valueOf();
+          try {
+            const newData = originValue ? setPending(current(state[fKey]), false) : originValue;
+            // @ts-ignore
+            state[fKey] = setProperty(newData, 'error', error);
+          } catch (error) {
+            // @ts-ignore
+            state[fKey] = setProperty(originValue, 'error', error);
+          }
         } else {
           // @ts-ignore
           state[fKey] = data;
@@ -245,13 +254,14 @@ function createModel<
 
 export {
   createModel,
+  Builder,
 };
 export type {
-  InferModelFetch,
-  InferModelActions,
-  ModelCacheOptions,
   ModelCaseReducerActions,
+  InferModelFetch,
   CreateModelOptions,
   ModelBaseOptions,
+  ModelCacheOptions,
+  InferModelActions,
   Model,
 }

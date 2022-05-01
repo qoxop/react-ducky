@@ -1,27 +1,21 @@
 import React from 'react';
 import { HashRouter } from 'react-router-dom'
-import { ReduxProvider, initStore, enhanceHistory, PageActionProvider } from 'react-ducky';
-import { compose } from 'redux';
-
-enhanceHistory()
-
-const composeEnhancers = typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
-  window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ :
-  compose;
+import { DuckyProvider, initStore, historyMiddleware } from 'react-ducky';
 
 export const {
   store,
   updateReducer,
-} = initStore({enhancer: composeEnhancers()});
+} = initStore({
+  isDev: true,
+  middleware: [historyMiddleware],
+});
 
-export const Provider:React.FC = ({ children }) => {
+export const Provider:React.FC<{children: any}> = ({ children }) => {
   return (
-    <ReduxProvider store={store}>
-      <PageActionProvider>
-        <HashRouter>
-          {children}
-        </HashRouter>
-      </PageActionProvider>
-    </ReduxProvider>
+    <DuckyProvider store={store}>
+      <HashRouter>
+        {children}
+      </HashRouter>
+    </DuckyProvider>
   )
 }

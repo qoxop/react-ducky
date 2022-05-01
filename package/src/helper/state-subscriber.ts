@@ -3,8 +3,8 @@ import { Store, Unsubscribe } from 'redux';
 import { DefaultRootState, FunctionLike, Selector } from '../typings';
 
 type Handler = {
-    callback: FunctionLike<[any], boolean | void>,
-    once?: boolean
+  callback: FunctionLike<[any], boolean | void>,
+  once?: boolean
 }
 
 class Subscriber<S = unknown> {
@@ -34,28 +34,31 @@ class Subscriber<S = unknown> {
     return this.listeners.has(key);
   }
 
-  public clear() {
+  public clear(){
     this.listeners.clear();
   }
 }
-
 class ReduxSubscriber<STATE = DefaultRootState> extends Subscriber<STATE> {
   store: Store;
-
   unsubscribe: Unsubscribe;
 
   constructor(store: Store) {
     super();
     this.store = store;
+    this.startListen()
+  }
+  public startListen() {
     let delayExecute: () => void;
-    this.unsubscribe = this.store.subscribe(() => {
-      const execute = delayExecute = () => this.emit(this.store.getState());
-      Promise.resolve().then(() => {
-        if (delayExecute === execute) {
-          delayExecute();
-        }
+    if (!this.unsubscribe) {
+      this.unsubscribe = this.store.subscribe(() => {
+        const execute = delayExecute = () => this.emit(this.store.getState());
+        Promise.resolve().then(() => {
+          if (delayExecute === execute) {
+            delayExecute();
+          }
+        });
       });
-    });
+    }
   }
 
   public destroy() {
@@ -63,9 +66,10 @@ class ReduxSubscriber<STATE = DefaultRootState> extends Subscriber<STATE> {
     if (this.unsubscribe) {
       this.unsubscribe();
     }
+    this.unsubscribe = null;
   }
 
-  public getState<S = any, P = any>(selector?: Selector<S, P>): P {
+  public getState = <S = any, P = any>(selector?: Selector<S, P>): P => {
     if (selector) {
       return selector(this.store.getState());
     }

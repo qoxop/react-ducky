@@ -8,6 +8,8 @@ describe('reducer', () => {
   test('createReducer', () => {
     const addMatcherCall = jest.fn();
     const resetMatcherCall = jest.fn();
+    const originConsoleWarn = console.warn;
+    const mockWarn = console.warn = jest.fn();
     const reducer = createReducer({count: 1}, (builder) => {
       builder
       .addCase('add', (state, action: PayloadAction<number>) => {
@@ -57,7 +59,9 @@ describe('reducer', () => {
     data = reducer({count: 1}, { type: 'reset-10'});
     expect(data.count).toBe(10);
     expect(addMatcherCall.mock.calls.length).toBe(1)
-    expect(resetMatcherCall.mock.calls.length).toBe(1)
+    expect(resetMatcherCall.mock.calls.length).toBe(1);
+    expect(mockWarn.mock.calls.length).toBe(1);
+    console.warn = originConsoleWarn;
   });
 
   test('createReducerWithOpt', () => {
