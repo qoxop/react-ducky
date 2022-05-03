@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Store, Unsubscribe } from 'redux';
 import { DefaultRootState, FunctionLike, Selector } from '../typings';
 

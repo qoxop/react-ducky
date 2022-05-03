@@ -1,7 +1,7 @@
 import React from 'react';
+import { FunctionLike } from '../typings';
 import { isFunction } from '../utils/is-type';
 import { PageAction, getCurrentPageAction } from '../utils/history';
-import { FunctionLike } from '../typings';
 
 const {
   useState,

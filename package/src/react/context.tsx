@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Store } from 'redux';
-import { setStore } from '../redux/store';
-import { ReduxSubscriber } from '../helper/state-subscriber';
-import { PageAction } from '../utils/history';
 import { useSelector } from './hooks';
+import { setStore } from '../redux/store';
+import { PageAction } from '../utils/history';
+import { ReduxSubscriber } from '../helper/state-subscriber';
 
 const {
+  useRef,
   createContext,
   useLayoutEffect,
 } = React;

@@ -1,5 +1,5 @@
-import { T_OrReturnT } from "..";
 import { isFunction } from "./is-type";
+import { T_OrReturnT } from "../typings";
 
 /**
  * 浅对比
@@ -17,6 +17,11 @@ const shallowEqual = <T>(last: T, cur: T) => {
 };
 
 /**
+ * 创建一个唯一ID
+ */
+const uuid = ((count: number) => () => (`u_${count++}${Date.now().toString(36)}`))(0);
+
+/**
  * 计算 T_OrReturnT 类型
  * @param init T_OrReturnT<T>
  * @returns T
@@ -24,6 +29,7 @@ const shallowEqual = <T>(last: T, cur: T) => {
 const getInit = <T>(init: T_OrReturnT<T>) => isFunction(init) ? init() : init;
 
 export {
+  uuid,
   shallowEqual,
-  getInit
+  getInit,
 }

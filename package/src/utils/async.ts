@@ -1,7 +1,14 @@
-import { PromiseFn } from "../typings";
-import { FETCHER_TYPE_ERROR, INVALID_REQUEST_ERROR, INVALID_RESPONSE_ERROR } from "./constants";
+import {
+  FETCHER_TYPE_ERROR,
+  INVALID_REQUEST_ERROR,
+  INVALID_RESPONSE_ERROR
+} from "./constants";
+import {
+  setProperty,
+  removeProperty,
+} from "./object";
 import { isPromise } from "./is-type";
-import { removeProperty, setProperty } from "./object";
+import { PromiseFn } from "../typings";
 
 enum FetchStatus {
   'LOADING' = 1,

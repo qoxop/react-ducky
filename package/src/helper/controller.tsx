@@ -2,21 +2,19 @@
 /**
  * 控制器
  */
+import React, { Context, FunctionComponent } from 'react';
 import { produce } from 'immer';
 import { Dispatch, Store } from 'redux';
-import {
-  useState,
-  Context,
-  FunctionComponent,
-  createContext,
-  useReducer,
-  createElement,
-} from 'react';
 import { FunctionLike } from '../typings';
+
+const {
+  useState,
+  useReducer,
+  createContext,
+} = React;
 
 const $setState = Symbol ? Symbol('$setState') : '$__controller_$_set_state';
 const $forceUpdate = Symbol ? Symbol('$forceUpdate') : '$__controller_$_force_update';
-
 const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hooks';
 const $bindThis = Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
 
@@ -31,9 +29,14 @@ function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
   return (target: any) => {
     if (useCtx) {
       const CtrlContext: Context<any> = createContext(null);
-      const CtrlProvider = (
-        { controller, children }:{ controller: unknown, children: unknown },
-      ) => createElement(CtrlContext.Provider, { value: controller }, children);
+      const CtrlProvider:React.FC<{
+        controller: unknown,
+        children: any
+      }> = ({ controller, children }) => (
+        <CtrlContext.Provider value={controller}>
+          {children}
+        </CtrlContext.Provider>
+      )
 
       Object.defineProperties(target, {
         Provider: {

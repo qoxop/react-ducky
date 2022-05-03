@@ -22,7 +22,10 @@ const Articles:React.FC = () => {
   const [ handleScroll, scrollBoxRef ] = useMemoriesScroll({
     resetBy: [type],
     onScrollEnd: () => {
-      const { page, pageSize, type } = getArticleState();
+      const { page, pageSize, type, total } = getArticleState();
+      if (page * pageSize > total) {
+        return Promise.resolve();
+      }
       return articleActions.loadArticles({ page: 1 + page, size: pageSize, type });
     }
   })

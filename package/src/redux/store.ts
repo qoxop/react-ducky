@@ -1,3 +1,5 @@
+import { DefaultRootState } from '../typings';
+import { RouteActionType } from './middleware';
 import {
   Store,
   Reducer,
@@ -7,18 +9,31 @@ import {
   combineReducers,
   applyMiddleware,
 } from 'redux';
-import { DefaultRootState } from '../typings';
-import { RouteActionType } from './middleware';
+import {
+  REDUX_DEVTOOL,
+  STORE_UNINITIALIZED_ERROR
+} from '../utils/constants';
 
 type ReducerRecord = Record<string, Reducer>;
 
 let store:Store = null;
 
 const checkStore = () => {
-  if (!store) throw new Error('store 未初始化');
+  if (!store) throw new Error(STORE_UNINITIALIZED_ERROR);
   return true;
 };
+
+/**
+ * 获取 store
+ * @returns
+ */
 const getStore = () => checkStore() && store;
+
+/**
+ * 设置 store
+ * @param _store
+ * @returns 
+ */
 const setStore = (_store: Store) => store = _store;
 
 type InitStoreOption = {
@@ -30,11 +45,16 @@ type InitStoreOption = {
 }
 
 const createEnhancer = (middleware: any[], isDev = false) => {
-  // @ts-ignore
-  const composeEnhancers = isDev && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ : compose;
+  const composeEnhancers = isDev && window[REDUX_DEVTOOL] ? window[REDUX_DEVTOOL] : compose;
   return composeEnhancers(applyMiddleware(...middleware));
 }
 
+/**
+ * 创建根 Reducer 方法
+ * @param rootReducers
+ * @param reducerRecord 
+ * @returns 
+ */
 const createRootReducer = (rootReducers: ReducerRecord, reducerRecord?: ReducerRecord) => {
   const mainReducer = reducerRecord && Object.keys(reducerRecord).length ? 
     combineReducers(reducerRecord) :
@@ -65,13 +85,11 @@ const initStore = <STATE = any>({
   reducerRecord = {},
   rootReducers = {},
 }: InitStoreOption) => {
-
   const _store = createStore(
     createRootReducer(rootReducers, reducerRecord),
     initState,
     createEnhancer(middleware, isDev),
   );
-
   const updateReducer = (reducers: ReducerRecord, force = false) => {
     let hasNew = false;
     for (const key in reducers) {
@@ -85,11 +103,11 @@ const initStore = <STATE = any>({
     }
   };
   if (!store) {
-    store = _store
+    store = _store;
   }
   return {
-    store: _store as Store<STATE, AnyAction>,
     updateReducer,
+    store: _store as Store<STATE, AnyAction>,
   };
 };
 

@@ -46,7 +46,8 @@ const todoModel = createModel({
     }
   },
   cacheKey: 'my-todo-model',
-  cacheStorage: 'session',
+  cacheStorage: 'local',
+  cacheVersion: 'v1',
 });
 
 export const todoActions = todoModel.actions;

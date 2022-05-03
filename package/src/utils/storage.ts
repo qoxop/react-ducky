@@ -1,5 +1,6 @@
-/* eslint-disable no-unused-vars */
-export type StoreItem<T> = {
+import { JsonParse, JsonStringify, sessionStorage } from './constants'
+
+type StoreItem<T> = {
     get():T|null;
     set(t:T):void;
 }
@@ -15,17 +16,17 @@ const createPersistenceItem = <T>(storage: Storage, key: string, hash?: string):
       try {
         const str = storage.getItem(key);
         if (!str) return null;
-        return JSON.parse(str).v;
+        return JsonParse(str).v;
       } catch (error) {
         return null;
       }
     },
     set(v: T) {
-      storage.setItem(key, JSON.stringify({ v, h: hash }));
+      storage.setItem(key, JsonStringify({ v, h: hash }));
     },
   };
   try {
-    const { h: oldHash } = JSON.parse(storage.getItem(key) || '{}');
+    const { h: oldHash } = JsonParse(storage.getItem(key) || '{}');
     if (oldHash !== hash) {
       atom.set(null);
     }
@@ -44,13 +45,13 @@ const createSessionItem = <T>(key: string):StoreItem<T> => ({
     try {
       const str = sessionStorage.getItem(key);
       if (!str) return null;
-      return JSON.parse(str).v;
+      return JsonParse(str).v;
     } catch (error) {
       return null;
     }
   },
   set(v: T) {
-    sessionStorage.setItem(key, JSON.stringify({ v }));
+    sessionStorage.setItem(key, JsonStringify({ v }));
   },
 });
 
@@ -58,3 +59,7 @@ export {
   createSessionItem,
   createPersistenceItem,
 };
+
+export type {
+  StoreItem
+}

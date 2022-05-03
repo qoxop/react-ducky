@@ -8,8 +8,9 @@ import { useArticles, articleActions } from "./model";
 
 const ArticleDetail: React.FC = () => {
 
-  const article = useArticles(state => state?.currentArticle, { useThrow: true });
-  const [handleScroll, scrollBoxRef] = useMemoriesScroll()
+  const article = useArticles(state => state.currentArticle, { withSuspense: true });
+
+  const [handleScroll, scrollBoxRef] = useMemoriesScroll();
 
   return (
     <article className="p-4 flex flex-col h-full">

@@ -1,12 +1,12 @@
 import produce from 'immer';
+import { isFunction } from '../utils/is-type';
+import { ACTION_TYPE_DUPLICATE_WARN } from '../utils/constants';
 import {
   ReducerCase,
   ValidObj,
   AnyAction,
   FunctionLike,
 } from '../typings';
-import { ACTION_TYPE_DUPLICATE_WARN } from '../utils/constants';
-import { isFunction } from '../utils/is-type';
 
 class Builder<S> {
   default?: ReducerCase<S>;

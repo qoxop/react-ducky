@@ -44,7 +44,7 @@ const removeProperty = <T>(obj: T, key:string|symbol) => {
  * @returns 
  */
 const isEmpty = (value: unknown) => {
-  if (!value) return true;
+  if (!value || !value?.valueOf()) return true;
   if (isArray(value)) return value.length === 0;
   if (isObject(value)) return Object.getOwnPropertyNames(value).length === 0;
   return false;

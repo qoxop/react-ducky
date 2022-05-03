@@ -1,6 +1,8 @@
+import { current } from 'immer';
 import { Store, Reducer } from 'redux';
 import { setProperty } from '../utils/object';
 import { getStore as _getStore } from './store';
+import { JsonStringify, localStorage } from '../utils/constants';
 import { Builder, createReducerWithOpt } from './create-reducer';
 import { useSelector, UseSelectorOptions } from '../react/hooks';
 import { isPending, setPending, createFetchHandler } from '../utils/async';
@@ -17,7 +19,6 @@ import {
   XOR,
   PayloadAction,
 } from '../typings';
-import { current } from 'immer';
 
 /**
  * reducer case 方法集合对象
@@ -94,7 +95,7 @@ type Model<
   useModel: <T = STATE>(
     selector?: Selector<STATE, T>,
     config?: {
-      useThrow?: boolean | ((subState: any) => boolean);
+      withSuspense?: boolean | ((subState: any) => boolean);
       eq?: IsEqual<T>
     }
   ) => T;
@@ -122,7 +123,7 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
       storeItem = createPersistenceItem(
         cacheStorage === 'local' ? localStorage : cacheStorage,
         cacheKey,
-        options.cacheVersion || JSON.stringify(options.initialState),
+        options.cacheVersion || JsonStringify(options.initialState),
       );
     }
     return {

@@ -1,13 +1,17 @@
+import React from 'react';
 import { Store } from 'redux';
-import React, { useCallback } from 'react';
-
 import { isFunction } from '../utils/is-type';
 import { isPending, outPromise } from '../utils/async';
-import { ReduxContext, PageActionContext } from './context';
+import { getInit, shallowEqual } from '../utils/helper';
+import { ReduxContext } from './context';
 import {
-  DefaultRootState, FunctionLike, IsEqual, Klass, Selector, T_OrReturnT,
+  Klass,
+  IsEqual,
+  Selector,
+  T_OrReturnT,
+  FunctionLike,
+  DefaultRootState,
 } from '../typings';
-import { $classHooks, Controller, ReduxController } from '../helper/controller';
 import {
   PageAction,
   getCurrentPageAction,
@@ -15,7 +19,11 @@ import {
   getPageState,
   setPageState,
 } from '../utils/history';
-import { getInit, shallowEqual } from '../utils/helper';
+import {
+  $classHooks,
+  Controller,
+  ReduxController,
+} from '../helper/controller';
 
 const {
   useRef,
@@ -23,11 +31,12 @@ const {
   useEffect,
   useContext,
   useReducer,
+  useCallback,
 } = React;
 
 type UseSelectorOptions<P> = {
   eq?: IsEqual<P>,
-  useThrow?: boolean | FunctionLike<[P], boolean>;
+  withSuspense?: boolean | FunctionLike<[P], boolean>;
 }
 type SetState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
 
@@ -47,12 +56,11 @@ const useSelector = <S = DefaultRootState, P = any>(
   selector: Selector<S, P>,
   options: UseSelectorOptions<P> = {},
 ) => {
-  const { eq, useThrow: isThrow } = useMemo(() => ({
+  const { eq, withSuspense } = useMemo(() => ({
     eq: options.eq || shallowEqual,
-    // eslint-disable-next-line no-nested-ternary
-    useThrow: options.useThrow === true
+    withSuspense: options.withSuspense === true
       ? isPending
-      : (isFunction(options.useThrow) ? options.useThrow : null),
+      : (isFunction(options.withSuspense) ? options.withSuspense : null),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
   const { subscriber, store } = useContext(ReduxContext);
@@ -81,14 +89,14 @@ const useSelector = <S = DefaultRootState, P = any>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
 
-  if (isThrow) {
+  if (withSuspense) {
     // 判断是否为 pending，如果是 pending 抛出一个 promise 的异常
-    if (isThrow(subState)) {
+    if (withSuspense(subState)) {
       const { promise, resolve } = outPromise<P>();
-      const symbolKey = Symbol('use-throw');
+      const symbolKey = Symbol('with-suspense');
       subscriber.add(symbolKey, (appState) => {
         const newSubState = selector(appState);
-        if (!isThrow(newSubState)) {
+        if (!withSuspense(newSubState)) {
           resolve(newSubState);
           return true;
         }
@@ -177,20 +185,19 @@ const usePageEffect = (options: {
   onLeave?: FunctionLike<[PageAction], void>;
   onEnterEffect?: FunctionLike<[PageAction], void>;
 }) => {
-  const curOptions = usePropRef(options);
   const executed = useRef(false);
-  const action = useContext(PageActionContext);
+  const curOptions = usePropRef(options);
 
   if (!executed.current) {
     executed.current = true;
     if (isFunction(curOptions.current.onEnter)) {
-      curOptions.current.onEnter(action);
+      curOptions.current.onEnter(getCurrentPageAction());
     }
   }
 
   useEffect(() => {
     if (isFunction(curOptions.current.onEnterEffect)) {
-      curOptions.current.onEnterEffect(action);
+      curOptions.current.onEnterEffect(getCurrentPageAction());
     }
     const { onLeave } = curOptions.current
     return () => {
@@ -225,6 +232,7 @@ const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetState<T>] => 
       storeValue();
       window.removeEventListener('beforeunload', storeValue);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return [state, setState];
 };

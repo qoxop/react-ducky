@@ -20,8 +20,7 @@ export {
 } from './helper/controller';
 
 export * from './utils/async';
-
-
+export { isEmpty } from './utils/object';
 
 export {
   withPageHook

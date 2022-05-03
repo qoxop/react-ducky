@@ -1,10 +1,23 @@
-import { PageAction } from '../typings';
+import {
+  POP_STATE,
+  PUSH_STATE,
+  REPLACE_STATE,
+  history,
+  dispatchEvent,
+  sessionStorage,
+  addEventListener,
+  JsonParse,
+  JsonStringify,
+} from './constants';
+import { uuid } from './helper';
 import { isFunction } from './is-type';
+import { PageAction } from '../typings';
 import { createSessionItem } from './storage';
 
 let executed = false;
 let currentPageAction:PageAction = 'replace';
 
+const initPageKey = uuid();
 const EventName = 'pageAction';
 
 /**
@@ -13,22 +26,23 @@ const EventName = 'pageAction';
  */
 const getCurrentPageAction = () => currentPageAction;
 
-const getPageKey = () => {
-  const hrefFragment = window.location.href.split('?');
-  const search = hrefFragment[hrefFragment.length - 1] || '';
-  const keyFragment = search.split('_rt_key=')[1];
-  if (keyFragment) {
-    return keyFragment.split('&')[0] || 'init_page_key';
-  }
-  return 'init_page_key';
-};
+/**
+ * 获取页面唯一ID
+ * @returns
+ */
+const getPageId = ():string => history.state?._key_ || initPageKey;
 
-const getPageState = <D>(init: D | (() => D), pageKey?: string): D => {
-  const key = pageKey || getPageKey();
+/**
+ * 获取页面状态数据
+ * @param init 初始值
+ * @param pageId 页面ID，可选
+ */
+const getPageState = <D>(init: D | (() => D), pageId?: string): D => {
+  const key = pageId || getPageId();
   const dataStr = sessionStorage.getItem(key);
   if (dataStr) {
     try {
-      return JSON.parse(dataStr).v;
+      return JsonParse(dataStr).v;
     } catch (error) {
       console.warn(error);
     }
@@ -36,53 +50,68 @@ const getPageState = <D>(init: D | (() => D), pageKey?: string): D => {
   return isFunction(init) ? init() : init;
 };
 
-const setPageState = <D>(data: D, pageKey?: string) => {
-  const key = pageKey || getPageKey();
-  sessionStorage.setItem(key, JSON.stringify({ v: data }));
-};
-
-// eslint-disable-next-line dot-notation
-const createKey = () => (`rk_${createKey['_called_times'] = (createKey['_called_times'] || 0) + 1}${Date.now().toString(36)}`);
-
 /**
- * 更新 路由 key 值
- * @param PageKey
- * @param url
- * @returns
+ * 设置页面状态数据
+ * @param data 数据
+ * @param pageId 页面ID
  */
-const setPageKeyToUrl = (PageKey: string, url?: string | URL) => {
-  if (url !== undefined && url !== null) {
-    if (typeof url === 'string') {
-      const path = /#/.test(url) ? url.split('#')[1] : url;
-      url = /\?/.test(path) ? `${url}&${PageKey}` : `${url}?${PageKey}`;
-    } else if (url.hash) {
-      url.hash += (/\?/.test(url.hash) ? `&${PageKey}` : `?${PageKey}`);
-    } else {
-      url.search += (/\?/.test(url.search) ? `&${PageKey}` : `?${PageKey}`);
-    }
+const setPageState = <D>(data: D, pageId?: string) => {
+  const key = pageId || getPageId();
+  // @ts-ignore from history lib
+  if (data.idx && data.key) {
+    // @ts-ignore
+    if (data.usr) sessionStorage.setItem(key, JsonStringify({ v: data.usr }));
+    return;
   }
-  return url;
+  sessionStorage.setItem(key, JsonStringify({ v: data }));
 };
+
 /**
- * 增强 window.history 能力，使其能监听判断浏览器的前进后退
+ * 创建页面ID
+ * @param state 
+ */
+const createPageId = (state: any):string => (state && state.idx && state.key) ? state.key : uuid();
+
+/**
+ * 判断是否使用旧的页面ID，用于页面路径不发生变化，但是路由栈修改的情况下
+ * @param state
+ * @param url 
+ */
+const isUseOldPageId = (state: any, url?: string | URL): boolean => (!url || state?._key_ === -1 || state?.usr?._key_ === -1);
+
+/**
+ * 向 state 注入_key_字段
+ * @param state
+ * @param url 
+ */
+const injectKeyToState = (state: any, url?: string | URL) => ({
+  ...state,
+  _key_: isUseOldPageId(state, url) ? getPageId() : createPageId(state),
+});
+
+
+/**
+ * 增强 history 能力，使其能监听判断浏览器的前进后退
  * @returns
  */
 const enhanceHistory = () => {
   if (executed) return;
 
   const PageStackStorage = createSessionItem<string[]>('$route_stack');
-  const PageStack = PageStackStorage.get() || [getPageKey()];
+  const PageStack = PageStackStorage.get() || [getPageId()];
 
   const updateActions = {
     pushState: (key: string) => {
-      const lastKey = getPageKey();
+      const lastKey = getPageId();
+      // 获取路由栈指针位置
       const position = PageStack.findIndex((stackKey) => stackKey === lastKey);
       if (position > -1) {
+        // 将指针指后的 key 值取出
         const deletedKeys = PageStack.splice(position + 1, PageStack.length - position - 1, key);
-        // remove items that never use
+        // 稍后清空
         setTimeout(() => {
           let allKeys = Object.keys(sessionStorage);
-          deletedKeys.forEach((deleteKey: string) => {
+          for (const deleteKey of deletedKeys) {
             const restKeys = [];
             for (const storageKey of allKeys) {
               if (storageKey.indexOf(deleteKey) === 0) {
@@ -92,48 +121,30 @@ const enhanceHistory = () => {
               }
             }
             allKeys = restKeys;
-          });
-        }, 17);
+          }
+        }, 1000 / 60);
       } else {
         PageStack.push(key);
       }
       PageStackStorage.set(PageStack);
     },
     replaceState: (key: string) => {
-      const lastKey = getPageKey();
+      const lastKey = getPageId();
       const position = PageStack.findIndex((stackKey) => stackKey === lastKey);
       PageStack[position] = key;
       PageStackStorage.set(PageStack);
     },
   };
-  function enhanceHistoryMethod(methodName:'pushState'|'replaceState') {
-    const method = window.history[methodName];
-    // eslint-disable-next-line func-names
-    return function (data: unknown, unused?: string, url?: string | URL) {
-      const PageKey = createKey();
-      if (data !== null && data !== undefined) {
-        // save data to sessionStorage
-        setPageState(data, PageKey);
-      }
-      if (url !== undefined && url !== null) {
-        updateActions[methodName](PageKey);
-        method.call(this, data, unused || '', setPageKeyToUrl(`_rt_key=${PageKey}`, url));
-      } else {
-        method.call(this, data, unused || '', url);
-      }
-      window.dispatchEvent(new Event(methodName));
-    };
-  }
+  
 
-  let lastPageKey = getPageKey();
-  const handle = (eventType: 'popstate'|'pushState'|'replaceState') => {
-    const currentPageKey = getPageKey();
-    
+  let lastPageKey = getPageId();
+  const routeChangeCallback = (eventType: 'popstate'|'pushState'|'replaceState') => {
+    const currentPageKey = getPageId();
     switch (eventType) {
-      case 'pushState':
+      case PUSH_STATE:
         currentPageAction = 'push';
         break;
-      case 'replaceState':
+      case REPLACE_STATE:
         currentPageAction = 'replace';
         break;
       default:
@@ -147,20 +158,36 @@ const enhanceHistory = () => {
     }
     const event = new Event(EventName);
     event[`_${EventName}`] = currentPageAction;
-    window.dispatchEvent(event);
+    dispatchEvent(event);
     lastPageKey = currentPageKey;
   };
-  window.history.pushState = enhanceHistoryMethod('pushState');
-  window.history.replaceState = enhanceHistoryMethod('replaceState');
-  window.addEventListener('popstate', () => handle('popstate'));
-  window.addEventListener('pushState', () => handle('pushState'));
-  window.addEventListener('replaceState', () => handle('replaceState'));
+  function enhanceHistoryMethod(methodName:'pushState'|'replaceState') {
+    const method = history[methodName];
+    return function (data: unknown, unused?: string, url?: string | URL) {
+
+      const dataWithKey = injectKeyToState(data, url);
+
+      if (data) setPageState(data, dataWithKey._key_);
+      
+      if (url !== undefined && url !== null) {
+        updateActions[methodName](dataWithKey._key_);
+        method.call(this, dataWithKey, unused || '', url);
+      } else {
+        method.call(this, dataWithKey, unused || '', url);
+      }
+      // 提前执行
+      routeChangeCallback(methodName);
+    };
+  }
+  history.pushState = enhanceHistoryMethod(PUSH_STATE);
+  history.replaceState = enhanceHistoryMethod(REPLACE_STATE);
+  addEventListener(POP_STATE, () => routeChangeCallback(POP_STATE));
   executed = true;
 };
 
 export {
   EventName,
-  getPageKey,
+  getPageId as getPageKey,
   getPageState,
   setPageState,
   enhanceHistory,
