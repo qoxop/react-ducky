@@ -10,22 +10,22 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: '易用的数据模型',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        React-ducky 使用 createModel 帮你创建基于 Redux 的业务数据模型，统一了 actions、reducer 的定义，且提供方便的异步数据获取方式，
+        减少大量模版代码，并提供完全的类型定义
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: '自动的缓存管理',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        通过重写浏览器的 pushState 和 popState 方法(无破坏性改造)监听浏览器的前进后退事件，支持将任何状态数据与路由堆栈进行绑定，
+        从而避免减少手动管理业务数据缓存的烦恼
       </>
     ),
   },

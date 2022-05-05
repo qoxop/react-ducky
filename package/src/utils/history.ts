@@ -175,7 +175,6 @@ const enhanceHistory = () => {
       } else {
         method.call(this, dataWithKey, unused || '', url);
       }
-      // 提前执行
       routeChangeCallback(methodName);
     };
   }
@@ -187,7 +186,7 @@ const enhanceHistory = () => {
 
 export {
   EventName,
-  getPageId as getPageKey,
+  getPageId,
   getPageState,
   setPageState,
   enhanceHistory,

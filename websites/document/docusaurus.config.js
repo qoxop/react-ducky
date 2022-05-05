@@ -7,14 +7,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'React-Ducky',
-  tagline: 'Dinosaurs are cool',
-  url: 'https://your-docusaurus-test-site.com',
+  tagline: 'React-Ducky 用更简单的方式管理你的React应用状态',
+  url: 'https://react-ducky.qoxop.run',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'qoxop', // Usually your GitHub org/user name.
+  projectName: 'react-ducky', // Usually your repo name.
 
   presets: [
     [
@@ -46,23 +46,19 @@ const config = {
         title: 'React-Ducky',
         logo: {
           alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          src: 'img/logo.png',
         },
         items: [
           {
             type: 'doc',
-            docId: 'intro',
+            docId: 'intro/index',
             position: 'left',
-            label: 'Tutorial',
+            label: '使用指南',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {to: '/doc', label: '文档', position: 'left'},
+          {to: '/blog', label: '博客', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
-            label: 'Demo',
-            position: 'right',
-          },
-          {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/qoxop/react-ducky',
             label: 'GitHub',
             position: 'right',
           },
@@ -72,7 +68,7 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: '文档链接',
             items: [
               {
                 label: 'Tutorial',
@@ -80,25 +76,25 @@ const config = {
               },
             ],
           },
-          // {
-          //   title: 'Community',
-          //   items: [
-          //     {
-          //       label: 'Stack Overflow',
-          //       href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-          //     },
-          //     {
-          //       label: 'Discord',
-          //       href: 'https://discordapp.com/invite/docusaurus',
-          //     },
-          //     {
-          //       label: 'Twitter',
-          //       href: 'https://twitter.com/docusaurus',
-          //     },
-          //   ],
-          // },
           {
-            title: 'More',
+            title: '相关框架',
+            items: [
+              {
+                label: 'React',
+                href: 'https://reactjs.org/',
+              },
+              {
+                label: 'Redux',
+                href: 'https://redux.js.org/',
+              },
+              {
+                label: 'immer',
+                href: 'https://github.com/immerjs/immer',
+              },
+            ],
+          },
+          {
+            title: '更多',
             items: [
               {
                 label: 'Blog',
@@ -111,7 +107,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} qoxop, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,

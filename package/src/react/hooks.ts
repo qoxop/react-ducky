@@ -15,7 +15,7 @@ import {
 import {
   PageAction,
   getCurrentPageAction,
-  getPageKey,
+  getPageId,
   getPageState,
   setPageState,
 } from '../utils/history';
@@ -35,7 +35,8 @@ const {
 } = React;
 
 type UseSelectorOptions<P> = {
-  eq?: IsEqual<P>,
+  sync?: boolean;
+  eq?: IsEqual<P>;
   withSuspense?: boolean | FunctionLike<[P], boolean>;
 }
 type SetState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
@@ -56,8 +57,9 @@ const useSelector = <S = DefaultRootState, P = any>(
   selector: Selector<S, P>,
   options: UseSelectorOptions<P> = {},
 ) => {
-  const { eq, withSuspense } = useMemo(() => ({
+  const { eq, withSuspense, sync } = useMemo(() => ({
     eq: options.eq || shallowEqual,
+    sync: options.sync,
     withSuspense: options.withSuspense === true
       ? isPending
       : (isFunction(options.withSuspense) ? options.withSuspense : null),
@@ -84,7 +86,7 @@ const useSelector = <S = DefaultRootState, P = any>(
         subStateRef.current = newSubState;
         forceRender();
       }
-    });
+    }, { sync });
     return () => subscriber.remove(symbolKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
@@ -100,7 +102,7 @@ const useSelector = <S = DefaultRootState, P = any>(
           resolve(newSubState);
           return true;
         }
-      }, /* only once */ true);
+      }, { once: true });
       throw promise;
     }
   }
@@ -211,7 +213,6 @@ const usePageEffect = (options: {
         });
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 };
 
@@ -221,18 +222,15 @@ const usePageEffect = (options: {
  * @returns
  */
 const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetState<T>] => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pageKey = useMemo(() => `${getPageKey()}${suffix}`, []);
-  const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageKey));
-  // 组件销毁时保存状态
-  const storeValue = useCallback(() => setPageState(stateRef.current, pageKey), []); // destroy by refresh
+  const pageId = useMemo(() => `${getPageId()}${suffix}`, []);
+  const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageId));
+  const storeValue = useCallback(() => setPageState(stateRef.current, pageId), []);
   useEffect(() => {
-    window.addEventListener('beforeunload', storeValue);
-    return () => {
+    window.addEventListener('beforeunload', storeValue); // destroy by refresh
+    return () => { // 组件销毁时保存状态
       storeValue();
       window.removeEventListener('beforeunload', storeValue);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return [state, setState];
 };

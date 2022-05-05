@@ -30,8 +30,6 @@ export {
   ReduxContext,
   ReduxProvider,
   DuckyProvider,
-  PageActionContext,
-  PageActionProvider,
 } from './react/context'
 
 export * from './react/hooks';

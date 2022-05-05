@@ -2,7 +2,24 @@
  * CSS files with the .module.css suffix will be treated as CSS modules
  * and scoped locally.
  */
-
+:root {
+  --ifm-color-primary: #2f54eb;
+  --ifm-color-primary-dark: #163fe8;
+  --ifm-color-primary-darker: #153cdb;
+  --ifm-color-primary-darkest: #1131b4;
+  --ifm-color-primary-light: #4969ed;
+  --ifm-color-primary-lighter: #5674ef;
+  --ifm-color-primary-lightest: #7c93f2;
+}
+[data-theme='dark'] {
+  --ifm-color-primary: #66b5ff;
+  --ifm-color-primary-dark: #42a4ff;
+  --ifm-color-primary-darker: #309bff;
+  --ifm-color-primary-darkest: #0081fa;
+  --ifm-color-primary-light: #8ac6ff;
+  --ifm-color-primary-lighter: #9ccfff;
+  --ifm-color-primary-lightest: #d1e9ff;
+}
 .heroBanner {
   padding: 4rem 0;
   text-align: center;

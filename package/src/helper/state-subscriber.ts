@@ -3,25 +3,32 @@ import { DefaultRootState, FunctionLike, Selector } from '../typings';
 
 type Handler = {
   callback: FunctionLike<[any], boolean | void>,
-  once?: boolean
+  once?: boolean,
+  sync?: boolean,
 }
 
 class Subscriber<S = unknown> {
   private listeners: Map<symbol, Handler> = new Map();
 
-  public emit(state: S) {
+  public emit(state: S, sync: boolean) {
     this.listeners.forEach((handler, key, map) => {
-      const handled = handler.callback(state);
-      if (handler.once && handled) {
-        map.delete(key);
+      if (!!handler.sync === sync) {
+        const handled = handler.callback(state);
+        if (handler.once && handled) {
+          map.delete(key);
+        }
       }
     });
   }
 
-  public add<O extends boolean|void>(key: symbol, handler: FunctionLike<[any], O>, once?: O) {
+  public add(
+    key: symbol,
+    handler: FunctionLike<[any], void | boolean>,
+    options?: {once?: boolean, sync?: boolean}
+  ) {
     this.listeners.set(key, {
       callback: handler,
-      once: !!once,
+      ...options,
     });
   }
 
@@ -50,7 +57,8 @@ class ReduxSubscriber<STATE = DefaultRootState> extends Subscriber<STATE> {
     let delayExecute: () => void;
     if (!this.unsubscribe) {
       this.unsubscribe = this.store.subscribe(() => {
-        const execute = delayExecute = () => this.emit(this.store.getState());
+        this.emit(this.store.getState(), true);
+        const execute = delayExecute = () => this.emit(this.store.getState(), false);
         Promise.resolve().then(() => {
           if (delayExecute === execute) {
             delayExecute();
