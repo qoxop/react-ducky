@@ -16,7 +16,7 @@
   },
 
   "docModel": {
-    "enabled": false
+    "enabled": true
   },
 
   "tsdocMetadata": {

@@ -3,11 +3,13 @@ const del = require('del');
 const path = require('path');
 const ts = require('typescript');
 const rollup = require('rollup');
-const rollupTypescript = require('@rollup/plugin-typescript');
+const { spawn } = require('child_process');
 const { terser } = require('rollup-plugin-terser');
+const rollupTypescript = require('@rollup/plugin-typescript');
 const { Extractor, ExtractorConfig } = require("@microsoft/api-extractor");
 
 const TEMP_DIR = path.posix.resolve(__dirname, '../temp');
+const API_DOC_DIR = path.posix.resolve(__dirname, '../.api-doc');
 const OUTPUT_DIR =  path.posix.resolve(__dirname, '../dist');
 const INPUT_FILE = path.resolve(__dirname, '../src/index.ts');
 const TSCONFIG_FILE = path.resolve(__dirname, '../tsconfig.json');
@@ -94,10 +96,23 @@ function createTypeFile() {
     }
   );
 }
+function generateApiDocument() {
+  return new Promise((resolve, reject) => {
+    spawn(
+      'npx',
+      ['api-documenter', 'markdown', '-i', TEMP_DIR, '-o', API_DOC_DIR],
+      { stdio: 'inherit' }
+    )
+    .on('close', resolve)
+    .on('exit', resolve)
+    .on('error', reject);
+  })
+}
 
 (async function() {
-  await del(OUTPUT_DIR)
+  await del(OUTPUT_DIR);
   await bundle();
   createTypeFile();
+  await generateApiDocument();
   await del(TEMP_DIR);
 })();

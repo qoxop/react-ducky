@@ -1,6 +1,7 @@
 {
 	"scripts": {
-		"build-doc": "node ./build/document.js",
+		"doc": "pnpm install && node ./scripts/document.js",
+		"api": "pnpm install && node ./scripts/api.js",
 		"lint": "eslint ."
 	},
 	"devDependencies": {

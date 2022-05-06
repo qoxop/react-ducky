@@ -34,8 +34,7 @@ const outPromise = <T = any|void>() => {
 }
 
 /**
- * alwayResolve 
- * @description 将一个 promise 转化成一个永不报错的新 promise，把错误信息包装在返回结果中
+ * 将一个 promise 转化成一个永不报错的新 promise，把错误信息包装在返回结果中
  * @param ps
  * @returns [response, error]
  */
@@ -68,8 +67,7 @@ type FetchHandlerOptions<Args extends any[], Resp = any> = {
 }
 
 /**
- * 创建一个请求处理函数
- * @description 当段时间内发起多个请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理
+ * 创建一个请求处理函数，当段时间内发起多个请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理
  * @returns 
  */
 const createFetchHandler = <Args extends unknown[], Resp>({ fetcher, after, before, identifier }: FetchHandlerOptions<Args,Resp>) => {
@@ -103,10 +101,9 @@ type PaginationHandlerOptions<Args extends any[], Resp = any> = FetchHandlerOpti
 }
 
 /**
- * 创建一个分页请求处理函数
- * @description 当段时间内发起多个重置请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理
- * @description 限制发起分页请求必须是非 loading 状态(上一个请求结束之后)
- * @returns paging
+ * 创建一个分页请求处理函数，
+ * 当段时间内发起多个重置请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理，
+ * 限制发起分页请求必须是非 loading 状态(上一个请求结束之后)
  */
 const createPaginationHandler = <A extends unknown[], D>({ fetcher, after, before, isReset, identifier }: PaginationHandlerOptions<A,D>) => {
 	let statusMap: Record<string, FetchStatus|undefined> = {}

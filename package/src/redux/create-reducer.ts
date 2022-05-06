@@ -10,7 +10,6 @@ import {
 
 /**
  * Reducer 构建器
- * @internal
  */
 class Builder<S> {
   /**

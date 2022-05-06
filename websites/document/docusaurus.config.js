@@ -55,12 +55,13 @@ const config = {
             position: 'left',
             label: '使用指南',
           },
-          {to: '/doc', label: '文档', position: 'left'},
+          {to: '/docs/api/react-ducky', label: 'API', position: 'left'},
           {to: '/blog', label: '博客', position: 'left'},
           {
             href: 'https://github.com/qoxop/react-ducky',
-            label: 'GitHub',
             position: 'right',
+            className: 'header-github-link',
+            'aria-label': 'GitHub repository',
           },
         ],
       },
@@ -108,6 +109,11 @@ const config = {
           },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} qoxop, Inc. Built with Docusaurus.`,
+      },
+      docs: {
+        sidebar: {
+          hideable: true
+        }
       },
       prism: {
         theme: lightCodeTheme,

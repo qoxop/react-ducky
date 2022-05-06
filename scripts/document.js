@@ -1,8 +1,8 @@
 const fs = require('fs');
+const del = require('del');
 const yazl = require('yazl');
 const path = require('path');
 const { spawnSync } = require('child_process');
-// const del = require('del');
 
 const cwd = path.resolve(__dirname, '../websites/document');
 const distPath = path.resolve(__dirname, '../websites/document/build');
@@ -12,10 +12,6 @@ const zipFileName = path.resolve(tempPath, `react-ducky-doc.zip`)
 if (!fs.existsSync(tempPath)) {
   fs.mkdirSync(tempPath)
 }
-
-spawnSync('pnpm', ['install'], { cwd, stdio: 'inherit' });
-spawnSync('pnpm', ['run', 'build'], { cwd, stdio: 'inherit' });
-
 
 function fileIterator(absoluteDir, relativeDir, callback) {
   const files = fs.readdirSync(absoluteDir, { withFileTypes: true }) || [];
@@ -51,14 +47,15 @@ const doZip = () => new Promise((resolve, reject) => {
   zipFile.end();
 });
 
-const doUpload = () => {
-}
-
 
 (async function () {
+  // update api doc
+  spawnSync('pnpm', ['api'], { cwd: process.cwd(), stdio: 'inherit' });
+  // build document
+  spawnSync('pnpm', ['run', 'build'], { cwd, stdio: 'inherit' });
   await doZip();
-  await doUpload();
-  // del(zipFileName);
+  // await doUpload();
+  del(zipFileName);
 })();
 
 

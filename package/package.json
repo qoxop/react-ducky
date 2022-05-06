@@ -22,7 +22,7 @@
     "url": "https://github.com/qoxop/react-ducky/issues"
   },
   "scripts": {
-    "build": "node ./build/index.js",
+    "build": "node ./scripts/build.js",
     "test": "jest",
     "debug": "pnpm build && cd ./dist && pnpm link"
   },
