@@ -70,22 +70,38 @@ function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
  * 控制器 - 模拟 class 组件行为
  */
 class Controller<State = any, Props = any> {
+  /**
+   * Controller Context
+   */
   static Context: Context<any> = createContext(null);
-
+  /**
+   * Controller Provider
+   */
   static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
 
-  // class like
+  /**
+   * 模拟 class 组件的 state
+   */
   state: State = {} as any;
-
+  /**
+   * 组件的 props 引用
+   */
   props: Props = {} as any;
 
+  /**
+   * 模拟 class 组件的 setState
+   */
   readonly setState = (updater: Partial<State> | FunctionLike<[State], void>) => (
     this[$setState](updater)
   );
-
+  /**
+   * 强制更新组件
+   */
   readonly forceUpdate = () => this[$forceUpdate]();
 
-  // eslint-disable-next-line class-methods-use-this
+  /**
+   * hooks 回调函数，需要被使用者重写
+   */
   public useHooks(): any {
     return {};
   }
@@ -124,8 +140,13 @@ class Controller<State = any, Props = any> {
  * ReduxController 结合 Redux 使用的控制器
  */
 class ReduxController<S = any, P = any> extends Controller<S, P> {
+  /**
+   * redux dispatch
+   */
   protected readonly dispatch: Dispatch;
-
+  /**
+   * redux store
+   */
   protected readonly store: Store;
 
   constructor(store: Store, props?: P) {

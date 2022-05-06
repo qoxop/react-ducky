@@ -34,12 +34,18 @@ const {
   useCallback,
 } = React;
 
+/**
+ * UseSelectorOptions
+ */
 type UseSelectorOptions<P> = {
   sync?: boolean;
   eq?: IsEqual<P>;
   withSuspense?: boolean | FunctionLike<[P], boolean>;
 }
-type SetState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
+/**
+ * SetRefState
+ */
+type SetRefState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
 
 /**
  * 获取 Redux 的 Dispatch 方法
@@ -138,6 +144,11 @@ const useReduxController = <C extends ReduxController, P = any>(CtrlClass: Klass
   return [ctrl, data];
 };
 
+/**
+ * useCtrlContext
+ * @param CtrlClass 
+ * @returns 
+ */
 const useCtrlContext = <C extends Klass & { Context: any } = any>(CtrlClass: C) => (
   useContext<InstanceType<C>>(CtrlClass.Context)
 );
@@ -159,9 +170,9 @@ const usePropRef = <P>(prop: P): React.MutableRefObject<P> => {
 /**
  * 用 ref 实现的 useState，用于保留对最新 state 的引用
  * @param init 初始值
- * @returns [T, SetState<T>, React.MutableRefObject<T>]
+ * @returns [T, SetRefState<T>, React.MutableRefObject<T>]
  */
-const useStateRef = <T>(init: T_OrReturnT<T>): [T, SetState<T>, React.MutableRefObject<T>] => {
+const useStateRef = <T>(init: T_OrReturnT<T>): [T, SetRefState<T>, React.MutableRefObject<T>] => {
   const [_, forceUpdate] = useReducer(s => s + 1, 0);
   const stateRef = useRef(getInit(init));
   const setState = useCallback((data: T_OrReturnT<T>, preventUpdate?: boolean) => {
@@ -221,7 +232,7 @@ const usePageEffect = (options: {
  * @param init
  * @returns
  */
-const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetState<T>] => {
+const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>] => {
   const pageId = useMemo(() => `${getPageId()}${suffix}`, []);
   const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageId));
   const storeValue = useCallback(() => setPageState(stateRef.current, pageId), []);
@@ -248,6 +259,6 @@ export {
 };
 
 export type {
-  SetState,
+  SetRefState,
   UseSelectorOptions,
 };

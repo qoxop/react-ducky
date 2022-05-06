@@ -49,7 +49,7 @@ const alwayResolve = async <D>(ps: Promise<D>): Promise<[(D|null), any]> => {
 }
 
 /**
- * 分批请求处理函数配置项
+ * 异步请求处理器配置参数
  */
 type FetchHandlerOptions<Args extends any[], Resp = any> = {
   fetcher: PromiseFn<Resp, Args>;
@@ -92,6 +92,9 @@ const createFetchHandler = <Args extends unknown[], Resp>({ fetcher, after, befo
   }
 }
 
+/**
+ * 分页请求处理器配置参数
+ */
 type PaginationHandlerOptions<Args extends any[], Resp = any> = FetchHandlerOptions<Args, Resp> & {
   /**
    * 根据请求参数判断是否是重置请求(加载第一页的请求)

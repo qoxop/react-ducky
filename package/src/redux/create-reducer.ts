@@ -8,13 +8,27 @@ import {
   FunctionLike,
 } from '../typings';
 
+/**
+ * Reducer 构建器
+ * @internal
+ */
 class Builder<S> {
+  /**
+   * 默认处理函数
+   * @internal
+   */
   default?: ReducerCase<S>;
-
+  /**
+   * 要求类型相等才执行的处理函数
+   * @internal
+   */
   equal: {
     [k: string]: ReducerCase<S> ;
   };
-
+  /**
+   * 要求类型匹配才执行的处理函数
+   * @internal
+   */
   match: Array<{
     matcher: FunctionLike<[AnyAction], boolean>;
     reducer: ReducerCase<S>;
@@ -25,6 +39,12 @@ class Builder<S> {
     this.match = [];
   }
 
+  /**
+   * 添加要求类型相等的处理函数
+   * @param type string
+   * @param reducer 处理函数
+   * @returns Builder
+   */
   addCase(type: string, reducer: ReducerCase<S>) {
     if (this.equal[type]) {
       console.warn(ACTION_TYPE_DUPLICATE_WARN);
@@ -33,7 +53,12 @@ class Builder<S> {
     }
     return this;
   }
-
+  /**
+   * 添加要求类型匹配的处理函数
+   * @param type string
+   * @param reducer 处理函数
+   * @returns Builder
+   */
   addMatcher(matcher: FunctionLike<[AnyAction], boolean>, reducer: ReducerCase < S >) {
     this.match.push({
       reducer,
@@ -41,7 +66,11 @@ class Builder<S> {
     });
     return this;
   }
-
+  /**
+   * 设置默认处理函数
+   * @param reducer
+   * @returns Builder
+   */
   addDefaultCase(reducer: ReducerCase<S>) {
     this.default = reducer;
     return this;

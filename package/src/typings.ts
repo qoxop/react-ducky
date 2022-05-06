@@ -1,7 +1,9 @@
 /** TS 类型体操 */
 import { Action, AnyAction } from 'redux';
 
-
+/**
+ * Without
+ */
 export type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 
 /**
@@ -83,6 +85,9 @@ export type PageAction = 'push'|'replace'|'forward'|'goBack';
  * 可以通过 TS 的类型覆盖，实现 useSelector 的类型推导
  */
 export interface DefaultRootState {
+  /**
+   * 当前路由信息
+   */
   _CURRENT_ROUTE?: {
     hash: string;
     state: any;
@@ -90,5 +95,8 @@ export interface DefaultRootState {
     pathname: string;
     method: PageAction;
   };
+  /**
+   * 其他字段
+   */
   [key: string]: any;
 }

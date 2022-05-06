@@ -14,6 +14,9 @@ import {
   STORE_UNINITIALIZED_ERROR
 } from '../utils/constants';
 
+/**
+ * reducer 配置对象
+ */
 type ReducerRecord = Record<string, Reducer>;
 
 let store:Store = null;
@@ -36,11 +39,29 @@ const getStore = () => checkStore() && store;
  */
 const setStore = (_store: Store) => store = _store;
 
+/**
+ * 初始化 Store 的配置项
+ */
 type InitStoreOption = {
+  /**
+   * 是否开发模式
+   */
   isDev?: boolean;
+  /**
+   * 初始值
+   */
   initState?: any;
+  /**
+   * 中间件列表
+   */
   middleware?: any[];
+  /**
+   * 切片 reducer
+   */
   reducerRecord?: ReducerRecord;
+  /**
+   * 根 reducer
+   */
   rootReducers?: ReducerRecord;
 }
 

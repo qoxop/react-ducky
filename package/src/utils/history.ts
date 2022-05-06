@@ -18,6 +18,9 @@ let executed = false;
 let currentPageAction:PageAction = 'replace';
 
 const initPageKey = uuid();
+/**
+ * 自定义的路由事件名
+ */
 const EventName = 'pageAction';
 
 /**

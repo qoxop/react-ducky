@@ -9,8 +9,14 @@ const {
   useLayoutEffect,
 } = React;
 
+/**
+ * ReduxContext
+ */
 const ReduxContext = createContext<{store?: Store, subscriber?: ReduxSubscriber }>({});
 
+/**
+ * ReduxProvider
+ */
 const ReduxProvider:React.FC<{ store: Store, children: any, setDefault?: boolean }> = ({
   store,
   children,

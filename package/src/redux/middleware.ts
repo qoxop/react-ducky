@@ -1,12 +1,19 @@
 import { isFunction } from '../utils/is-type';
 import { enhanceHistory, EventName } from '../utils/history';
 
+/**
+ * thunkMiddleware
+ */
 const thunkMiddleware = ({ getState }) => (next) => (action) => (
   isFunction(action) ? action(next, getState) : next(action)
 );
 
 const RouteActionType = 'ROUTE-CHANGED';
 
+/**
+ * redux 路由中间件
+ * @remake 用于发起自定义的路由事件和更新路由信息
+ */
 const historyMiddleware = ({ dispatch }) => {
   enhanceHistory();
   window.addEventListener(EventName, (event) => {
