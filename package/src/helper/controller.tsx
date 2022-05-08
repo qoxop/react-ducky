@@ -19,10 +19,18 @@ const $classHooks = Symbol ? Symbol('$classHooks') : '$__controller_$_class_hook
 const $bindThis = Symbol ? Symbol('$bindThis') : '$__controller_$_bind_this';
 
 /**
- * Controller 装饰器：
- * @param options.useCtx 提供 React Provider 、Context 等属性
- * @param options.bindThis 自动给方法绑定 this 对象
- * @returns
+ * Controller 装饰器
+ * @param options 配置对象
+ * @remarks
+ * 类型说明:
+ * ```ts
+ * type OptionsType = {
+ *  // 提供 React Provider 、Context 等属性
+ *  useCtx?: boolean;  
+ *  // 自动给方法绑定 this 对象
+ *  bindThis?: boolean;
+ * }
+ * ```
  */
 function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
   const { useCtx = true, bindThis = false } = options;
@@ -71,36 +79,41 @@ function ctrlEnhance(options:{useCtx?: boolean, bindThis?: boolean} = {}) {
  */
 class Controller<State = any, Props = any> {
   /**
-   * Controller Context
+   * 存放实例对象的 Context 
    */
   static Context: Context<any> = createContext(null);
   /**
-   * Controller Provider
+   * 提供实例对象的 Provider
    */
   static Provider: FunctionComponent<{ controller: unknown, children: unknown }>;
 
   /**
    * 模拟 class 组件的 state
+   * @readonly
    */
   state: State = {} as any;
   /**
    * 组件的 props 引用
+   * @readonly
    */
   props: Props = {} as any;
 
   /**
    * 模拟 class 组件的 setState
+   * @readonly
    */
   readonly setState = (updater: Partial<State> | FunctionLike<[State], void>) => (
     this[$setState](updater)
   );
   /**
    * 强制更新组件
+   * @readonly
    */
   readonly forceUpdate = () => this[$forceUpdate]();
 
   /**
    * hooks 回调函数，需要被使用者重写
+   * @override
    */
   public useHooks(): any {
     return {};
@@ -123,8 +136,7 @@ class Controller<State = any, Props = any> {
     this[$forceUpdate] = useReducer((a) => (a + 1), 0)[1];
     this.state = state;
     this.props = props;
-    if (!this[$setState]) {
-      // 只赋值一次
+    if (!this[$setState]) { // 只赋值一次
       this[$setState] = (updater) => {
         if (typeof updater === 'function') {
           setState(produce<State>(updater));
@@ -137,15 +149,15 @@ class Controller<State = any, Props = any> {
 }
 
 /**
- * ReduxController 结合 Redux 使用的控制器
+ * ReduxController 结合 Redux 使用的控制器，继承自 {@link Controller}
  */
 class ReduxController<S = any, P = any> extends Controller<S, P> {
   /**
-   * redux dispatch
+   * redux dispatch 方法
    */
   protected readonly dispatch: Dispatch;
   /**
-   * redux store
+   * redux store 对象
    */
   protected readonly store: Store;
 

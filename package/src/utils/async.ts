@@ -17,10 +17,8 @@ enum FetchStatus {
 
 /**
  * 创建一个 Promise，将 resolve 和 reject 提取到作用域外
- * @param void
- * @returns { promise: Promise<T>; resolve: (data?: T) => void; reject: (error?: T) => void;}
  */
-const outPromise = <T = any|void>() => {
+function outPromise <T = any|void>() {
   const data: {
     promise: Promise<T>;
     resolve: (data?: T) => void;
@@ -34,11 +32,11 @@ const outPromise = <T = any|void>() => {
 }
 
 /**
- * 将一个 promise 转化成一个永不报错的新 promise，把错误信息包装在返回结果中
- * @param ps
- * @returns [response, error]
+ * 将一个 Promise 实例 转化成一个永不报错的新 Promise 实例，把错误信息包装在返回结果中
+ * @param ps Promise 实例
+ * @returns `[data, null] | [null, error]`
  */
-const alwayResolve = async <D>(ps: Promise<D>): Promise<[(D|null), any]> => {
+async function alwayResolve <D>(ps: Promise<D>): Promise<[(D|null), any]> {
   try {
     const data = await ps;
     return [data, null];
@@ -67,10 +65,12 @@ type FetchHandlerOptions<Args extends any[], Resp = any> = {
 }
 
 /**
- * 创建一个请求处理函数，当段时间内发起多个请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理
+ * 创建一个请求处理函数，当段时间内发起多个请求时，只响应最后一个请求，前面的请求返回时进行抛异常处理
+ * @param options 配置对象 {@link FetchHandlerOptions}
  * @returns 
  */
-const createFetchHandler = <Args extends unknown[], Resp>({ fetcher, after, before, identifier }: FetchHandlerOptions<Args,Resp>) => {
+function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerOptions<Args,Resp>) {
+  const { fetcher, after, before, identifier } = options;
   let fetchIndexMap:Record<string, number> = {};
   return async (...args: Args) => {
     const key = identifier ? identifier(...args) : 'def';
@@ -101,11 +101,13 @@ type PaginationHandlerOptions<Args extends any[], Resp = any> = FetchHandlerOpti
 }
 
 /**
- * 创建一个分页请求处理函数，
- * 当段时间内发起多个重置请求时，指响应最后一个请求，前面的请求返回时进行抛异常处理，
- * 限制发起分页请求必须是非 loading 状态(上一个请求结束之后)
+ * 创建一个分页请求处理函数。<br />
+ * - 当段时间内发起多个重置请求时，只响应最后一个请求，前面的请求返回时进行抛异常处理 <br />
+ * - 限制发起分页请求必须是非 loading 状态(上一个请求结束之后)
+ * @param options 配置对象 {@link PaginationHandlerOptions}
  */
-const createPaginationHandler = <A extends unknown[], D>({ fetcher, after, before, isReset, identifier }: PaginationHandlerOptions<A,D>) => {
+function createPaginationHandler<A extends unknown[], D>(options: PaginationHandlerOptions<A,D>) {
+  const { fetcher, after, before, isReset, identifier } = options;
 	let statusMap: Record<string, FetchStatus|undefined> = {}
 	let fetchIndexMap:Record<string, number> = {};
 	return async (...args: A) => {

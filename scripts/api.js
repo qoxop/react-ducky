@@ -1,22 +1,22 @@
 /**
  * update api doc
  */
-const del = require('del');
+const fs = require('fs-extra');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { createInterface } = require("readline");
 const { filesTransfer } = require('./utils');
 
 const PACKAGE_FOLDER = path.resolve(__dirname, '../package');
 const DOCUMENT_FOLDER = path.resolve(__dirname, '../websites/document');
+const ApiDocTemp = path.resolve(PACKAGE_FOLDER, './.api-doc');
 
 (async function () {
   // build package
   spawnSync('pnpm', ['build'], { cwd: PACKAGE_FOLDER, stdio: 'inherit' });
-  await del(path.resolve(DOCUMENT_FOLDER, './docs/api/*.md'))
+  await fs.remove(path.resolve(DOCUMENT_FOLDER, './docs/api'));
   // copy api-doc
   await filesTransfer({
-    from: path.resolve(PACKAGE_FOLDER, './.api-doc'),
+    from: ApiDocTemp,
     to: path.resolve(DOCUMENT_FOLDER, './docs/api'),
     transform: async (filename, buff) => {
       const id = filename.replace(/\.md$/, '');
@@ -43,6 +43,6 @@ const DOCUMENT_FOLDER = path.resolve(__dirname, '../websites/document');
       return header + text;
     },
     filter: (filePath) => !/index\.md$/.test(filePath)
-  })
+  });
 })();
 

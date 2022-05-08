@@ -19,13 +19,13 @@ function filesTransfer({ from, to, transform, filter = () => true }) {
     const toPath = path.join(to, item.name);
     if (item.isFile()) {
       ps.push(new Promise((resolve, reject) => {
-        if (!filter(fromPath)) return (resolve);
+        if (!filter(fromPath)) return resolve(fromPath);
         fs.readFile(fromPath, (rErr, data) => {
           if (rErr) return reject(rErr);
           Promise.resolve(transform(item.name, data)).then((newData) => {
             fs.writeFile(toPath, newData, (wErr) => {
               if (wErr) reject(wErr);
-              resolve();
+              resolve(fromPath);
             });
           });
         });

@@ -96,16 +96,17 @@ const createRootReducer = (rootReducers: ReducerRecord, reducerRecord?: ReducerR
 
 /**
  * 初始化 redux store
- * @param InitStoreOption
+ * @param options {@link InitStoreOption}
  * @returns 
  */
-const initStore = <STATE = any>({
-  isDev = false,
-  initState = {},
-  middleware = [],
-  reducerRecord = {},
-  rootReducers = {},
-}: InitStoreOption) => {
+function initStore<STATE = any>(options: InitStoreOption) {
+  const {
+    isDev = false,
+    initState = {},
+    middleware = [],
+    reducerRecord = {},
+    rootReducers = {},
+  } = options;
   const _store = createStore(
     createRootReducer(rootReducers, reducerRecord),
     initState,

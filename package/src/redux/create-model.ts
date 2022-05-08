@@ -138,7 +138,10 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
 };
 
 /**
- * 创建一个基于 Redux 的模型
+ * 创建一个基于 Redux 的状态模型
+ * @param options 配置对象 {@link CreateModelOptions}
+ * @param getStore 获取 `redux store` 的方法，多 redux 实例时使用
+ * @returns 返回状态模型 {@link Model}
  */
 function createModel<
   STATE extends Record<string, any>,

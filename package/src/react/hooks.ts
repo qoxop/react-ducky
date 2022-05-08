@@ -35,17 +35,48 @@ const {
 } = React;
 
 /**
- * UseSelectorOptions
+ * useSelector 的配置对象
+ * @remarks
+ * 类型说明:
+ * ```ts
+ * type UseSelectorOptions = {
+ *  // 是否同步订阅(redux 值一更新就马上执行组件的 update 操作)，默认为 false
+ *  sync?: boolean;
+ *  // 对比方法
+ *  eq?: IsEqual<P>;
+ *  // 是否与 React.Suspense 配合使用
+ *  withSuspense?: boolean | FunctionLike<[P], boolean>;
+ * }
+ * ```
  */
 type UseSelectorOptions<P> = {
+  /**
+   * 同步订阅，redux 值一更新就马上执行组件的 update 操作，默认为 false
+   */
   sync?: boolean;
+  /**
+   * 对比方法
+   */
   eq?: IsEqual<P>;
+  /**
+   * 是否与 React.Suspense 配合使用
+   */
   withSuspense?: boolean | FunctionLike<[P], boolean>;
 }
+
 /**
- * SetRefState
+ * {@link useStateRef} 的第二个返回值，用于更新状态
  */
-type SetRefState<S> = (state: T_OrReturnT<S>, preventUpdate?: boolean) => void;
+type SetRefState<S> = (
+  /**
+   * 待更新的值
+   */
+  state: T_OrReturnT<S>,
+  /**
+   * 更新值的时候，阻止重新渲染
+   */
+  preventUpdate?: boolean
+) => void;
 
 /**
  * 获取 Redux 的 Dispatch 方法
@@ -55,14 +86,10 @@ const useDispatch = () => (useContext(ReduxContext).store.dispatch);
 
 /**
  * 订阅 Redux 的状态变化
- * @param selector
- * @param options
- * @returns
+ * @param selector 数据选择器函数 {@link Selector}
+ * @param options 配置选项 {@link UseSelectorOptions}
  */
-const useSelector = <S = DefaultRootState, P = any>(
-  selector: Selector<S, P>,
-  options: UseSelectorOptions<P> = {},
-) => {
+function useSelector <S = DefaultRootState, P = any>(selector: Selector<S, P>, options: UseSelectorOptions<P> = {}): P {
   const { eq, withSuspense, sync } = useMemo(() => ({
     eq: options.eq || shallowEqual,
     sync: options.sync,
@@ -116,12 +143,12 @@ const useSelector = <S = DefaultRootState, P = any>(
 };
 
 /**
- * 使用一个 Controller 类
- * @param CtrlClass
- * @param props
- * @returns
+ * 在组件内使用一个 Controller 子类
+ * @param CtrlClass {@link Controller} 的子类
+ * @param props 组件的 `props`
+ * @returns 返回一个元组，内容分别是 {@link Controller} 实例，以及实例内 {@link Controller.useHooks} 的返回值
  */
-const useController = <C extends Controller, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] => {
+function useController <C extends Controller, P = any>(CtrlClass: Klass<[P?], C>, props?: P):[C, ReturnType<C['useHooks']>] {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ctrl = useMemo(() => (new CtrlClass(props)), []);
   ctrl[$classHooks](props);
@@ -130,12 +157,12 @@ const useController = <C extends Controller, P = any>(CtrlClass: Klass<[P?], C>,
 };
 
 /**
- * 使用一个 ReduxController 类
- * @param CtrlClass
- * @param props
- * @returns
+ * 在组件内使用一个 ReduxController 子类
+ * @param CtrlClass {@link ReduxController} 的子类
+ * @param props 组件的 `props`
+ * @returns 返回一个元组，内容分别是 {@link ReduxController} 实例，以及实例内 {@link Controller.useHooks} 方法的返回值
  */
-const useReduxController = <C extends ReduxController, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] => {
+function useReduxController<C extends ReduxController, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>] {
   const { store } = useContext(ReduxContext);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ctrl = useMemo(() => (new CtrlClass(store, props)), []);
@@ -145,20 +172,20 @@ const useReduxController = <C extends ReduxController, P = any>(CtrlClass: Klass
 };
 
 /**
- * useCtrlContext
- * @param CtrlClass 
- * @returns 
+ * 通过 context 获取父级组件的 Controller 实例
+ * @param CtrlClass - 父级组件使用的 Controller 类
+ * @returns - 返回 {@link Controller} 实例
  */
-const useCtrlContext = <C extends Klass & { Context: any } = any>(CtrlClass: C) => (
-  useContext<InstanceType<C>>(CtrlClass.Context)
-);
+function useCtrlContext <C extends Klass & { Context: any } = any>(CtrlClass: C):InstanceType<C> {
+  return useContext<InstanceType<C>>(CtrlClass.Context)
+}
 
 /**
  * 使用 useRef 保留对最新 props 的引用
- * @param prop
- * @returns
+ * @param prop - 可以是任意组件闭包内的任何变量
+ * @returns `React.MutableRefObject<P>`
  */
-const usePropRef = <P>(prop: P): React.MutableRefObject<P> => {
+function usePropRef <P>(prop: P): React.MutableRefObject<P> {
   const propRef = useRef(prop);
   if (propRef.current !== prop) {
     propRef.current = prop;
@@ -166,13 +193,12 @@ const usePropRef = <P>(prop: P): React.MutableRefObject<P> => {
   return propRef;
 };
 
-
 /**
  * 用 ref 实现的 useState，用于保留对最新 state 的引用
- * @param init 初始值
- * @returns [T, SetRefState<T>, React.MutableRefObject<T>]
+ * @param { T_OrReturnT<T> } init - 初始值
+ * @returns 返回一个元组，内容分别是 state, {@link SetRefState} 和 `React.MutableRefObject<T>`
  */
-const useStateRef = <T>(init: T_OrReturnT<T>): [T, SetRefState<T>, React.MutableRefObject<T>] => {
+function useStateRef <T>(init: T_OrReturnT<T>): [T, SetRefState<T>, React.MutableRefObject<T>] {
   const [_, forceUpdate] = useReducer(s => s + 1, 0);
   const stateRef = useRef(getInit(init));
   const setState = useCallback((data: T_OrReturnT<T>, preventUpdate?: boolean) => {
@@ -190,14 +216,26 @@ const useStateRef = <T>(init: T_OrReturnT<T>): [T, SetRefState<T>, React.Mutable
 };
 
 /**
- * 订阅页面钩子
- * @param options
+ * 路由事件钩子，用于识别组件的建立与销毁与路由动作 {@link PageAction} 的关系
+ * @remarks
+ * 类型说明:
+ * ```typescript
+ * type options = {
+ *  // 进入组件时执行的回调方法(接收 PageAction 参数)，表示当前是通过何种路由方式进入到该组件的
+ *  onEntry: FunctionLike<[PageAction], void>;
+ *  // 进入组件时执行的回调方法(接收 PageAction 参数)，表示该组件是由于何种路由方式销毁的 * 
+ *  onLeave?: FunctionLike<[PageAction], void>;
+ *  // 同 onEnter，区别是调用时机不同(onEnterEffect是在组件渲染之后执行) *
+ *  onEnterEffect?: FunctionLike<[PageAction], void>;
+ * }
+ * ```
+ * @param options 回调事件配置
  */
-const usePageEffect = (options: {
+function usePageEffect(options: {
   onEnter?: FunctionLike<[PageAction], void>;
   onLeave?: FunctionLike<[PageAction], void>;
   onEnterEffect?: FunctionLike<[PageAction], void>;
-}) => {
+}):void {
   const executed = useRef(false);
   const curOptions = usePropRef(options);
 
@@ -229,10 +267,11 @@ const usePageEffect = (options: {
 
 /**
  * 查询和设置页面状态数据
- * @param init
- * @returns
+ * @param init 初始值
+ * @param suffix 每个路由都有一个唯一的 ID，但是同一个路由下可以使用多份缓存，suffix 用于区分不同的缓存
+ * @returns 返回一个元组，内容分别是 state 和 {@link SetRefState}
  */
-const usePageState = <T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>] => {
+function usePageState<T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>]  {
   const pageId = useMemo(() => `${getPageId()}${suffix}`, []);
   const [state, setState, stateRef] = useStateRef(() => getPageState(init, pageId));
   const storeValue = useCallback(() => setPageState(stateRef.current, pageId), []);
