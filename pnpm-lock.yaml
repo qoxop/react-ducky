@@ -74,7 +74,7 @@ importers:
     devDependencies:
       '@types/jest': 27.5.0
 
-  package/dist:
+  package/lib:
     specifiers:
       '@types/jest': ^27.4.1
     devDependencies:
@@ -114,7 +114,7 @@ importers:
       react: 18.1.0
       react-datepicker: 4.7.0_react-dom@18.1.0+react@18.1.0
       react-dom: 18.1.0_react@18.1.0
-      react-ducky: link:../../package/dist
+      react-ducky: link:../../package/lib
       react-router: 6.3.0_react@18.1.0
       react-router-dom: 6.3.0_react-dom@18.1.0+react@18.1.0
       redux: 4.2.0

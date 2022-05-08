@@ -8,7 +8,7 @@
 
   "dtsRollup": {
     "enabled": true,
-    "untrimmedFilePath": "./dist/index.d.ts"
+    "untrimmedFilePath": "./lib/index.d.ts"
   },
 
   "apiReport": {

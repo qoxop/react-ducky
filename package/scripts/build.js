@@ -10,7 +10,7 @@ const { Extractor, ExtractorConfig } = require("@microsoft/api-extractor");
 
 const TEMP_DIR = path.posix.resolve(__dirname, '../temp');
 const API_DOC_DIR = path.posix.resolve(__dirname, '../.api-doc');
-const OUTPUT_DIR =  path.posix.resolve(__dirname, '../dist');
+const OUTPUT_DIR =  path.posix.resolve(__dirname, '../lib');
 const INPUT_FILE = path.resolve(__dirname, '../src/index.ts');
 const TSCONFIG_FILE = path.resolve(__dirname, '../tsconfig.json');
 const API_EXTRACTOR_FILE = path.resolve(__dirname, '../api-extractor.json');
