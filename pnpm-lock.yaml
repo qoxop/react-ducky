@@ -10,6 +10,7 @@ importers:
       '@babel/preset-env': ^7.16.11
       '@babel/preset-react': ^7.16.7
       '@babel/preset-typescript': ^7.15.0
+      '@microsoft/api-documenter': ^7.17.12
       '@microsoft/api-extractor': ^7.22.2
       '@rollup/plugin-typescript': ^8.3.2
       '@testing-library/react-hooks': ^7.0.2
@@ -42,6 +43,7 @@ importers:
       '@babel/preset-env': 7.17.10_@babel+core@7.17.10
       '@babel/preset-react': 7.16.7_@babel+core@7.17.10
       '@babel/preset-typescript': 7.16.7_@babel+core@7.17.10
+      '@microsoft/api-documenter': 7.17.12
       '@microsoft/api-extractor': 7.23.1
       '@rollup/plugin-typescript': 8.3.2_b374d55ef3a5cbacf4be717ca2e846ca
       '@testing-library/react-hooks': 7.0.2_8d1c68dbe288f9c300f5c52e7b2952ac
@@ -2576,6 +2578,19 @@ packages:
 
   /@mdx-js/util/1.6.22:
     resolution: {integrity: sha512-H1rQc1ZOHANWBvPcW+JpGwr+juXSxM8Q8YCkm3GhZd8REu1fHR3z99CErO1p9pkcfcxZnMdIZdIsXkOHY0NilA==}
+
+  /@microsoft/api-documenter/7.17.12:
+    resolution: {integrity: sha512-XJq58+HwLxw5bY/YPnJnmn2rG1DXHBUIXKWWwphHj9A/sNyYxf5elbvwcsx41+MSNz07pcfW8/neyK5v05MFgA==}
+    hasBin: true
+    dependencies:
+      '@microsoft/api-extractor-model': 7.17.2
+      '@microsoft/tsdoc': 0.14.1
+      '@rushstack/node-core-library': 3.45.4
+      '@rushstack/ts-command-line': 4.10.10
+      colors: 1.2.5
+      js-yaml: 3.13.1
+      resolve: 1.17.0
+    dev: true
 
   /@microsoft/api-extractor-model/7.17.2:
     resolution: {integrity: sha512-fYfCeBeLm7jnZligC64qHiH4/vzswFLDfyPpX+uKO36OI2kIeMHrYG0zaezmuinKvE4vg1dAz38zZeDbPvBKGg==}
@@ -7398,6 +7413,14 @@ packages:
 
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  /js-yaml/3.13.1:
+    resolution: {integrity: sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==}
+    hasBin: true
+    dependencies:
+      argparse: 1.0.10
+      esprima: 4.0.1
+    dev: true
 
   /js-yaml/3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
