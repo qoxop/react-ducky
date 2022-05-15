@@ -1,8 +1,8 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = require('prism-react-renderer/themes/okaidia');
+const darkCodeTheme = require('prism-react-renderer/themes/oceanicNext');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -33,7 +33,11 @@ const config = {
             'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [
+            require.resolve('./src/css/icons/iconfont.css'),
+            require.resolve('./src/css/custom.css')
+          ],
+
         },
       }),
     ],
@@ -57,6 +61,11 @@ const config = {
           },
           {to: '/docs/api/react-ducky', label: 'API', position: 'left'},
           {to: '/blog', label: '博客', position: 'left'},
+          {
+            href: 'https://react-ducky.qoxop.run/demo',
+            label: 'DEMO', 
+            position: 'right'
+          },
           {
             href: 'https://github.com/qoxop/react-ducky',
             position: 'right',

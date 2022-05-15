@@ -14,22 +14,22 @@ sidebar_position: 2
 - `goBack`: 将路由指针指向路由栈的上一个路由，并跳转到该路由。
 - `forward`: 将路由指针指向路由栈的下一个路由，并跳转到该路由。
 
-React-ducky 提供了一个与浏览器路由栈行为一致的缓存管理方案: **当某个页面对应的路由从路由栈中被推出时，它的缓存也会被清除**。
+React-Ducky 提供了一个与浏览器路由栈行为一致的缓存管理方案: **当某个页面对应的路由从路由栈中被推出时，它的缓存也会被清除**。
 
 也就是说，当你某个页面上新建了一份缓存数据后，如果你通过 `forward` 和 `goBack` 的方式重新访问该页面，那么这个缓存数据依然有效，如果使用其他的方式，缓存就会失效。
 
 ## 与 [History.state](https://developer.mozilla.org/zh-CN/docs/Web/API/History/state) 的区别
 
-区别在于：History.state 是只读的，而且必须是由上一个路由传入。而 React-ducky 提供的缓存方案是允许你在当前页面的运行时对缓存数据进行写入和修改的。
+区别在于：History.state 是只读的，而且必须是由上一个路由传入。而 React-Ducky 提供的缓存方案是允许你在当前页面的运行时对缓存数据进行写入和修改的。
 
-这里有一个运用该方案的[实际示例](https://www.hhhhhhh.com)。
+这里有一个运用该方案的[实际示例](https://React-Ducky.qoxop.run/demo)。
 
 ## 示例代码
 
 尝试编写一个记住滚动位置的 hook:
 
 ```tsx {6,13-15}
-import { usePageState } from 'react-ducky'
+import { usePageState } from 'React-Ducky'
 import { useRef, useCallback, useEffect } from 'react';
 
 export const useMemoriesScroll = (key: string = "memo-scroll") => {

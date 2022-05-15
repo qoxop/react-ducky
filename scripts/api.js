@@ -44,5 +44,6 @@ const ApiDocTemp = path.resolve(PACKAGE_FOLDER, './.api-doc');
     },
     filter: (filePath) => !/index\.md$/.test(filePath)
   });
+  await fs.remove(ApiDocTemp);
 })();
 

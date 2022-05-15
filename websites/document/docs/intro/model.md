@@ -18,12 +18,13 @@ sidebar_position: 1
 
 可以看到这样的数据流是相当清晰的。但是，使用 Redux 的过程中我们还是遇到了不少问题：
 
-- 纯粹使用 Redux 的话，我们的业务代码通常需要编写大量的模版代码，比如 reducer、action、actionCreator 等等
-- 如果要在 React 组件中使用 Redux 的话，需要使用 connect 或者 useSelector 来连接 Redux, 从全局的 state 中挑选出想要用的数据传递给组件。
-- 修改状态时需要手动 dispatch 或者提前将 dispatch 和对应的 actionCreator 关联起来，再传递到组件中
+- 为实现简单的功能，需要编写大量的模版代码，比如 reducer、action、actionCreator 等等
+- 在 React 组件中使用 Redux 需要：
+  - 使用 useSelector 或 connect 从**全局状态**中订阅数据
+  - 使用 bindActionCreators 或者手写 dispatch 来封装 action 的派发方法。
 - 对于异步状态的维护比较麻烦，需要借助 Redux-thunk 之类的中间件来实现异步 action。
 
-整个开发过程相对繁琐。**更重要的是**，虽然数据流向是清晰明了，但是**数据模型**却不清晰，数据的**定义**以及对数据的**更新**、**订阅**等操作是割裂开来的。
+整个开发过程相对繁琐。**更重要的是**，虽然数据流向是清晰了，但是**数据模型**却不清晰，数据的**定义**以及对数据的**更新**、**订阅**等操作是割裂开来的。
 
 为什么不能将业务数据抽象成一个个的稳定简单的模型：**定义好数据类型和初始值，然后提供便捷的相增删改查方法**呢? 为了简化 Redux 的使用以及方便前端的数据建模，React-Ducky 提供了一个核心的 Api — `createModel`, 下面是一个简单的示例：
 
@@ -31,7 +32,7 @@ sidebar_position: 1
 
 ```ts title="countModel.ts"
 import { updateReducer, store } from './store'
-import { createModel, PayloadAction } from 'react-ducky';
+import { createModel, PayloadAction } from 'React-Ducky';
 
 const countModel = createModel({
   statePaths: ['count'],
@@ -47,7 +48,7 @@ const countModel = createModel({
     },
   }
 });
-// 挂载到 store 上
+// 合并到 RootReducer 上
 updateReducer({ count: countModel.reducer });
 ```
 

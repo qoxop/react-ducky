@@ -4,13 +4,13 @@ sidebar_position: 2
 
 # 示例: 待办列表
 
-这一节，我们通过创建一个 TodoList 应用来快速熟悉一下 react-ducky 的基础用法。
+这一节，我们通过创建一个 TodoList 应用来快速熟悉一下 React-Ducky 的基础用法。
 
 :::note
 假设前置的安装和初始化都已经完成了，所以我们直接从具体的模块开始编写 Demo
 :::
 
-## 需求分析
+## 一、分析
 
 **首先，**我们先确认一个待办需要包含哪些信息:
 - 唯一ID
@@ -18,7 +18,7 @@ sidebar_position: 2
 - 到期时间
 - 完成状态
 
-**其次，**我们要明确待办列表的功能点(对应数据的操作)
+**其次，**我们要明确待办列表的功能点(对应数据的操作):
 - **新增**一个待办
 - **删除**一个待办
 - **修改**一个待办
@@ -26,13 +26,15 @@ sidebar_position: 2
   - 修改内容和时间
 - **查看**筛选待办列表
 
-## 创建数据模型
+## 二、创建数据模型
+
+基本上就是定义数据的类型以及对数据的操作方法: 
 
 ```ts title='model.ts' {19-45}
 import { 
   createModel, 
   PayloadAction
-} from 'react-ducky';
+} from 'React-Ducky';
 
 export type TodoItem = {
   id: string,
@@ -41,7 +43,7 @@ export type TodoItem = {
   finished: boolean;
 }
 
-export default createModel({
+const todoModel = createModel({
   statePaths: ['todo'],
   initialState: {
     list: [] as TodoItem[],
@@ -78,38 +80,39 @@ export default createModel({
 });
 ```
 
-## 使用数据模型
+## 三、使用数据模型
 
-### 1、挂载 reducer
-当调用完 `createModel` 后，我们只是获取到一个 `model` 对象，我们需要将它们与 redux 产生关联: 将 `model.reducer` 方法通过
-[`combineReducers`](http://cn.redux.js.org/api/combinereducers) 和
-[`store.replaceReducer`](http://cn.redux.js.org/api/store#replacereducernextreducer) 将挂在到 redux 上。
+### 1、更新 reducer
 
-在这个例子中，因为我们使用的是 react-ducky 提供的 `initStore` 方法初始化 Redux，所以可以方便地通过其返回的 `updateReducer` 方法轻松实现这个过程。
+`model` 对象上有个 `reducer` 方法，我们需要通过 [`combineReducers`](http://cn.redux.js.org/api/combinereducers) 将它合并到 redux 的**根 `reducer`** 上。
+
+在这个例子中，我们通过 `initStore` 返回的 `updateReducer` 方法来实现合并的过程：
 
 ```ts title='model.ts'
 import { updateReducer } from 'src/provider';
-
+// createModel ....
 updateReducer({ todo: todoModel.reducer });
+
+export default todoModel;
 ```
 
 ### 2、在组件订阅模型数据
 
-通过 model 对象上的 `useModel` 方法可以订阅到模型数据，达到和 `useSelector` 一样的效果，区别在于: `useModel` 订阅的的是当前模型的数据，`useSelector` 订阅的是全局的 Redux 状态数据。
+通过 model 对象上的 `useModel` 方法可以订阅到模型数据。
 
 ```tsx {5}
 import React from 'react';
 import todoModel from './model';
 
 export const TodoList = () => {
-  const todoList = todoModel.useModel((state) => state.list); // 拥有完善的类型提醒功能
+  const todoList = todoModel.useModel((state) => state.list);
   return (/* render todoList */)
 }
 ```
 
 ### 3、将更新方法传递给组件
 
-传统的 redux 用法中，我们需要将自行将 `dispatch` 方法与对应的 `action` 进行绑定，封装成一个新的方法再传递给组件调用，但是，在  react-ducky 中，这一切都在自动完成的。我们只需要调用 `model.actions` 中暴露出来的方法就可以完成对应 `action` 的派发。
+**不需要 `connect`, 也不需要 `dispatch`**。`todoModel.actions` 对象上的方法内部会自行调用 `dispatch` 方法来触发一个 redux 的动作，从而达到修改数据的目的。
 
 ```tsx title="将 todoModel 的增删改方法直接传递给UI组件" {10,15-17}
 import React from 'react';
@@ -118,7 +121,7 @@ import { Todo } from './components/todo-item';
 import { TodoEditor } from './components/todo-editor';
 
 export const TodoList = () => {
-  const todoList = todoModel.useModel((state) => state.list); // 拥有完善的类型提醒功能
+  const todoList = todoModel.useModel((state) => state.list);
   return (
     <div>
       <TodoEditor onSave={todoModel.actions.add} />
@@ -138,16 +141,18 @@ export const TodoList = () => {
 ```
 
 :::info
-`model.actions` 包含的方法与传入的 `reducers` 一一对应，action方法的参数类型由 `reducer` 方法**自动推导**得出。
-比如: <br />
-**`reducers.toggle`** 的类型为 `(state, action: PayloadAction<string>) => void`，推导出 <br />
-**`actions.toggle`** 的类型为 `(arg: string) => void`
+_**model.actions**_ 包含的方法与传入的 _**reducers**_ 一一对应，_**actions**_ 方法的参数类型由 _**reducer**_ 方法**自动推导**得出。
+比如: 
+_**reducers.toggle**_ 的类型为 `(state, action: PayloadAction<string>) => void`，推导出 
+**actions.toggle** 的类型为 `(arg: string) => void`
 :::
 
-到此，除了布局样式和具体的UI组件外，我们已经完成了所有业务逻辑的编写。[查看完整示例代码](https://github1s.com/qoxop/react-ducky/blob/main/websites/demo/src/pages/todo/model.ts)
+到此，除了布局样式和具体的UI组件外，我们已经完成了所有业务逻辑的编写。[查看完整示例代码](https://github1s.com/qoxop/React-Ducky/blob/main/websites/demo/src/pages/todo/model.ts)
 
-## 使用持久化存储
-上面完成的 TodoList 应用，数据的存储全部存放在了内存中，页面一刷新数据就全部丢失了。为了保证数据的持久性，我们可以只用`localStorage` 进行数据的存储，仅仅需要增加一点点的配置就可以实现。
+
+## 四、使用持久化存储
+
+为了让我们的数据再能持久化保存，我们可以使用相关的缓存配置:
 
 ```ts title='model.ts' {8-10}
 // .... 
@@ -163,9 +168,11 @@ export default createModel({
 });
 ```
 
-## 最终效果
+## 五、最终效果
 
-
-
+<iframe
+  src="https://React-Ducky.qoxop.run/demo#/todo/list"
+  className="todo_demo"
+></iframe>
 
 
