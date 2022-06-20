@@ -83,7 +83,10 @@ const createRootReducer = (rootReducers: ReducerRecord, reducerRecord?: ReducerR
   return (state:DefaultRootState, action: AnyAction) => {
     switch (action.type) {
       case RouteActionType:
-        return { ...state, _CURRENT_ROUTE: action.payload };
+        if (state?._CURRENT_ROUTE) {
+          delete (state._CURRENT_ROUTE as any).last;
+        }
+        return { ...state, _CURRENT_ROUTE: {...action.payload, last: state?._CURRENT_ROUTE} };
       default:
         const { _CURRENT_ROUTE, ...otherState } = state;
         return { 

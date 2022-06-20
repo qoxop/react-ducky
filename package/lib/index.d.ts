@@ -597,7 +597,7 @@ export declare function usePropRef<P>(prop: P): React_2.MutableRefObject<P>;
 export declare function useReduxController<C extends ReduxController, P = any>(CtrlClass: Klass<[Store, P?], C>, props?: P): [C, ReturnType<C['useHooks']>];
 
 /**
- * 订阅 Redux 的状态变化
+ * 订阅 Redux 的状态数据
  * @param selector 数据选择器函数 {@link Selector}
  * @param options 配置选项 {@link UseSelectorOptions}
  */
@@ -655,7 +655,7 @@ export declare type Without<T, U> = {
 };
 
 /**
- * 增强路由组件，增加前进后退钩子
+ * 增强路由组件，给页面级组件的路由事件回调提供切入点。
  * @param Component
  * @param opt
  * @returns

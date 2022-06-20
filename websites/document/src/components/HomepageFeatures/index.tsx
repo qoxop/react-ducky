@@ -4,48 +4,45 @@ import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  imgSrc: string;
   description: JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: '易用的数据模型',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: '数据模型',
+    imgSrc: require('@site/static/img/data-model.png').default,
     description: (
       <>
-        React-ducky 使用 createModel 帮你创建基于 Redux 的业务数据模型，统一了 actions、reducer 的定义，且提供方便的异步数据获取方式，
-        减少大量模版代码，并提供完全的类型定义
+        针对 Redux 封装了一套简易的 API ，将 Redux 的 reducer 切片抽象成数据模型，简化状态管理。
       </>
     ),
   },
   {
-    title: '自动的缓存管理',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: '路由与缓存',
+    imgSrc: require('@site/static/img/page-route.png').default,
     description: (
       <>
-        通过重写浏览器的 pushState 和 popState 方法(无破坏性改造)监听浏览器的前进后退事件，支持将任何状态数据与路由堆栈进行绑定，
-        从而避免减少手动管理业务数据缓存的烦恼
+        基于 history Api 设计了用于优化 React 应用前进后退体验的缓存方案，提供页面级缓存以及路由跳转方法判断等方法。
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: '逻辑控制器',
+    imgSrc: require('@site/static/img/controller.png').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        提供了一种 class + hook 的方式来编写你的业务逻辑，拥抱 hooks 的同时，也能使用 class 的方式组织业务代码。让业务逻辑更加简洁，隔离性更好。
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({title, imgSrc, description}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        <img src={imgSrc} className={styles.featureSvg} role="img" />
       </div>
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>

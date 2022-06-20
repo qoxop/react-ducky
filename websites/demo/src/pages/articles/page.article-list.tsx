@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { withPageHook } from "react-ducky";
+import { useSelector, withPageHook } from "react-ducky";
 import { Loading, RadioGroup } from "@components";
 import { useMemoriesScroll, useMemoriesVisited } from "@utils/hooks";
 
@@ -17,7 +17,8 @@ const Articles:React.FC = () => {
     articleActions.setType(value);
     articleActions.loadArticles({ page: 1, size: 10, type: value });
   }, []);
-
+  const routes = useSelector(state => state._CURRENT_ROUTE);
+  console.log(routes);
   const [ visited, onVisit ] = useMemoriesVisited([type]);
   const [ handleScroll, scrollBoxRef ] = useMemoriesScroll({
     resetBy: [type],

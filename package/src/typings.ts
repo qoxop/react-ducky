@@ -1,4 +1,3 @@
-/** TS 类型体操 */
 import { Action, AnyAction } from 'redux';
 
 /**

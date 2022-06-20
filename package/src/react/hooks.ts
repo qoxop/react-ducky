@@ -84,12 +84,16 @@ type SetRefState<S> = (
  */
 const useDispatch = () => (useContext(ReduxContext).store.dispatch);
 
+// TODO 增加回调事件，用于 throw promise 之前触发
 /**
- * 订阅 Redux 的状态变化
+ * 订阅 Redux 的状态数据
  * @param selector 数据选择器函数 {@link Selector}
  * @param options 配置选项 {@link UseSelectorOptions}
  */
-function useSelector <S = DefaultRootState, P = any>(selector: Selector<S, P>, options: UseSelectorOptions<P> = {}): P {
+function useSelector <S = DefaultRootState, P = any>(
+  selector: Selector<S, P>,
+  options: UseSelectorOptions<P> = {}
+): P {
   const { eq, withSuspense, sync } = useMemo(() => ({
     eq: options.eq || shallowEqual,
     sync: options.sync,

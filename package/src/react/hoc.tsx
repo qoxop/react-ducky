@@ -9,7 +9,7 @@ const {
 } = React;
 
 /**
- * 增强路由组件，增加前进后退钩子
+ * 增强路由组件，给页面级组件的路由事件回调提供切入点。
  * @param Component
  * @param opt
  * @returns

@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/oceanicNext');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'React-Ducky',
-  tagline: 'React-Ducky 用更简单的方式管理你的React应用状态',
+  tagline: 'React-Ducky 用更简单的方式编基于 React 的业务代码',
   url: 'https://react-ducky.qoxop.run',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -24,14 +24,14 @@ const config = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: 'https://github.com/qoxop/react-ducky/tree/main/websites',
         },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-        },
+        // blog: {
+        //   showReadingTime: true,
+        //   // Please change this to your repo.
+        //   editUrl:
+        //     'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+        // },
         theme: {
           customCss: [
             require.resolve('./src/css/icons/iconfont.css'),
@@ -55,12 +55,12 @@ const config = {
         items: [
           {
             type: 'doc',
-            docId: 'intro/index',
+            docId: 'intro',
             position: 'left',
             label: '使用指南',
           },
           {to: '/docs/api/react-ducky', label: 'API', position: 'left'},
-          {to: '/blog', label: '博客', position: 'left'},
+          // {to: '/blog', label: '博客', position: 'left'},
           {
             href: 'https://react-ducky.qoxop.run/demo',
             label: 'DEMO', 
@@ -106,10 +106,10 @@ const config = {
           {
             title: '更多',
             items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
+              // {
+              //   label: 'Blog',
+              //   to: '/blog',
+              // },
               {
                 label: 'GitHub',
                 href: 'https://github.com/qoxop/react-ducky',
