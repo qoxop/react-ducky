@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/oceanicNext');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'React-Ducky',
-  tagline: 'React-Ducky 用更简单的方式编基于 React 的业务代码',
+  tagline: '用更简单的方式编写基于 React 的业务代码',
   url: 'https://react-ducky.qoxop.run',
   baseUrl: '/',
   onBrokenLinks: 'throw',

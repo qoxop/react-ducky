@@ -1,9 +1,10 @@
 
-<h3 align="center">
+# React-Ducky
+<h2 align="center">
   <a href="./images/cover.png">
   <img src="./images/cover.png?raw=true" alt="React-Ducky Logo" width="500">
   </a>
-</h3>
+</h2>
 <h3 align="center">
   <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/minzip/react-ducky">
   <img alt="npm" src="https://img.shields.io/npm/dy/react-ducky">
