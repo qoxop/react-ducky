@@ -2,7 +2,8 @@
 	"scripts": {
 		"doc": "pnpm install && node ./scripts/document.js",
 		"api": "node ./scripts/api.js",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"release": "node ./scripts/release.js"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.15.0",
