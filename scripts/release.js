@@ -4,7 +4,6 @@
  const fs = require('fs-extra');
  const path = require('path');
  const { spawnSync } = require('child_process');
- const { filesTransfer } = require('./utils');
  
  const PACKAGE_FOLDER = path.resolve(__dirname, '../package');
  const RELEASE_FOLDER = path.resolve(__dirname, '../package/lib');
