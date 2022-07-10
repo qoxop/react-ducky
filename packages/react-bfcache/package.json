@@ -1,0 +1,21 @@
+{
+  "name": "rc-bfcache",
+  "version": "1.0.0",
+  "description": "实现类似浏览器前进后退缓存策略的 React 组件状态缓存方案",
+  "main": "index.js",
+  "dependencies": {
+    "query-string": "^7.1.1"
+  },
+  "peerDependencies": {
+    "@types/react": "^16.8 || ^17.0 || ^18.0",
+    "@types/react-dom": "^16.8 || ^17.0 || ^18.0",
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0",
+    "history": "^4"
+  },
+  "author": {
+    "name": "张集伟",
+    "email": "1106291186@qq.com"
+  },
+  "license": "ISC"
+}
