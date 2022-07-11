@@ -275,7 +275,7 @@ function BusinessComponent(props) {
 
 #### 持久化缓存
 
-当你不希望某些 Redux 数据随着页面刷新就丢失时，你就可以通过将它们下沉到 `localStorage`或 `sessionStorage` 中，以达到持久化的目的。`createModel` 提供了三个用于持久化缓存的字段:
+当你不希望某些 Redux 数据随着页面刷新就丢失时，你就可以将它们下沉到 `localStorage`或 `sessionStorage` 中，以达到持久化的目的。`createModel` 提供了三个用于持久化缓存的配置字段:
 
 - `cacheStorage?: 'session'|'local'|Storage;`：配置存储对象。
 - `cacheKey?: string;`： 存储用的 key 值，需要维护其唯一性。
@@ -371,7 +371,7 @@ function Parent() {
 
 #### actions
 
-actions 对象包含了当前 reducer 切片的所有动作派发函数(不需要额外的 connect 就可以直接派发动作)。该对象由 reduces 配置推导而出:
+动作派发方法集合对象，调用这些方法就可以直接派发动作，不需要额外调用 `bindActionCreators`。该对象由 reduces 配置推导而出:
 
 ```typescript
 // reducers 定义
@@ -388,7 +388,7 @@ type Actions = {
 
 #### fetch
 
-状态数据加载方法集合对，拥有与 [`fetch`](#fetch) 配置对象一样的类型签名，用于获取异步数据。它除了会自动维护数据的加载状态外，还处理了数据竞争的问题。
+状态数据加载方法集合对象，拥有与 [`fetch`](#fetch) 配置对象一样的类型签名，用于获取异步数据。它除了会自动维护数据的加载状态外，还处理了数据竞争的问题。
 
 > 数据竞争说明: 用户不断变更筛选条件，导致发起多次筛选请求，但这些请求最终都是作用于同一个数据，这个时候，数据的最终结果会变得不可控，网络抖动会导致请求的返回顺序与发起顺序不一致，最终导致界面会展示最慢返回的请求数据，这与用户的期待是不一致的。
 > 
