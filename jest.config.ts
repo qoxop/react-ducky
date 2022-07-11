@@ -8,5 +8,5 @@ export default {
   coverageDirectory: "coverage",
   testEnvironment: "jsdom",
   resetMocks: false,
-  setupFiles: ["jest-localstorage-mock"]
+  setupFiles: ["jest-localstorage-mock"],
 };

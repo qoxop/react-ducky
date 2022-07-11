@@ -1,0 +1,16 @@
+{
+  "name": "react-ducky",
+  "version": "1.0.0",
+  "description": "是一个以优化业务逻辑为目的的 React 工具库 🐳 ",
+  "main": "index.js",
+  "dependencies": {
+    "rc-bfcache": "workspace:*",
+    "rc-controller": "workspace:*",
+    "rd-model": "workspace:*"
+  },
+  "author": {
+    "name": "张集伟",
+    "email": "1106291186@qq.com"
+  },
+  "license": "ISC"
+}

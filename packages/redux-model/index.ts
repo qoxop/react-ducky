@@ -30,3 +30,7 @@ export type {
   PayloadAction,
   ExtendAction,
 } from './typings'
+
+export type {
+  Model
+} from './src/create-model';

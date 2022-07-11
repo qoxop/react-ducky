@@ -9,6 +9,7 @@ import React, {
   useLayoutEffect,
 } from "react";
 import {
+  enhanceHistory,
   getCurAction,
   getRouteState,
   setRouteState,
@@ -131,4 +132,5 @@ export {
   useBfCache,
   useRouteAction,
   withRouteAction,
+  enhanceHistory,
 }

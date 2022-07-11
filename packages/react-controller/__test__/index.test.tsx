@@ -12,8 +12,8 @@ type Props = {
   getList: (n: number) => Promise<number[]>;
 }
 
-@ctrlEnhance({ useCtx: true, bindThis: true })
-class TestController extends Controller<State, Props> {
+// @ctrlEnhance({ useCtx: true, bindThis: true })
+class _TestController extends Controller<State, Props> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -44,6 +44,12 @@ class TestController extends Controller<State, Props> {
   }
 }
 
+const TestController: typeof _TestController= ctrlEnhance({
+  useCtx: true,
+  bindThis: true,
+})(_TestController)
+
+
 describe('controller', () => {
   const getList = (n: number) => new Promise((rs) => {
     setTimeout(() => {
@@ -54,7 +60,7 @@ describe('controller', () => {
       rs(data);
     }, 10);
   })
-  test('', () => {
+  test('useController', () => {
     const { result, waitForNextUpdate } = renderHook(
       () => useController(TestController, { rate: 2, initLenght: 10, getList }), 
     );

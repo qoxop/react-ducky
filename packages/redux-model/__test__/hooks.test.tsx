@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks/lib/dom";
+import { renderHook, act } from "@testing-library/react-hooks/lib/dom";
 import React, { Suspense } from "react";
 import { ReduxProvider } from "../src/context";
 import { useStore, useDispatch, useSelector } from "../src/hooks";
@@ -33,11 +33,15 @@ test('useSelector - sync === false', async () => {
   const wrapper = ({ children }) => (<ReduxProvider store={redux.store}>{children}</ReduxProvider>);
   const { result, waitForNextUpdate } = renderHook(() => useSelector(state => state.test), { wrapper });
   expect(result.current).toBe(0);
-  redux.store.dispatch({type: 'add'});
+  act(() => {
+    redux.store.dispatch({type: 'add'});
+  })
   expect(result.current).toBe(0); // 延迟更新
   await waitForNextUpdate();
   expect(result.current).toBe(1);
-  redux.store.dispatch({type: 'minus'});
+  act(() => {
+    redux.store.dispatch({type: 'minus'});
+  })
   expect(result.current).toBe(1); // 延迟更新
   await waitForNextUpdate();
   expect(result.current).toBe(0);
@@ -58,9 +62,13 @@ test('useSelector - sync === true', async () => {
   const { result } = renderHook(() => useSelector(state => state.test, { sync: true }), { wrapper });
   // 非延迟更新
   expect(result.current).toBe(0);
-  redux.store.dispatch({type: 'add'});
+  act(() => {
+    redux.store.dispatch({type: 'add'});
+  })
   expect(result.current).toBe(1);
-  redux.store.dispatch({type: 'minus'});
+  act(() => {
+    redux.store.dispatch({type: 'minus'});
+  })
   expect(result.current).toBe(0);
 })
 
@@ -87,11 +95,15 @@ test('useSelector - withSuspense', async () => {
     }
   ), { wrapper });
   expect(result.current).toEqual({});
-  redux.store.dispatch({type: 'fetch'});
+  act(() => {
+    redux.store.dispatch({type: 'fetch'});
+  })
   const start = Date.now();
-  setTimeout(() => {
-    redux.store.dispatch({type: 'set', data: [ 1,2,3 ]});
-  }, 100);
+  act(() => {
+    setTimeout(() => {
+      redux.store.dispatch({type: 'set', data: [ 1,2,3 ]});
+    }, 100);
+  })
   await waitForNextUpdate();
   expect(Date.now() - start >= 100).toBe(true); 
   expect(result.current).toEqual({ data: [ 1,2,3 ] });

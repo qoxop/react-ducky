@@ -1,5 +1,5 @@
 
-import type {History } from 'history';
+import type { History } from 'history';
 import { parse } from 'query-string';
 
 let _history:History = null as any;
@@ -90,7 +90,7 @@ const getCurAction = () => {
 
 const uuid = ((count: number) => () => (`u_${count++}${Date.now().toString(36)}`))(0);
 
-function enhanceHistory(history: History)  {
+function enhanceHistory(history: History) {
   const updateSearch = (search: string, key: string) => `${search}${(search || '').indexOf('?') > -1 ? '&' : '?'}_rs_key_=${key}`;
   const push = history.push.bind(history);
   const replace = history.replace.bind(history);

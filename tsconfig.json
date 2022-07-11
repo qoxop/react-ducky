@@ -11,17 +11,13 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
+    "module": "ES6",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "noEmit": true,
     "jsx": "react",
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "declaration": false
+    "preserveConstEnums": true
   },
   "include": [
-    "./**/*",
+    "./packages/**/*"
   ]
 }

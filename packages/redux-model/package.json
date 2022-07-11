@@ -1,6 +1,6 @@
 {
   "name": "rd-model",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "用于简化 Redux 使用的工具库",
   "main": "index.js",
   "peerDependencies": {

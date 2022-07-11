@@ -107,6 +107,7 @@ dist
 # Dependencies
 /node_modules
 
+libs
 # Generated files
 .docusaurus
 .cache-loader
