@@ -91,11 +91,10 @@ await waitForNextUpdate();
 expect(result.current).toBe(0); // pass
 ```
 
-## API
 
-### 基础方法
+## 基础API
 
-#### useStore
+### useStore
 
 在函数组件中，获取 redux 的 store 对象
 
@@ -103,7 +102,7 @@ expect(result.current).toBe(0); // pass
 const useStore: () => Store<any, AnyAction>
 ```
 
-#### useDispatch
+### useDispatch
 
 在函数组件中，获取 redux 的 dispatch 方法。
 
@@ -111,7 +110,7 @@ const useStore: () => Store<any, AnyAction>
 const useDispatch: () => Dispatch<AnyAction>
 ```
 
-#### useSelector
+### useSelector
 
 在函数组件中，从 redux 中订阅状态数据。
 
@@ -137,9 +136,9 @@ function useSelector<S = DefaultRootState, P = any>(
 - eq: 新旧状态的对比方法，默认使用浅对比函数。
 - withSuspense: 一个判断函数，判断所选状态是否为加载中，如果是，则抛出一个 promise，直到状态数据加载完成，promise 才会被 resolve 掉。如果传入值 true，则是使用内部自带的判断函数。
 
-### 模型方法
+## 核心API
 
-#### createModal
+### createModel
 
 ```ts
 function createModel(ModelOptions):Model;
@@ -179,7 +178,7 @@ type ModelOptions<STATE> {
 
 PS: 为了实现良好的类型提醒，`ModelOptions` 的 TS 类型极奇复杂，这里为了容易阅读，对其进行了简化。
 
-##### statePaths
+#### statePaths
 
 一个字符串数组，表示当前 reducer 切片的访问路径，它可以帮助 model 对象准确地订阅和修改 redux 中的数据。但是它同时要求你在以同样的路径对 model 的 reducer 进行嵌套合并。
 
@@ -204,13 +203,13 @@ const rootReducer = combineReducers({
 });
 ```
 
-##### initialState
+#### initialState
 
 reducer 切片的初始值，因为 rd-model 内部使用了 [immer](https://immerjs.github.io/immer/zh-CN/) 来实现数据不可变，所以，数据模型的初始值必须是一个引用值，而不是简单值。
 
 > 如果你的 reducer 切片数据仅仅只是一个 `number`,`string` 等简单值，那大可不必使用一个数据模型来管理它。
 
-##### reducers
+#### reducers
 
 一个 `key-value` 对象, 类型定义如下:
 
@@ -228,7 +227,7 @@ rd-model 可以由该对象计算出最终的 reducer 方法，以及生成对�
 
 > 你需要对 action 参数通过 `PayloadAction` 指定类型来帮助 rd-model 进行类型推导。
 
-##### fetch
+#### fetch
 
 指定模型对象中某个字段数据的获取方法(异步)。如果数据模型中某个字段的值是通过**非分页请求**获取的，那么你可以通过 fetch 字段进行配置。eg:
 
@@ -261,7 +260,7 @@ function BusinessComponent() {
 }
 ```
 
-##### 持久化缓存
+#### 持久化缓存
 
 当某些 Redux 数据你不希望页面一刷新就丢失时，你就可以通过将它们下沉到 `localStorage`或 `sessionStorage` 中，以达到持久化的目的。createModel 提供了三个关于持久化缓存的字段:
 
@@ -269,7 +268,7 @@ function BusinessComponent() {
 - `cacheKey?: string;`： 存储用的 key 值，需要维护其唯一性。
 - `cacheVersion?: string;`：缓存的版本号，一般用于避免代码版本的升级导致数据结构的冲突。
 
-##### extraReducers
+#### extraReducers
 
 订阅当前切片外的动作。
 
@@ -285,7 +284,7 @@ const dataModel = createModel({
 });
 ```
 
-#### Model
+### Model
 
 Model 对象包括对当前 reducer 切片数据的所有订阅和更新方法。
 
@@ -304,11 +303,11 @@ type Model<STATE> = {
 }
 ```
 
-##### getState
+#### getState
 
 获取当前 reducer 切片的数据。
 
-##### useModel
+#### useModel
 
 在函数组件内订阅当前 reducer 切片的状态数据。在所订阅的状态发生变化时更新当前组件。默认使用浅对比判断状态是否变化。
 
@@ -349,7 +348,7 @@ function Children() {
 
 因为使用 withSuspense 配置后，当数据处于加载中状态时它会抛出一个 Promise 异常，这个 Promise 会等待加载中状态结束时进行 resolve。 配合 `React.Suspense` 就可以像获取同步数据一样获取异步数据。
 
-##### actions
+#### actions
 
 actions 对象包含的的是当前 model 上同步修改数据的所有方法。由 reduces 配置推导而出，比如：
 ```typescript
@@ -365,13 +364,13 @@ type Actions = {
 }
 ```
 
-##### fetch
+#### fetch
 
 拥有与 fetch 配置对象一样的类型签名，用于获取异步数据，除了自动维护数据的加载状态外，还处理了数据竞争条件的问题。
 
 > 竞争条件说明: 用户不断变更筛选条件，导致发起多次筛选请求，但这些请求最终都是作用于同一个数据，这个时候，数据的最终结果会变得不可控，网络抖动会导致请求的返回顺序与发起顺序不一致，最终导致界面会展示最慢返回的请求数据，这与用户的期待是不一致的。
 
-##### reducer
+#### reducer
 
 reducer 方法，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上。
 
