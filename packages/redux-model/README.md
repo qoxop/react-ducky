@@ -371,7 +371,7 @@ function Parent() {
 
 #### actions
 
-动作派发方法集合对象，调用这些方法就可以直接派发动作，不需要额外调用 `bindActionCreators`。该对象由 reduces 配置推导而出:
+动作派发方法集合对象，调用这些方法就可以直接派发动作，不需要额外调用 `bindActionCreators`。该对象由 [reduces 配置](#reducers)推导而出:
 
 ```typescript
 // reducers 定义
