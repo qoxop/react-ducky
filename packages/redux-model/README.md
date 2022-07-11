@@ -275,7 +275,7 @@ function BusinessComponent(props) {
 
 #### 持久化缓存
 
-当某些 Redux 数据你不希望页面一刷新就丢失时，你就可以通过将它们下沉到 `localStorage`或 `sessionStorage` 中，以达到持久化的目的。createModel 提供了三个关于持久化缓存的字段:
+当你不希望某些 Redux 数据随着页面刷新就丢失时，你就可以通过将它们下沉到 `localStorage`或 `sessionStorage` 中，以达到持久化的目的。`createModel` 提供了三个用于持久化缓存的字段:
 
 - `cacheStorage?: 'session'|'local'|Storage;`：配置存储对象。
 - `cacheKey?: string;`： 存储用的 key 值，需要维护其唯一性。
@@ -299,7 +299,7 @@ const dataModel = createModel({
 
 ### Model
 
-Model 对象包含对当前 reducer 切片状态数据的所有订阅和更新方法。它拥有完善的类型提醒，使用也非常过程简单。
+Model 对象包含对当前 reducer 切片状态数据的所有订阅和更新方法。它拥有完善的类型提醒，使用也非常简单。
 
 ```typescript
 type Selector<S, s> = (state: S) => s;
@@ -365,13 +365,13 @@ function Parent() {
 
 ```
 
-当用 `model.fetch.xxx` 去获取异步数据时，withSuspense 配置能减少不少判定逻辑。
+当用 `model.fetch.xxx` 去获取异步数据时，`withSuspense` 配置能减少不少判定逻辑。
 
-因为使用 withSuspense 配置后，当数据处于加载中状态时它会抛出一个 Promise 异常，这个 Promise 会等待加载中状态结束时进行 resolve。 配合 `React.Suspense` 就可以像获取同步数据一样获取异步数据。
+因为使用 `withSuspense` 配置后，当数据处于加载中状态时它会抛出一个 Promise 异常，这个 Promise 会等待加载中状态结束时进行 resolve。 配合 `React.Suspense` 就可以像获取同步数据一样获取异步数据。
 
 #### actions
 
-actions 对象包含了当前 reducer 切片的所以动作派发函数(不需要额外的 connect 就可以直接派发动作)。该对象由 reduces 配置推导而出，比如：
+actions 对象包含了当前 reducer 切片的所有动作派发函数(不需要额外的 connect 就可以直接派发动作)。该对象由 reduces 配置推导而出:
 
 ```typescript
 // reducers 定义
@@ -388,12 +388,13 @@ type Actions = {
 
 #### fetch
 
-状态数据加载方法集合对，拥有与 [fetch](#fetch) 配置对象一样的类型签名，用于获取异步数据。它除了会自动维护数据的加载状态外，还处理了数据竞争的问题。
+状态数据加载方法集合对，拥有与 [`fetch`](#fetch) 配置对象一样的类型签名，用于获取异步数据。它除了会自动维护数据的加载状态外，还处理了数据竞争的问题。
 
 > 数据竞争说明: 用户不断变更筛选条件，导致发起多次筛选请求，但这些请求最终都是作用于同一个数据，这个时候，数据的最终结果会变得不可控，网络抖动会导致请求的返回顺序与发起顺序不一致，最终导致界面会展示最慢返回的请求数据，这与用户的期待是不一致的。
+> 
 > 虽然使用截流函数能减少此类问题的概率，但是并不能完全杜绝出现的可能性。
 
 #### reducer
 
-一个纯的 reducer 函数，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上，详见[statePaths](#statepaths)。
+一个纯的 reducer 函数，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上，详见 [`statePaths` 配置](#statepaths)。
 
