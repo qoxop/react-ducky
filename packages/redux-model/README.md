@@ -145,7 +145,7 @@ function createModel(ModelOptions):Model;
 ```
 作为 rd-model 的一个核心函数，它接受初始值、reducers方法对象、持久化配置对象和异步数据获取方法对象等作为参数，并返回一个包含 actionDispatcher、useSelector、reducer、getState 等方法的对象。
 
-```typescript
+```ts
 type ModelOptions<STATE> {
   /**
    * 当前 reducer 切片的访问路径
@@ -176,7 +176,7 @@ type ModelOptions<STATE> {
 }
 ```
 
-PS: 为了实现良好的类型提醒，`ModelOptions` 的 TS 类型极奇复杂，这里为了容易阅读，对其进行了简化。
+PS: 为了实现良好的类型提醒，`ModelOptions` 的 TS 类型比较复杂，这里为了容易阅读，对其进行了简化。
 
 #### statePaths
 
@@ -229,30 +229,41 @@ rd-model 可以由该对象计算出最终的 reducer 方法，以及生成对�
 
 #### fetch
 
-指定模型对象中某个字段数据的获取方法(异步)。如果数据模型中某个字段的值是通过**非分页请求**获取的，那么你可以通过 fetch 字段进行配置。eg:
+指定模型对象中某个字段数据的获取方法(异步)。如果数据模型中某个字段的值是通过**非分页请求**获取的，那么你可以通过 fetch 字段进行配置。
 
-```typescript
+```tsx
+
+/** redux 定义 **/
 type BusinessData = {/*...*/}
 
 const dataModel = createModel({
   initialState: {
-    // other...
+    // 其他字段 。。。
     businessData: null as BusinessData,
   },
-  // other config ...
+  // 其他配置 。。。
   fetch: {
-    businessData: fetchBusinessData, // () => Promise<BusinessData>
+    // 定义 businessData 的获取方法
+    businessData: fetchBusinessData, // as (id: string) => Promise<BusinessData>
   }
 });
 
-// business-component
+
+/** 业务组件 **/
 import { isPending } from 'rd-model';
 
-function BusinessComponent() {
+function BusinessComponent(props) {
+  
   useEffect(() => {
-    dataModal.fetch.businessData();
-  }, []);
+    // 直接调用 fetch.businessData
+    // rd-model 内部会自动维护加载状态的更新
+    dataModal.fetch.businessData(props.id);
+  }, [props.id]);
+
+  // 状态数据订阅
   const businessData = dataModal.useModel(state => state.businessData);
+
+  // 通过 isPending 直接判定是否处于加载中状态。
   if (isPending(businessData) || !businessData) {
      return <Loading />
   }
@@ -295,17 +306,22 @@ type UseModelOption = {
   eq?: (a, b) => boolean;
 };
 type Model<STATE> = {
+  /** 获取切片状态数据 */
   getState: () => STATE;
+  /** 组件内订阅切片状态数据 */
   useModel: <T>(selector: Selector<STATE, T>, options?: UseModelOption) => T;
+  /** actions dispatchers */
   actions: Record<string, Function>;
+  /** data fetchers */
   fetch: Record<string, PromiseFn>;
+  /** pure reducer functions */
   reducer: Reducer<STATE>;
 }
 ```
 
 #### getState
 
-获取当前 reducer 切片的数据。
+获取当前 reducer 切片的状态数据。
 
 #### useModel
 
@@ -325,6 +341,15 @@ const dataModel = createModel({
   }
 });
 
+function Children() {
+  // 订阅切片状态数据
+  const businessData = dataModel.useModel(
+    state => state.businessData,
+    { withSuspense: true }
+  );
+  return (<Display data={businessData} />)
+}
+
 function Parent() {
   useLayoutEffect(() => {
     dataModel.fetch.businessData()
@@ -336,21 +361,16 @@ function Parent() {
   )
 }
 
-function Children() {
-  const businessData = dataModel.useModel(
-    state => state.businessData,
-    { withSuspense: true }
-  );
-  return <Display data={businessData}>
-}
 ```
+
 当用 `model.fetch.xxx` 去获取异步数据时，withSuspense 配置能减少不少判定逻辑。
 
 因为使用 withSuspense 配置后，当数据处于加载中状态时它会抛出一个 Promise 异常，这个 Promise 会等待加载中状态结束时进行 resolve。 配合 `React.Suspense` 就可以像获取同步数据一样获取异步数据。
 
 #### actions
 
-actions 对象包含的的是当前 model 上同步修改数据的所有方法。由 reduces 配置推导而出，比如：
+actions 对象包含了当前 reducer 切片的所以动作派发函数(不需要额外的 connect 就可以指出派发动作)。由 reduces 配置推导而出，比如：
+
 ```typescript
 // reducers 定义
 type Reducers = {
@@ -372,5 +392,5 @@ type Actions = {
 
 #### reducer
 
-reducer 方法，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上。
+一个纯的 reducer 函数，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上。
 
