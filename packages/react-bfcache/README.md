@@ -1,8 +1,8 @@
 # rc-bfcache
 
-浏览器使用 [前进后退缓存(Back/forward cache)](https://web.dev/bfcache/) 优化了用户浏览网站的导航体验，但是它只是针对不同页面间的前进后退，对于 spa 应用是不起作用的，但是很多 spa 应用也会有类似的缓存需求，实现这类需求往往会入侵业务代码，从而造成混乱。
+浏览器使用 [前进后退缓存(Back/forward cache)](https://web.dev/bfcache/) 优化了用户浏览网站的导航体验，但是这只是针对不同页面间的前进后退，对于 spa 应用是不起作用的，但是很多 spa 应用也会有类似的缓存需求，实现这类需求往往会入侵业务代码，从而造成混乱。
 
-为此，rc-bfcache 提供了一个 [history](https://github.com/remix-run/history) 增强函数，维护了一份与浏览器同步的路由栈信息，为组件状态缓存的**自动清除**提供判断依据。使用者在对 history 进行增强后，只需要调用与 `useState` 类似的 hook 方法 — `useRouteState`，即可让组件状态获得缓存能力，而无需关心缓存清空逻辑。
+为此，rc-bfcache 提供了一个 [history](https://github.com/remix-run/history) 扩展函数，维护了一份与浏览器同步的路由栈信息，为组件状态缓存的**自动清除**提供判断依据。使用者在对 `history` 对象进行能力扩展后，只需要调用与 `useState` 类似的 hook 方法 — `useRouteState`，即可让组件状态获得缓存能力，而无需关心缓存清空逻辑。
 
 当然，这一切的前提是：你所使用的路由框架(如: [react-router](https://reactrouter.com/))依赖于 [history](https://github.com/remix-run/history) 这个库，同时允许传入自定义的 `history` 对象。
 
@@ -14,9 +14,9 @@ pnpm install rc-bfcache
 
 ## 使用
 
-### enhanceHistory
+### 1、扩展 history 对象
 
-使用 enhanceHistory 扩展 history 对象的能力。
+使用 `enhanceHistory` 扩展 history 对象的能力。
 
 ```tsx
 import React from 'react';
@@ -36,13 +36,27 @@ export const CustomRouter = (props: HistoryRouterProps) => (
 
 > 注意：请保证项目依赖的 history 软件包版本与 react-router 的保持一致。
 
-### 组件内使用缓存的状态
+### 2、使用组件状态缓存
+```ts
+
+type SetRefState<S> = (
+  /** 待更新的值 */
+  state: S | ((s: S) => S),
+  /** 更新值的时候，阻止重新渲染 */
+  preventUpdate?: boolean
+) => void;
+function useBfCache<T>(init: T | (() => T), suffix?: string): [T, SetRefState<T>]
+```
+
+`useBfCache` 的使用于 `useState`类似, 区别在于它可以传入第二个参数，用于标识页面缓存的 key 值，只要确保在当前页面下是唯一的即可，因为当前 hook 状态缓存的 ID 是当前页面ID与key值的组合。
 
 ```tsx
 import React, { useEffect } from 'react'
 import { useBfCache } from 'rc-bfcache';
 
 const DataContainer = () => {
+  // 浏览器前进后退过程中
+  // 组件会使用缓存中的状态进行初始化
   const [data, setData] = useBfCache(null, 'data');
   useEffect(() => {
     if (!data) {

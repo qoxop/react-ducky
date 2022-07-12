@@ -23,7 +23,7 @@ type SetRefState<S> = (
   /**
    * 待更新的值
    */
-  state: S | (() => S),
+  state: S | ((s: S) => S),
   /**
    * 更新值的时候，阻止重新渲染
    */
@@ -61,8 +61,7 @@ function useBfCache<T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>]  {
   if (stateRef.current !== null) {
     stateRef.current = getRouteState<T>(init, suffix);
   }
-  const setState = useCallback((data: T | (() => T), preventUpdate?: boolean) => {
-    // @ts-ignore
+  const setState = useCallback((data: T | ((t: T) => T), preventUpdate?: boolean) => {
     stateRef.current = isFunction(data) ? data(stateRef.current) : data;
     !preventUpdate && forceUpdate();
   }, []);
@@ -111,8 +110,7 @@ function withRouteAction<T>(
     callback: (action: Action) => any,
   }
 ): T {
-  // @ts-ignore
-  return (props: any) => {
+  return ((props: any) => {
     const action = getCurAction();
     const [canRender, setRender] = useState(false);
     useLayoutEffect(() => {
@@ -125,7 +123,7 @@ function withRouteAction<T>(
     }
     // @ts-ignore
     return <Component {...props} routeAction={action} />
-  }
+  }) as unknown as T;
 }
 
 export {
