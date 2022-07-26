@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "是一个以优化业务逻辑为目的的 React 工具库 🐳 ",
   "main": "index.js",
+  "typings": "index.d.ts",
   "dependencies": {
     "rc-bfcache": "workspace:*",
     "rc-controller": "workspace:*",

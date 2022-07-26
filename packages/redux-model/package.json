@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "用于简化 Redux 使用的工具库",
   "main": "index.js",
+  "typings": "index.d.ts",
   "peerDependencies": {
     "@types/react": "^16.8 || ^17.0 || ^18.0",
     "@types/react-dom": "^16.8 || ^17.0 || ^18.0",

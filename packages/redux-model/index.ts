@@ -29,8 +29,18 @@ export {
 export type {
   PayloadAction,
   ExtendAction,
-} from './typings'
+  Selector,
+} from './typings';
 
 export type {
-  Model
+  FetchHandlerOptions
+} from './src/utils'
+
+export type {
+  UseSelectorOptions
+} from './src/hooks';
+
+export type {
+  Model,
+  CreateModelOptions
 } from './src/create-model';

@@ -5,6 +5,7 @@ const path = require('path');
 const { src, dest, series } = require('gulp');
 const { spawn, spawnSync } = require('child_process');
 const { bundle, createTypes } = require('./scripts/bundle');
+const { Extractor, ExtractorConfig } = require("@microsoft/api-extractor");
 
 const sourceGlobs = [
   'packages/**/*.md',
@@ -156,6 +157,44 @@ async function releaseLocalPackage() {
   });
 }
 
+async function createDocument() {
+  const packages = ['react-bfcache', 'react-controller', 'redux-model'];
+  const jsonTpl = fs.readFileSync(
+    path.resolve(__dirname, './api-extractor.json'),
+    { encoding: 'utf-8' }
+  );
+  packages.forEach(item => {
+    const pkgPath = path.resolve(dist, item);
+    const jsonPath = path.resolve(pkgPath,'api-extractor.json');
+    const entryFile = path.resolve(pkgPath,'index.d.ts');
+    const apiTemPath = path.resolve(pkgPath, 'temp');
+    const outFile = path.resolve(apiTemPath, 'index.d.ts');
+    const tsconfigFilePath = path.resolve(pkgPath, 'tsconfig.json');
+    const documentPath = path.resolve(__dirname, 'document', item);
+    const jsonStr = jsonTpl.replace(
+      '__ENTRY_POINT_FILE_PATH__',
+      entryFile
+    ).replace(
+      '__PUBLIC_TRIMMED_FILE_PATH__',
+      outFile
+    );
+    
+    fs.writeFileSync(jsonPath,  jsonStr);
+    fs.writeFileSync(
+      tsconfigFilePath,
+      fs.readFileSync(tsConfigPath, { encoding: 'utf-8' }).replace('packages/', '')
+    )
+    Extractor.invoke(
+      ExtractorConfig.loadFileAndPrepare(jsonPath),
+      {
+          localBuild: true,
+          showVerboseMessages: true
+      }
+    );
+    spawnSync('npx', ['api-documenter', 'markdown', '-i', './', '-o', documentPath], { cwd: apiTemPath });
+  })
+}
+
 
 /**
  * 测试
@@ -190,8 +229,13 @@ const releaseLocal = series(
   build,
   releaseLocalPackage
 )
+const document = series(
+  build,
+  createDocument
+)
 
 exports.test = test;
 exports.build = build;
+exports.document = document;
 exports.release = release;
 exports.releaseLocal = releaseLocal;
