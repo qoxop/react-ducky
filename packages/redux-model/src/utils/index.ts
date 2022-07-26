@@ -18,7 +18,7 @@ const shallowEqual = (last: any, cur: any) => {
     && cur.constructor === last.constructor
   ) {
     const curKeys = Object.keys(cur);
-    return curKeys.every((k) => cur[k] === last[k]) && curKeys.length === Object.keys(last).length;
+    return curKeys.length === Object.keys(last).length && curKeys.every((k) => cur[k] === last[k]);
   }
   return false;
 };

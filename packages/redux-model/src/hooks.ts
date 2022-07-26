@@ -20,7 +20,7 @@ import {
 } from '../typings';
 
 /**
- * useSelector 的配置对象
+ * {@link useSelector} 的可选配置对象 
  * @remarks
  * 类型说明:
  * ```ts
@@ -51,7 +51,7 @@ type UseSelectorOptions<P> = {
 
 /**
  * 获取 Redux 的 Store 对象
- * @returns
+ * @returns store
  */
 const useStore = () => (useContext(ReduxContext).store);
 

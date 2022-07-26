@@ -13,7 +13,7 @@ import {
 } from 'redux';
 
 /**
- * reducer 配置对象
+ * reducer 切片配置对象
  */
 type ReducerRecord = Record<string, Reducer>;
 
@@ -22,21 +22,22 @@ const REDUX_DEVTOOL = '__REDUX_DEVTOOLS_EXTENSION_COMPOSE__';
 
 let store:Store = null as any;
 
+/**
+ * 检查 store 对象是否已经完成初始化
+ */
 const checkStore = () => {
   if (!store) throw new Error(STORE_UNINITIALIZED_ERROR);
   return true;
 };
 
 /**
- * 获取 store
- * @returns
+ * 获取 Store
  */
 const getStore = () => checkStore() && store;
 
 /**
  * 设置 store
- * @param _store
- * @returns 
+ * @param _store redux store 对象
  */
 const setStore = (_store: Store) => store = _store;
 
@@ -73,9 +74,8 @@ const createEnhancer = (middleware: any[], isDev = false) => {
 
 /**
  * 创建根 Reducer 方法
- * @param rootReducers
- * @param reducerRecord 
- * @returns 
+ * @param rootReducers 根 reducer 对象，它的 key 值就是 actionType，其作用的数据范围是全局的 state。
+ * @param reducerRecord 切片 reducer 对象，它的 key 值是切片的 key，其作用的数据范围时当前切片对应的 state。
  */
 const createRootReducer = <State>(rootReducers: ReducerRecord, reducerRecord?: ReducerRecord) => {
   const mainReducer = reducerRecord && Object.keys(reducerRecord).length
@@ -91,7 +91,6 @@ const createRootReducer = <State>(rootReducers: ReducerRecord, reducerRecord?: R
 /**
  * 初始化 redux store
  * @param options {@link InitStoreOption}
- * @returns 
  */
 function initStore<STATE extends DefaultRootState>(options: InitStoreOption) {
   const {

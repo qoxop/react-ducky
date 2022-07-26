@@ -10,6 +10,9 @@ type Handler = {
   sync?: boolean,
 }
 
+/**
+ * 基础发布订阅器
+ */
 class Subscriber<S = unknown> {
   private listeners: Map<symbol, Handler> = new Map();
 
@@ -48,6 +51,9 @@ class Subscriber<S = unknown> {
   }
 }
 
+/**
+ * 基于 redux 的发布订阅器
+ */
 class ReduxSubscriber<STATE = DefaultRootState> extends Subscriber<STATE> {
   store: Store;
   unsubscribe: Unsubscribe;

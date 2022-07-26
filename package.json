@@ -4,8 +4,6 @@
 		"build": "gulp build",
 		"release": "gulp release",
 		"debug": "gulp releaseLocal",
-		"doc": "pnpm install && node ./scripts/document.js",
-		"api": "node ./scripts/api.js",
 		"lint": "eslint .",
 		"prepare": "husky install"
 	},
