@@ -43,6 +43,16 @@ const delay = <T = any>(
 );
 describe('工具方法',() => {
   test('shallowEqual', () => {
+    expect(shallowEqual(1, 1)).toBe(true);
+    expect(shallowEqual(0, 0)).toBe(true);
+    expect(shallowEqual(true, true)).toBe(true);
+    expect(shallowEqual(false, false)).toBe(true);
+    expect(shallowEqual(false, undefined)).toBe(false);
+    expect(shallowEqual(1, 0)).toBe(false);
+    expect(shallowEqual(1, null)).toBe(false);
+    expect(shallowEqual(1, '')).toBe(false);
+    expect(shallowEqual(false, '')).toBe(false);
+    expect(shallowEqual(true, false)).toBe(false);
     expect(shallowEqual({}, {})).toBe(true);
     expect(shallowEqual({}, [])).toBe(false);
     expect(shallowEqual({a: 1, b: 2}, {b: 2, a: 1})).toBe(true);

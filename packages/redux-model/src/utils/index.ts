@@ -8,7 +8,7 @@ import { isArray, isObject, isFunction } from './is-type';
  * @param cur
  * @returns boolean
  */
-const shallowEqual = <T>(last: T, cur: T) => {
+const shallowEqual = (last: any, cur: any) => {
   if (last === cur) return true;
   if (
     cur
