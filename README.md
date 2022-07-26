@@ -22,9 +22,6 @@ pnpm install react-ducky
 ```
 如果你只想要部分功能，可以选择只安装对应的子 npm 包，`rd-model`、`rc-bfcache`、`rc-controller`。
 
-## 使用文档
-
-[https://react-ducky.qoxop.run/](https://react-ducky.qoxop.run/)
 
 ## 核心功能
 

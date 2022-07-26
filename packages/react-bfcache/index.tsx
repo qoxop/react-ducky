@@ -55,7 +55,7 @@ window.addEventListener('beforeunload', () => {
  * @returns 返回一个元组，内容分别是 state 和 {@link SetRefState}
  */
 function useBfCache<T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>]  {
-  const [_, forceUpdate] = useReducer(s => s + 1, 0);
+  const [, forceUpdate] = useReducer(s => s + 1, 0);
   const stateRef = useRef<T>(null as unknown as T);
   // 仅仅执行一次
   if (stateRef.current !== null) {
@@ -68,6 +68,7 @@ function useBfCache<T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>]  {
   const unloadEvent = useMemo(() => ({
     key: uuid(),
     callback: () => setRouteState(stateRef.current, suffix),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
   useEffect(() => {
     // 离开页面时存储状态数据
@@ -76,6 +77,7 @@ function useBfCache<T>(init: T | (() => T), suffix = ''): [T, SetRefState<T>]  {
       unloadEvent.callback();
       delete beforeUnloadCallback[unloadEvent.key]
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return [stateRef.current, setState];
 };
@@ -117,6 +119,7 @@ function withRouteAction<T>(
       Promise.resolve(callback(action)).then(() => {
         setRender(true);
       });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     if (!canRender) {
       return fallback;

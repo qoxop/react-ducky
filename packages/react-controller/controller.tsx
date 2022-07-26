@@ -139,9 +139,12 @@ class Controller<State = any, Props = any> {
 
   // 模拟 class组件的 setState、forceUpdate 方法
   [$classHooks](props:Props) {
+    
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [state, setState] = useState(this.state);
     this.state = state;
     this.props = props;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     this[$forceUpdate] = useReducer((a) => (a + 1), 0)[1];
     if (!this[$setState]) {
       this[$setState] = createSetState<State>(setState)

@@ -76,9 +76,11 @@ function useSelector <S = DefaultRootState, P = any>(
     withSuspense: options.withSuspense === true
       ? isPending
       : (isFunction(options.withSuspense) ? options.withSuspense : null),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
   const { subscriber, store } = useContext(ReduxContext);
   const [forceTimes, forceRender] = useReducer((s) => s + 1, 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const subState = useMemo(() => selector(store.getState()), [store, forceTimes]);
   const subStateRef = useRef<P>(subState);
 

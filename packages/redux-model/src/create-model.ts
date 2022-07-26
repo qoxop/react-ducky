@@ -20,7 +20,6 @@ import {
   IsEqual,
   ValidObj,
   Selector,
-  PromiseFn,
   ReducerCase,
   ExtendAction,
   FunctionLike,

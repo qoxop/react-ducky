@@ -5,7 +5,7 @@ import { parse } from 'query-string';
 let _history:History = null as any;
 
 const getHistory = () => {
-  if (!_history) throw 'enhanceHistory before use';
+  if (!_history) throw new Error('enhanceHistory before use');
   return _history
 }
 const setHistory = (history: History) => {

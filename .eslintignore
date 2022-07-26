@@ -3,3 +3,4 @@ coverage/
 .vscode/
 lib/
 jest.config.ts
+**/__test__/**
