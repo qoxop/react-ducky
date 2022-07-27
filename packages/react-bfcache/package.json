@@ -1,6 +1,6 @@
 {
   "name": "rc-bfcache",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "实现类似浏览器前进后退缓存策略的 React 组件状态缓存方案",
   "main": "index.js",
   "typings": "index.d.ts",
