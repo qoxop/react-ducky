@@ -36,7 +36,7 @@ function useController<C extends Controller, P = any>(CtrlClass: Klass<[P?], C>,
  * @param ReduxContext
  * @returns 
  */
-const createUseReduxController = (ReduxContext: Context<{store: any, [k: string]: any}>) => {
+function createUseReduxController(ReduxContext: Context<{store: any, [k: string]: any}>) {
   /**
    * 在组件内使用一个 ReduxController 子类
    * @param CtrlClass {@link ReduxController} 的子类

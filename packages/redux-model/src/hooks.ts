@@ -53,13 +53,18 @@ type UseSelectorOptions<P> = {
  * 获取 Redux 的 Store 对象
  * @returns store
  */
-const useStore = () => (useContext(ReduxContext).store);
+function useStore() {
+  return useContext(ReduxContext).store
+}
 
 /**
  * 获取 Redux 的 Dispatch 方法
  * @returns
  */
- const useDispatch = () => (useContext(ReduxContext).store.dispatch);
+function useDispatch() {
+  return useContext(ReduxContext).store.dispatch
+}
+
 
 /**
  * 订阅 Redux 的状态数据

@@ -8,7 +8,7 @@ import { isArray, isObject, isFunction } from './is-type';
  * @param cur
  * @returns boolean
  */
-const shallowEqual = (last: any, cur: any) => {
+function shallowEqual(last: any, cur: any) {
   if (last === cur) return true;
   if (
     cur
@@ -33,7 +33,9 @@ const uuid = ((count: number) => () => (`u_${count++}${Date.now().toString(36)}`
  * @param init T_OrReturnT<T>
  * @returns T
  */
-const getInit = <T>(init: T_OrReturnT<T>) => isFunction(init) ? init() : init;
+function getInit<T>(init: T_OrReturnT<T>) {
+  return isFunction(init) ? init() : init;
+}
 
 
 // #region 对象赋值
@@ -55,7 +57,7 @@ function ValueRef(data: unknown, key: string|symbol, value:unknown) {
  * 给任意值安全的地设置属性值
  * @returns
  */
-const setProperty = <T>(obj: T, key:symbol|string, value: unknown) => {
+function setProperty<T>(obj: T, key:symbol|string, value: unknown) {
   if (!obj || typeof obj !== 'object') {
     return new ValueRef(obj, key, value);
   }
@@ -68,7 +70,7 @@ const setProperty = <T>(obj: T, key:symbol|string, value: unknown) => {
  * @param key
  * @returns
  */
-const removeProperty = <T>(obj: T, key:string|symbol) => {
+function removeProperty<T>(obj: T, key:string|symbol) {
   if (obj && key in obj) {
     delete obj[key];
   }
@@ -81,7 +83,7 @@ const removeProperty = <T>(obj: T, key:string|symbol) => {
  * @param value
  * @returns 
  */
-const isEmpty = (value: unknown) => {
+function isEmpty(value: unknown) {
   // @ts-ignore
   if (!value || !value?.valueOf()) return true;
   if (isArray(value)) return value.length === 0;
@@ -174,7 +176,9 @@ function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerO
  * @param obj
  * @returns 
  */
-const isPending = <T = any>(obj:T) => !!(obj && obj[PENDING_KEY] === true);
+function isPending<T = any>(obj:T) {
+  return !!(obj && obj[PENDING_KEY] === true);
+}
 
 /**
  * 设置加载中标识
@@ -182,7 +186,7 @@ const isPending = <T = any>(obj:T) => !!(obj && obj[PENDING_KEY] === true);
  * @param pending 
  * @returns 
  */
-const setPending = <T>(obj:T, pending: boolean) => {
+function setPending <T>(obj:T, pending: boolean) {
 	if (pending) {
     return setProperty(obj, PENDING_KEY, true);
 	}
