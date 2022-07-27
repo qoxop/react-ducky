@@ -159,6 +159,11 @@ async function releaseLocalPackage() {
 
 async function createDocument() {
   const packages = ['react-bfcache', 'react-controller', 'redux-model'];
+  const names = {
+    'react-bfcache': 'rc-bfcache',
+    'react-controller': 'rc-controller',
+    'redux-model': 'rd-model',
+  };
   const jsonTpl = fs.readFileSync(
     path.resolve(__dirname, './api-extractor.json'),
     { encoding: 'utf-8' }
@@ -192,7 +197,7 @@ async function createDocument() {
       }
     );
     spawnSync('npx', ['api-documenter', 'markdown', '-i', './', '-o', documentPath], { cwd: apiTemPath });
-    fs.renameSync(path.resolve(documentPath, 'index.md'), path.resolve(documentPath, 'README.md'));
+    fs.copyFileSync(path.resolve(documentPath, `${names[item]}.md`), path.resolve(documentPath, 'README.md'));
   })
 }
 
