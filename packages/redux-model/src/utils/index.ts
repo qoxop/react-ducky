@@ -172,7 +172,7 @@ function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerO
 }
 
 /**
- *  判断是否存在加载中标识 
+ *  判断对象是否存在加载中标识 
  * @param obj
  * @returns 
  */
