@@ -11,9 +11,9 @@
 </h3>
 
 react-ducky 是一个以优化业务逻辑为目的的 React 工具库。由一下几个 npm 包组合而成：
-- [rd-model](./packages/redux-model/README.md): 简化 redux 在 react 应用的中的使用。
-- [rc-bfcache](./packages/react-bfcache/README.md): 提供 history 增强函数，模拟浏览器的前进后退缓存，用于优化 react 页面跳转体验
-- [rc-controller](./packages/react-controller/README.md): 用 Class 组织和封装函数组件中用于处理业务逻辑的方法，减少 ref 的使用，避免函数的重复创建。
+- [rd-model](./packages/redux-model): 简化 redux 在 react 应用的中的使用。
+- [rc-bfcache](./packages/react-bfcache): 提供 history 增强函数，模拟浏览器的前进后退缓存，用于优化 react 页面跳转体验
+- [rc-controller](./packages/react-controller): 用 Class 组织和封装函数组件中用于处理业务逻辑的方法，减少 ref 的使用，避免函数的重复创建。
 
 ## 安装
 
