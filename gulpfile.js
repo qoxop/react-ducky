@@ -105,9 +105,38 @@ function testPackage() {
 }
 
 /**
+ * 更新版本
+ */
+function updateVersion(cb) {
+  // npx changeset version
+  spawnSync('npx', ['changeset', 'version'], { stdio: 'inherit' });
+  // check status
+  const { stdout } = spawnSync('git', ['status'], { encoding: 'utf-8', stdio: 'inherit' });
+  // if unclean, add & commit & tag & push
+  if (!/working tree clean/.test(stdout)) {
+    spawnSync('git', ['add', '.'], { stdio: 'inherit' });
+    spawnSync('git', ['commit', '-m="update version"'], { stdio: 'inherit' });
+    spawnSync('npx', ['changeset', 'tag'], { stdio: 'inherit' });
+    spawnSync('git', ['push', '--follow-tags'], { stdio: 'inherit' });
+  }
+  cb()
+}
+
+
+/**
  * 发布包
  */
 function releasePackge(cb) {
+  const dirs = fs.readdirSync(dist).map(dir => {
+    const abs = path.resolve(dist, dir);
+    if (fs.statSync(abs).isDirectory()) {
+      return abs;
+    }
+    return '';
+  }).filter(Boolean);
+  dirs.forEach(dir => {
+    spawnSync('npm', ['publish', '--registry=https://registry.npmjs.org/'], { stdio: 'inherit', cwd: dir });
+  });
   cb();
 }
 
@@ -152,11 +181,13 @@ async function releaseLocalPackage() {
     return '';
   }).filter(Boolean);
   dirs.forEach(dir => {
-    console.log(dir)
     spawnSync('npm', ['publish', '--registry=http://my-npm.com/'], { stdio: 'inherit', cwd: dir });
   });
 }
 
+/**
+ * 创建文档
+ */
 async function createDocument() {
   const packages = ['react-bfcache', 'react-controller', 'redux-model'];
   const names = {
@@ -203,46 +234,33 @@ async function createDocument() {
 
 
 /**
- * 测试
+ * 测试任务
  */
-const test = series(
-  delOutput,
-  testPackage,
-);
+const TestTask = series(delOutput, testPackage);
 
 /**
- * 构建
+ * 构建任务
  */
-const build = series(
-  test,
-  tsCompile,
-  copyPackge,
-  updatePackge
-);
+const BuildTask = series(TestTask, tsCompile, copyPackge, updatePackge);
 
 /**
- * 发布正式包
+ * 发布正式包任务
  */
-const release = series(
-  build,
-  releasePackge,
-);
+const ReleaseTask = series(BuildTask, releasePackge);
 
 /**
- * 发布本地包
+ * 发布本地包任务
  */
-const releaseLocal = series(
-  build,
-  releaseLocalPackage
-)
-const document = series(
-  build,
-  createDocument,
-  delOutput,
-)
+const ReleaseLocalTask = series(BuildTask, releaseLocalPackage);
 
-exports.test = test;
-exports.build = build;
-exports.document = document;
-exports.release = release;
-exports.releaseLocal = releaseLocal;
+/**
+ * 生成文档任务
+ */
+const DocumentTask = series(BuildTask, createDocument, delOutput);
+
+exports.test = TestTask;
+exports.build = BuildTask;
+exports.document = DocumentTask;
+exports.release = ReleaseTask;
+exports.version = updateVersion;
+exports.releaseLocal = ReleaseLocalTask;
