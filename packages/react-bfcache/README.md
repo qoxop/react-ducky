@@ -107,3 +107,6 @@ export const RouteComponent = withRouteAction(MyComponent, {
   fallback: "loading..."
 })
 ```
+
+---
+[完整 API 文档地址](../../document/react-bfcache/)

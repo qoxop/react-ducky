@@ -398,3 +398,5 @@ type Actions = {
 
 一个纯的 reducer 函数，由 reducers 配置生成，**为了让 model 对象能够正常使用**，需要将它合并到正确的位置上，详见 [`statePaths` 配置](#statePaths)。
 
+---
+[完整 API 文档地址](../../document/redux-model/)

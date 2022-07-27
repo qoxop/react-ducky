@@ -103,3 +103,6 @@ useController 用于将自定义的 Controller 类进行实例化。`useControll
 其使用方法 `Controller` 并无差异，只是实例内部增加了 `store`、`dispatch` 属性，用于获取 Redux中的数据以及派发动作。
 
 > rc-controller 内部没有提供 `useReduxController` 这个方法，需要使用者调用 `createUseReduxController` 这个方法生成，因为 rc-controller 内部不直接依赖于 redux。
+
+---
+[完整 API 文档地址](../../document/react-controller/)

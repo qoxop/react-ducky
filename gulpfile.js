@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const got = require('got');
 const del = require('del');
 const path = require('path');
@@ -192,6 +192,7 @@ async function createDocument() {
       }
     );
     spawnSync('npx', ['api-documenter', 'markdown', '-i', './', '-o', documentPath], { cwd: apiTemPath });
+    fs.renameSync(path.resolve(documentPath, 'index.md'), path.resolve(documentPath, 'README.md'));
   })
 }
 
