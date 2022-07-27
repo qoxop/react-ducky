@@ -1,3 +1,13 @@
+/**
+ * 浏览器使用 [前进后退缓存(Back/forward cache)](https://web.dev/bfcache/) 优化了用户浏览网站的导航体验，
+ * 但是这只是针对不同页面间的前进后退，对于 spa 应用是不起作用的，但是很多 spa 应用也会有类似的缓存需求，实现这类需求往往会入侵业务代码，从而造成混乱。
+ * 
+ * 为此，rc-bfcache 提供了一个 [history](https://github.com/remix-run/history) 扩展函数，维护了一份与浏览器同步的路由栈信息，为组件状态缓存的**自动清除**提供判断依据。
+ * 使用者在对 `history` 对象进行能力扩展后，只需要调用与 `useState` 类似的 hook 方法 — `useRouteState`，即可让组件状态获得缓存能力，而无需关心缓存清空逻辑。
+ * 
+ * 当然，这一切的前提是：你所使用的路由框架(如: [react-router](https://reactrouter.com/))依赖于 [history](https://github.com/remix-run/history) 这个库，同时允许传入自定义的 `history` 对象。
+ * @packageDocumentation
+ */
 import { Action } from "history";
 import React, {
   useRef,
