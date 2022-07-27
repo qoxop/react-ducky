@@ -237,7 +237,8 @@ const releaseLocal = series(
 )
 const document = series(
   build,
-  createDocument
+  createDocument,
+  delOutput,
 )
 
 exports.test = test;
