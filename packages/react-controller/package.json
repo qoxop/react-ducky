@@ -1,0 +1,20 @@
+{
+  "name": "rc-controller",
+  "version": "0.0.2",
+  "description": "使用 Class 组织和封装 React 函数组件内的业务逻辑方法",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "peerDependencies": {
+    "@types/react": "^16.8 || ^17.0 || ^18.0",
+    "@types/react-dom": "^16.8 || ^17.0 || ^18.0",
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0",
+    "redux": "^4",
+    "immer": "^9"
+  },
+  "author": {
+    "name": "张集伟",
+    "email": "1106291186@qq.com"
+  },
+  "license": "ISC"
+}

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "ES5",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "typeRoots": ["node_modules/@types"],
+    "strict": false,
+    "isolatedModules": true,
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ES6",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "preserveConstEnums": true
+  },
+  "include": [
+    "./packages/**/*"
+  ]
+}

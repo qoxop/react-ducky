@@ -11,9 +11,9 @@
 </h3>
 
 react-ducky 是一个以优化业务逻辑为目的的 React 工具库。由一下几个 npm 包组合而成：
-- [rd-model](./packages/redux-model): 简化 redux 在 react 应用的中的使用。
-- [rc-bfcache](./packages/react-bfcache): 提供 history 增强函数，模拟浏览器的前进后退缓存，用于优化 react 页面跳转体验
-- [rc-controller](./packages/react-controller): 用 Class 组织和封装函数组件中用于处理业务逻辑的方法，减少 ref 的使用，避免函数的重复创建。
+- [rd-model](https://www.npmjs.com/package/rd-mode): 简化 redux 在 react 应用的中的使用。
+- [rc-bfcache](https://www.npmjs.com/package/rc-bfcache): 提供 history 增强函数，模拟浏览器的前进后退缓存，用于优化 react 页面跳转体验
+- [rc-controller](https://www.npmjs.com/package/rc-controller): 用 Class 组织和封装函数组件中用于处理业务逻辑的方法，减少 ref 的使用，避免函数的重复创建。
 
 ## 安装
 
@@ -22,6 +22,9 @@ pnpm install react-ducky
 ```
 如果你只想要部分功能，可以选择只安装对应的子 npm 包，`rd-model`、`rc-bfcache`、`rc-controller`。
 
+## 使用文档
+
+[https://react-ducky.qoxop.run/](https://react-ducky.qoxop.run/)
 
 ## 核心功能
 
@@ -39,7 +42,7 @@ react-ducky 针对 redux 封装了一套简易的 API，类似于 redux-toolkit�
 
 ### 三、业务逻辑控制器
 
-在函数组件中使用 hook 可以方便地封装和复用逻辑，但当业务逻辑变得复杂时，代码可能会变得不简洁甚至混乱，某些处理方法不得不定义在组件内，随着组件更新重复地创建。同时必须时刻注意闭包问题，避免取值错误，有时往往需要使用很多 ref。
+在函数组件中使用 hook 可以方便地封装和复用逻辑，但当复杂业务逻辑变得复杂时，代码可能会变得不简洁甚至混乱，某些处理方法不得不定义在组件内，随着组件更新重复地创建。同时必须时刻注意闭包问题，避免取值错误，有时往往需要使用很多 ref。
 
 业务逻辑控制器提供了一种 `class + hook` 的方式来编写你的业务逻辑。用 Class 组织和封装函数组件中用于处理业务逻辑的方法，减少 ref 的使用，避免函数的重复创建，同时让代码更加简洁。
 
@@ -47,3 +50,5 @@ react-ducky 针对 redux 封装了一套简易的 API，类似于 redux-toolkit�
 
 - 纯 TS 编写，提供完善的类型提醒 。
 - 单元测试已覆盖核心场景，仍在继续完善中。
+
+

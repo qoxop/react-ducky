@@ -1,0 +1,20 @@
+{
+  "name": "rd-model",
+  "version": "0.0.2",
+  "description": "用于简化 Redux 使用的工具库",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "peerDependencies": {
+    "@types/react": "^16.8 || ^17.0 || ^18.0",
+    "@types/react-dom": "^16.8 || ^17.0 || ^18.0",
+    "immer": "^9",
+    "react": "^16.8 || ^17.0 || ^18.0",
+    "react-dom": "^16.8 || ^17.0 || ^18.0",
+    "redux": "^3 || ^4"
+  },
+  "author": {
+    "name": "张集伟",
+    "email": "1106291186@qq.com"
+  },
+  "license": "ISC"
+}
