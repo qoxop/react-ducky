@@ -115,7 +115,7 @@ function updateVersion(cb) {
   // if unclean, add & commit & tag & push
   if (!/working tree clean/.test(stdout)) {
     spawnSync('git', ['add', '.'], { stdio: 'inherit' });
-    spawnSync('git', ['commit', '-m="update version"', '--no-verify'], { stdio: 'inherit' });
+    spawnSync('git', ['commit', '-m="update version [skip actions]"', '--no-verify'], { stdio: 'inherit' });
     spawnSync('npx', ['changeset', 'tag'], { stdio: 'inherit' });
     spawnSync('git', ['push', '--follow-tags', '--no-verify'], { stdio: 'inherit' });
   }
@@ -134,7 +134,9 @@ function releasePackge(cb) {
     }
     return '';
   }).filter(Boolean);
+  
   dirs.forEach(dir => {
+    fs.copySync(path.resolve(__dirname, '.npmrc'), path.resolve(dir, '.npmrc'));
     spawnSync('npm', ['publish', '--registry=https://registry.npmjs.org/'], { stdio: 'inherit', cwd: dir });
   });
   cb();
