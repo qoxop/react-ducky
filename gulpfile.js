@@ -258,9 +258,14 @@ const ReleaseLocalTask = series(BuildTask, releaseLocalPackage);
  */
 const DocumentTask = series(BuildTask, createDocument, delOutput);
 
+/**
+ * 版本发布任务
+ */
+const VersionTask = series(testPackage, updateVersion);
+
 exports.test = TestTask;
 exports.build = BuildTask;
 exports.document = DocumentTask;
 exports.release = ReleaseTask;
-exports.version = updateVersion;
+exports.version = VersionTask;
 exports.releaseLocal = ReleaseLocalTask;

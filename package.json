@@ -2,7 +2,9 @@
 	"scripts": {
 		"test": "gulp test",
 		"build": "gulp build",
+		"document": "gulp document",
 		"release": "gulp release",
+		"version": "gulp version",
 		"debug": "gulp releaseLocal",
 		"lint": "eslint .",
 		"prepare": "husky install"
