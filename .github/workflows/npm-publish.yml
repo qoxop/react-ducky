@@ -23,4 +23,4 @@ jobs:
       - run: pnpm run version
       - run: pnpm run release
         env:
-          NPM_TOKEN: ${{secrets.npm_token}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
