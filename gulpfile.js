@@ -115,11 +115,11 @@ function updateVersion(cb) {
   // if unclean, add & commit & tag & push
   if (!/working tree clean/.test(stdout)) {
     spawnSync('git', ['add', '.'], { stdio: 'inherit' });
-    spawnSync('git', ['commit', '-m="update version"'], { stdio: 'inherit' });
+    spawnSync('git', ['commit', '-m="update version"', '--no-verify'], { stdio: 'inherit' });
     spawnSync('npx', ['changeset', 'tag'], { stdio: 'inherit' });
-    spawnSync('git', ['push', '--follow-tags'], { stdio: 'inherit' });
+    spawnSync('git', ['push', '--follow-tags', '--no-verify'], { stdio: 'inherit' });
   }
-  cb()
+  cb();
 }
 
 
