@@ -2,12 +2,14 @@ name: Publish Package
 
 on:
   push:
-    tags:
-      - "v*"
-      
+    branches:
+      - main
+    paths:
+      - '.changeset/**.md'      
 jobs:
   
   publish-npm:
+    if: github.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,6 +20,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: "pnpm"
       - run: pnpm install
+      - run: pnpm run version
       - run: pnpm run release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NPM_TOKEN: ${{secrets.npm_token}}
