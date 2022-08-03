@@ -75,14 +75,20 @@ function useSelector <S = DefaultRootState, P = any>(
   selector: Selector<S, P>,
   options: UseSelectorOptions<P> = {}
 ): P {
-  const { eq, withSuspense, sync } = useMemo(() => ({
-    eq: options.eq || shallowEqual,
-    sync: options.sync,
-    withSuspense: options.withSuspense === true
-      ? isPending
-      : (isFunction(options.withSuspense) ? options.withSuspense : null),
+  const { eq, withSuspense, sync } = useMemo(() => {
+    // 兼容旧版 API
+    if (typeof options === 'function') {
+      return { eq: options as any }
+    }
+    return {
+      eq: options.eq || shallowEqual,
+      sync: options.sync,
+      withSuspense: options.withSuspense === true
+        ? isPending
+        : (isFunction(options.withSuspense) ? options.withSuspense : null),
+      }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), []);
+  }, []);
   const { subscriber, store } = useContext(ReduxContext);
   const [forceTimes, forceRender] = useReducer((s) => s + 1, 0);
   // eslint-disable-next-line react-hooks/exhaustive-deps

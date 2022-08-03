@@ -14,6 +14,7 @@ import {
   StoreItem,
   createPersistenceItem,
   createSessionItem,
+  createAtomChunk,
 } from './utils';
 import {
   XOR,
@@ -65,6 +66,18 @@ type ModelBaseOptions<
   initialState: STATE;
   reducers: MCRA;
   fetch?: SIF;
+  /**
+   * @deprecated
+   * 
+   * 这是兼容旧版API写法，请改为 `statePaths`
+   */
+  selector?: (appState: any) => any;
+  /**
+   * @deprecated
+   * 
+   * 这是兼容旧版API写法，请改为 `fetch`
+   */
+  atomFetchers?: SIF;
   extraReducers?: Record<string, ReducerCase<STATE>> | FunctionLike<[Builder<STATE>], void>;
 }
 
@@ -75,6 +88,18 @@ type ModelCacheOptions = {
   cacheKey: string;
   cacheStorage: 'session'|'local'|Storage;
   cacheVersion?: string;
+  /**
+   * @deprecated
+   * 
+   * 这是兼容旧版API写法，请改为 `cacheStorage`
+   */
+  persistence?: 'session'|'local';
+  /**
+   * @deprecated
+   * 
+   * 这是兼容旧版API写法，请改为 `cacheKey`
+   */
+  persistenceKey?: string;
 }
 
 /**
@@ -144,6 +169,9 @@ const handleCache = (options: CreateModelOptions<any, any, any>) => {
   };
 };
 
+function _defaultIsPending(subState: any) {
+  return subState?.isPending || subState === undefined || subState === null;
+}
 /**
  * 创建一个基于 Redux 的状态模型
  * @param options 配置对象 {@link CreateModelOptions}
@@ -158,14 +186,27 @@ function createModel<
   options: CreateModelOptions<STATE, MCRA, SIF>,
   getStore: () => Store = _getStore as any,
 ):Model<STATE, MCRA, SIF> {
-  const {
+  // 兼容旧版 API
+  if (options.persistence) {
+    options.cacheStorage = options.persistence
+  }
+  if (options.persistenceKey) {
+    options.cacheKey = options.persistenceKey;
+  }
+  let {
+    name,
     statePaths,
     reducers,
     fetch: fetches,
     extraReducers,
+    selector,
+    atomFetchers,
   } = options;
-  const prefix = statePaths.join('_').toUpperCase();
-  const selector = createSelector(statePaths);
+  const isOld = !statePaths;
+  // fetches = fetches || options.atomFetchers;
+  // 兼容旧版 API
+  const prefix = !isOld ? statePaths.join('_').toUpperCase() : name;
+  selector = !isOld ? createSelector(statePaths) : selector;
   const Dispatch = () => getStore().dispatch;
 
   const actions: Record<string, ActionCreator<any>> = {};
@@ -179,11 +220,20 @@ function createModel<
     const reduceCase = reducers[rKey];
     const actionType = `${prefix}/${rKey}`;
     builder.addCase(actionType, reduceCase);
-    actions[rKey] = (arg: any) => Dispatch()({
-      ...(arg && typeof arg === 'object' ? arg : {}),
-      type: actionType,
-      payload: arg,
-    });
+    // 兼容旧版 API
+    if (isOld) {
+      actions[rKey] = (arg: any) => ({
+        ...(arg && typeof arg === 'object' ? arg : {}),
+        type: actionType,
+        payload: arg,
+      });
+    } else {
+      actions[rKey] = (arg: any) => Dispatch()({
+        ...(arg && typeof arg === 'object' ? arg : {}),
+        type: actionType,
+        payload: arg,
+      });
+    }
   }
 
   if (extraReducers) {
@@ -195,7 +245,22 @@ function createModel<
       }
     }
   }
-
+  // 兼容旧版本 API
+  let atomActions: any;
+  if (atomFetchers) {
+    atomActions = Object.keys(atomFetchers).reduce((pre, aKey) => {
+      const actionType = `${prefix}/fetch_${aKey}`;
+      // action
+      pre[aKey] = createAtomChunk(actionType, atomFetchers[aKey]);
+      // reducer 
+      builder.addCase(actionType, (state, action: PayloadAction<any>) => {
+          const { payload } = action;
+          // @ts-ignore
+          state[aKey] = Object.assign({}, state[aKey], payload);
+      });
+      return pre;
+  }, {});
+  }
   if (fetches && typeof fetches === 'object') {
     for (const fKey of Object.getOwnPropertyNames(fetches)) {
       const fetcher = fetches[fKey];
@@ -248,9 +313,18 @@ function createModel<
     },
   });
 
-  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config?: UseSelectorOptions<T>) => (
-    useSelector((state) => (subSelector ? subSelector(selector(state)) : selector(state)), config)
-  );
+  const useModel = <T = any>(subSelector?: Selector<STATE, T>, config: UseSelectorOptions<T> = {}) => {
+    // @ts-ignore 兼容旧版本API
+    if (config.usePending) {
+      config.withSuspense = _defaultIsPending;
+    }
+    // @ts-ignore 兼容旧版本API
+    if (config.isEqual) {
+      // @ts-ignore 兼容旧版本API
+      config.eq = config.isEqual;
+    }
+    return useSelector((state) => (subSelector ? subSelector(selector(state)) : selector(state)), config);
+  };
 
   const getState = () => selector(getStore().getState());
 
@@ -260,6 +334,7 @@ function createModel<
     reducer,
     useModel,
     getState,
+    atomActions,
     isPending: (key: string) => isPending((getState() || {})[key]),
   } as any;
 }

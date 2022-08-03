@@ -1,6 +1,6 @@
 {
   "name": "rc-controller",
-  "version": "0.0.2",
+  "version": "0.0.2-compat",
   "description": "使用 Class 组织和封装 React 函数组件内的业务逻辑方法",
   "main": "index.js",
   "typings": "index.d.ts",

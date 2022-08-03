@@ -8,13 +8,6 @@ import {
 } from 'rc-controller';
 
 import {
-  enhanceHistory,
-  useBfCache,
-  useRouteAction,
-  withRouteAction,
-} from 'rc-bfcache';
-
-import {
   setStore,
   getStore,
   initStore,
@@ -33,12 +26,10 @@ import {
 const useReduxController = createUseReduxController(ReduxContext);
 
 export {
-  enhanceHistory,
-  useBfCache,
-  useRouteAction,
-  withRouteAction,
   Controller,
+  Controller as Controler,
   ReduxController,
+  ReduxController as ReduxControler,
   useController,
   useCtrlContext,
   useReduxController,

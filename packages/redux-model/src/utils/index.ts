@@ -1,6 +1,7 @@
 import { INVALID_RESPONSE_ERROR } from "./constants";
 import { PromiseFn, T_OrReturnT } from "../../typings";
 import { isArray, isObject, isFunction } from './is-type';
+import { Dispatch } from "redux";
 
 /**
  * 浅对比
@@ -194,6 +195,46 @@ function setPending <T>(obj:T, pending: boolean) {
 };
 // #endregion
 
+/**
+ * @deprecated
+ * 
+ * @param type 
+ * @param fetcher 
+ * @returns 
+ */
+function createAtomChunk<T = any, Ags extends Array<unknown> = unknown[]>(
+  type: string,
+  fetcher: PromiseFn<T, Ags>
+) {
+  let count = 0;
+  return function atomChunk(...args: Ags) {
+    return (dispatch: Dispatch) => {
+      const promise = fetcher(...args);
+      const innerCount = count = (count + 1);
+      dispatch({ type, payload: { status: 'pending', isPending: true, error: null }});
+      promise.then((response) => {
+        if (innerCount === count) {
+          dispatch({ type, payload: {
+            status: 'fulfilled',
+            value: response,
+            error: null,
+            isPending: false,
+          }});
+        }
+      }).catch(error => {
+        if (innerCount === count) {
+          dispatch({ type, payload: {
+            status: 'rejected',
+            error,
+            isPending: false,
+          }});
+        }
+      });
+      return promise;
+    }
+  }
+}
+
 export {
   uuid,
   getInit,
@@ -213,6 +254,7 @@ export {
   isPending,
   setPending,
   // #endregion
+  createAtomChunk,
 };
 export * from './is-type';
 export * from './storage';
