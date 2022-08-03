@@ -206,7 +206,7 @@ function createModel<
   // fetches = fetches || options.atomFetchers;
   // 兼容旧版 API
   const prefix = !isOld ? statePaths.join('_').toUpperCase() : name;
-  selector = !isOld ? createSelector(statePaths) : selector;
+  selector = !isOld ? createSelector(statePaths) : (selector || ((state) => state[name]));
   const Dispatch = () => getStore().dispatch;
 
   const actions: Record<string, ActionCreator<any>> = {};
@@ -329,6 +329,7 @@ function createModel<
   const getState = () => selector(getStore().getState());
 
   return {
+    name,
     fetch,
     actions,
     reducer,
