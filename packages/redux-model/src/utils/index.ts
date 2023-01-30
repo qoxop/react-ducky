@@ -3,6 +3,8 @@ import { PromiseFn, T_OrReturnT } from "../../typings";
 import { isArray, isObject, isFunction } from './is-type';
 import { Dispatch } from "redux";
 
+const PENDING_KEY = Symbol('PENDING_KEY');
+
 /**
  * 浅对比
  * @param last
@@ -19,7 +21,11 @@ function shallowEqual(last: any, cur: any) {
     && cur.constructor === last.constructor
   ) {
     const curKeys = Object.keys(cur);
-    return curKeys.length === Object.keys(last).length && curKeys.every((k) => cur[k] === last[k]);
+    return (
+      curKeys.length === Object.keys(last).length &&
+      curKeys.every((k) => cur[k] === last[k]) &&
+      cur[PENDING_KEY] === last[PENDING_KEY]
+    );
   }
   return false;
 };
@@ -82,7 +88,7 @@ function removeProperty<T>(obj: T, key:string|symbol) {
 /**
  * 判断一个值是否为空：0、NaN、null、undefined、空字符串、空数组、空对象
  * @param value
- * @returns 
+ * @returns
  */
 function isEmpty(value: unknown) {
   // @ts-ignore
@@ -94,7 +100,6 @@ function isEmpty(value: unknown) {
 // #endregion
 
 // #region async-function-tools
-const PENDING_KEY = Symbol('PENDING_KEY');
 
 /**
  * 创建一个 Promise，将 resolve 和 reject 提取到作用域外
@@ -149,7 +154,7 @@ type FetchHandlerOptions<Args extends any[], Resp = any> = {
 /**
  * 创建一个请求处理函数，当段时间内发起多个请求时，只响应最后一个请求，前面的请求返回时进行抛异常处理
  * @param options 配置对象 {@link FetchHandlerOptions}
- * @returns 
+ * @returns
  */
 function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerOptions<Args,Resp>) {
   const { fetcher, after, before, identifier } = options;
@@ -173,9 +178,9 @@ function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerO
 }
 
 /**
- *  判断对象是否存在加载中标识 
+ *  判断对象是否存在加载中标识
  * @param obj
- * @returns 
+ * @returns
  */
 function isPending<T = any>(obj:T) {
   return !!(obj && obj[PENDING_KEY] === true);
@@ -183,9 +188,9 @@ function isPending<T = any>(obj:T) {
 
 /**
  * 设置加载中标识
- * @param obj 
- * @param pending 
- * @returns 
+ * @param obj
+ * @param pending
+ * @returns
  */
 function setPending <T>(obj:T, pending: boolean) {
 	if (pending) {
@@ -197,10 +202,10 @@ function setPending <T>(obj:T, pending: boolean) {
 
 /**
  * @deprecated
- * 
- * @param type 
- * @param fetcher 
- * @returns 
+ *
+ * @param type
+ * @param fetcher
+ * @returns
  */
 function createAtomChunk<T = any, Ags extends Array<unknown> = unknown[]>(
   type: string,

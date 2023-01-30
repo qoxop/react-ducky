@@ -125,3 +125,5 @@ yarn-error.log*
 /websites/document/build
 /websites/document/docs/api
 package/.api-doc
+
+.idea
