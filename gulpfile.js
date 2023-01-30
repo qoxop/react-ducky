@@ -16,6 +16,7 @@ const sourceGlobs = [
 const dist = path.resolve(__dirname, './libs');
 const source = path.resolve(__dirname, './packages');
 const tsConfigPath = path.resolve(__dirname, './tsconfig.json');
+const localRegistry = 'https://npm.qoxop.run/'
 
 async function libsVisitor(cb) {
   const dirs = fs.readdirSync(dist);
@@ -146,8 +147,14 @@ function releasePackge(cb) {
  * 发布本地包
  */
 async function releaseLocalPackage() {
-  const { latest } = await got('http://my-npm.com/-/verdaccio/data/sidebar/react-ducky').json();
-  const newVersion = latest.version
+  let latestVersion = '6.6.6'
+  try {
+    const { latest: version } = await got(`${localRegistry}-/verdaccio/data/sidebar/react-ducky`).json()
+    latestVersion = version;
+  } catch (error) {
+    console.warn(error);
+  }
+  const newVersion = latestVersion
     .split('.')
     .map((v, index) => (index === 2 ? +v+1 : v))
     .join('.');
@@ -183,7 +190,7 @@ async function releaseLocalPackage() {
     return '';
   }).filter(Boolean);
   dirs.forEach(dir => {
-    spawnSync('npm', ['publish', '--registry=http://my-npm.com/'], { stdio: 'inherit', cwd: dir });
+    spawnSync('npm', ['publish', `--registry=${localRegistry}`], { stdio: 'inherit', cwd: dir });
   });
 }
 

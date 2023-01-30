@@ -118,6 +118,7 @@ libs
 .env.development.local
 .env.test.local
 .env.production.local
+.idea
 ./libs/**/*
 npm-debug.log*
 yarn-debug.log*

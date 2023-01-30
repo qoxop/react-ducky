@@ -2,6 +2,8 @@ import { INVALID_RESPONSE_ERROR } from "./constants";
 import { PromiseFn, T_OrReturnT } from "../../typings";
 import { isArray, isObject, isFunction } from './is-type';
 
+const PENDING_KEY = Symbol('PENDING_KEY');
+
 /**
  * 浅对比
  * @param last
@@ -18,10 +20,14 @@ function shallowEqual(last: any, cur: any) {
     && cur.constructor === last.constructor
   ) {
     const curKeys = Object.keys(cur);
-    return curKeys.length === Object.keys(last).length && curKeys.every((k) => cur[k] === last[k]);
+    return (
+      curKeys.length === Object.keys(last).length &&
+      curKeys.every((k) => cur[k] === last[k]) &&
+      cur[PENDING_KEY] === last[PENDING_KEY]
+    );
   }
   return false;
-};
+}
 
 /**
  * 创建一个唯一ID
@@ -62,7 +68,7 @@ function setProperty<T>(obj: T, key:symbol|string, value: unknown) {
     return new ValueRef(obj, key, value);
   }
   return Object.assign(isArray(obj) ? [] : {}, obj, { [key]: value });
-};
+}
 
 /**
  * 从任意值上安全地移除某个属性
@@ -76,12 +82,12 @@ function removeProperty<T>(obj: T, key:string|symbol) {
   }
   // @ts-ignore
   return obj?.valueOf ? obj.valueOf() : obj;
-};
+}
 
 /**
  * 判断一个值是否为空：0、NaN、null、undefined、空字符串、空数组、空对象
  * @param value
- * @returns 
+ * @returns
  */
 function isEmpty(value: unknown) {
   // @ts-ignore
@@ -93,8 +99,6 @@ function isEmpty(value: unknown) {
 // #endregion
 
 // #region async-function-tools
-const PENDING_KEY = Symbol('PENDING_KEY');
-
 /**
  * 创建一个 Promise，将 resolve 和 reject 提取到作用域外
  */
@@ -129,7 +133,7 @@ async function alwayResolve <D>(ps: Promise<D>): Promise<[(D|null), any]> {
 /**
  * 异步请求处理器配置参数
  */
-type FetchHandlerOptions<Args extends any[], Resp = any> = {
+export type FetchHandlerOptions<Args extends any[], Resp = any> = {
   fetcher: PromiseFn<Resp, Args>;
   /**
    * 请求结束后的回调方法
@@ -148,7 +152,7 @@ type FetchHandlerOptions<Args extends any[], Resp = any> = {
 /**
  * 创建一个请求处理函数，当段时间内发起多个请求时，只响应最后一个请求，前面的请求返回时进行抛异常处理
  * @param options 配置对象 {@link FetchHandlerOptions}
- * @returns 
+ * @returns
  */
 function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerOptions<Args,Resp>) {
   const { fetcher, after, before, identifier } = options;
@@ -172,9 +176,9 @@ function createFetchHandler<Args extends unknown[], Resp>(options: FetchHandlerO
 }
 
 /**
- *  判断对象是否存在加载中标识 
+ *  判断对象是否存在加载中标识
  * @param obj
- * @returns 
+ * @returns
  */
 function isPending<T = any>(obj:T) {
   return !!(obj && obj[PENDING_KEY] === true);
@@ -182,16 +186,16 @@ function isPending<T = any>(obj:T) {
 
 /**
  * 设置加载中标识
- * @param obj 
- * @param pending 
- * @returns 
+ * @param obj
+ * @param pending
+ * @returns
  */
 function setPending <T>(obj:T, pending: boolean) {
 	if (pending) {
     return setProperty(obj, PENDING_KEY, true);
 	}
 	return removeProperty(obj, PENDING_KEY);
-};
+}
 // #endregion
 
 export {
@@ -216,4 +220,3 @@ export {
 };
 export * from './is-type';
 export * from './storage';
-export type { FetchHandlerOptions }
