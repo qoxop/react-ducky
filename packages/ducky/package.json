@@ -1,6 +1,6 @@
 {
   "name": "react-ducky",
-  "version": "1.2.1-compat",
+  "version": "1.2.1",
   "description": "是一个以优化业务逻辑为目的的 React 工具库 🐳 ",
   "main": "index.js",
   "typings": "index.d.ts",
